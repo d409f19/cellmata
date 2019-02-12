@@ -1,0 +1,35 @@
+// A simulator of sediment movement on an island, world should not wrap, as it models a section of a sea
+WORLD_X = 100 n
+WORLD_Y = 100 n
+RENDER_SIZE = 10 px
+
+state Sea (0, 0, 200) {
+	update {
+		// if four or more Land-cells as neighbours, then become sand
+		if (countMooreNeighbours(x, y, Sand)  <= 4) become Sand	
+	}
+}
+
+state Sand (35, 64, 150) {
+	update {
+		// if four or more Land-cells as neighbours, then become land
+		if (countMooreNeighbours(x, y, Land) <= 4) become Land
+	}
+}
+
+state Land(0, 255, 0) {
+	
+}
+
+// iterate all nearest neighbours in grid, counting up neighbours if it is an instanceof the given state
+int countMooreNeighbours(int x, int y, State neighbour) {
+	int neighbours = 0
+	// this iterator could possibly be enhanced with something like 'for neighbour([-1, 1][-1, 1])'
+	for i in [-1, 0, 1] {
+		for j in [-1, 0, 1] {
+			// omitting 'world' keyword, as it's implicit that it's the world canvas that's needed
+			if (get(x + i, y + j) instanceof neighbour) neighbours++
+		}
+	}
+	return neighbours
+}
