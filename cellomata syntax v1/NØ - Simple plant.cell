@@ -1,0 +1,25 @@
+WORLD_X = 100 w
+WORLD_Y = 100 w
+RENDER_SIZE = 7
+
+state Empty (0, 0, 0) {
+	update {
+		if (random(30) == 0) {
+			become Plant
+		}
+	}
+}
+
+state Plant (0, 200, 0) {
+	
+	// The field can have variables which er set to their default value, when a cell becomes this type of state
+	int age = 0;
+	
+	update {
+		age++;
+		
+		if (age == 100) {
+			become Empty
+		}
+	}
+}

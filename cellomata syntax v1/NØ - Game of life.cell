@@ -1,0 +1,50 @@
+// Global options:
+// First the worlds properties is defined for both the x-axis and the y-axis
+// The first parameter is the size of axies in cells
+// The second parameter is the behaviour of the axies, w: wrap, wrapping from x.MAX +1 = x.MIN similar to overflow, n: no-wrap, does not wrap, i: infinite (this might become a problem)
+WORLD_X = 50 w
+WORLD_Y = 50 w
+// Cell pixelsize, can take just one parameter if world sizes are square
+RENDER_SIZE = 10
+
+// Each possible cell state is defined in a code block starting with "State"  then the name of the state and then the colour of the cell in parenthesis as RGB-notation (red, green, blue)
+state Dead (255, 255, 255) {
+	// The update block defines what happens with the cell each update
+	update {
+	    // Here we see a function call. The x and y are the position of this cell
+		int aliveNeighbours = countAliveMooreNeighbours(x, y)
+		
+		// Only state changes need to be defined
+		if (aliveNeighbours == 3) {
+			// The 'become' keyword defines the following state
+			// When a 'become' keyword is met the execution of this update block stops, just like return in other languages
+			become Alive
+		}
+	}
+}
+
+state Alive (0, 0, 0) {
+	update {
+		int aliveNeighbours = countAliveNeighbours(x, y)
+		
+		if (aliveNeighbours < 2 or 3 < aliveNeighbours) {
+			become Dead
+		}
+	}	
+}
+
+// The definition of the countAliveNeighbours
+int countAliveMooreNeighbours(int x, int y) {
+	int aliveCount = 0;
+	for i in [-1, 0, 1] {
+		for j in [-1, 0, 1] {
+			if (i != 0 or j != 0) {
+				// The world variable holds multiple useful functions, and x and y are the position of this cell
+				if (world.get(x + i, y + j)) {
+					aliveCount++;
+				}
+			}
+		}
+	}
+	return aliveCount;
+}
