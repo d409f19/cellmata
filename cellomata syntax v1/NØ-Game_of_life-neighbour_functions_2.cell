@@ -1,0 +1,49 @@
+WORLD_X = 50 w
+WORLD_Y = 50 w
+RENDER_SIZE = 10
+
+// This declares a moore neighbourhood, so we later can call mooreNeighbours(x, y) and get a list of all the neighbours.
+// @ is the current cell, X are included neighbours, and "-" are excluded neighbours.
+neighbourhood mooreNeighbours {
+	- - - - -
+	- X X X -
+	- X @ X -
+	- X X X -
+	- - - - -
+}
+
+neighbourhood neumannNeighbours {
+	- - X - -
+	- - X - -
+	X X @ X X
+	- - X - -
+	- - X - -
+}
+
+neighbourhood customNeighbours {
+	X X - -
+	X @ X X
+	- X - - 
+	- X - -
+}
+
+state Dead (255, 255, 255) {
+	update {
+		// Using the moore neighbourhood defined above
+		int aliveNeighbours = mooreNeighbours(x, y).filter(Alive).size()
+		
+		if (aliveNeighbours == 3) {
+			become Alive
+		}
+	}
+}
+
+state Alive (0, 0, 0) {
+	update {
+		int aliveNeighbours = mooreNeighbours(x, y, 1).filter(Alive).size()
+		
+		if (aliveNeighbours < 2 or 3 < aliveNeighbours) {
+			become Dead
+		}
+	}	
+}
