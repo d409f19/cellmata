@@ -1,0 +1,29 @@
+WORLD_X = 75 w
+WORLD_Y = 75 w
+RENDER_SIZE = 8
+
+neighbourhood mooreNeighbours {
+	- - - - -
+	- X X X -
+	- X @ X -
+	- X X X -
+	- - - - -
+}
+
+state Rock (222, 0, 0) {
+	update {
+		if (mooreNeighbours(x, y).filter(Scissors).size() >= 2) become Scissors
+	}
+}
+
+state Paper (0, 222, 0) {
+	update {
+		if (mooreNeighbours(x, y).filter(Rock).size() >= 2) become Rock
+	}
+}
+
+state Scissors (0, 0, 222) {
+	update {
+		if (mooreNeighbours(x, y).filter(Paper).size() >= 2) become Paper
+	}
+}
