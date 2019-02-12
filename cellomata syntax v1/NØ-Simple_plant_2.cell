@@ -1,0 +1,29 @@
+WORLD_X = 100 w
+WORLD_Y = 100 w
+RENDER_SIZE = 7
+
+state Empty (0, 0, 0) {
+	update {
+		if (random(30) == 0) {
+			become Plant
+		}
+	}
+}
+
+// #100 means that there are 100 different plant states; Plant1, Plant2, Plant3, ..., Plant100
+state Plant#100 (0, 30, 0) {
+	
+	update {
+		
+		// The setColor functions changes the color of this cell
+		setColor(0, 30 + #, 0)
+		
+		// The symbol # is the plant state number. I.e. for the state Plant1, # is 1, and for state Plant2, it is 2
+		if (# != 100) {
+			// Using Plant(..) I can reference to any plant state
+			become Plant(#+1)
+		} else {
+			become Empty
+		}
+	}
+}
