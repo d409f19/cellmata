@@ -1,0 +1,81 @@
+WORLD_X = 50 w
+WORLD_Y = 50 w
+RENDER_SIZE = 10
+
+state Dead (255, 255, 255) {
+	update {
+		// mooreNeighbours() is a built in function that returns a list of the cells around the cell at (x, y) within 1 radius. Eg:
+		// - - - - -
+		// - X X X -
+		// - X @ X -
+		// - X X X -
+		// - - - - -
+		// where @ is the cell at (x, y) and 1's are included cells.
+		// mooreNeighbours(x, y, 2) would be:
+		// X X X X X
+		// X X X X X
+		// X X @ X X
+		// X X X X X
+		// X X X X X
+		// .filter(Alive) will reduce the list to only include cells that are Alive
+		int aliveNeighbours = mooreNeighbours(x, y, 1).filter(Alive).size()
+		
+		if (aliveNeighbours == 3) {
+			become Alive
+		}
+	}
+}
+
+state Alive (0, 0, 0) {
+	update {
+		int aliveNeighbours = mooreNeighbours(x, y, 1).filter(Alive).size()
+		
+		if (aliveNeighbours < 2 or 3 < aliveNeighbours) {
+			become Dead
+		}
+	}	
+}
+
+// ### Neighbour functions:
+//
+// mooreNeighbours(x, y, 1) would be:
+// - - - - -
+// - X X X -
+// - X @ X -
+// - X X X -
+// - - - - -
+//
+// mooreNeighbours(x, y, 2) would be:
+// X X X X X
+// X X X X X
+// X X @ X X
+// X X X X X
+// X X X X X
+//
+// neumannNeighbours(x, y, 1) would be:
+// - - - - -
+// - - X - -
+// - X @ X -
+// - - X - -
+// - - - - -
+//
+// neumannNeighbours(x, y, 2) would be:
+// - - X - -
+// - - X - -
+// X X @ X X
+// - - X - -
+// - - X - -
+//
+// diamondNeighbours(x, y, 1) would be (identical to neumannNeighbours(x, y, 1)):
+// - - - - -
+// - - X - -
+// - X @ X -
+// - - X - -
+// - - - - -
+//
+// diamondNeighbours(x, y, 2) would be:
+// - - X - -
+// - X X X -
+// X X @ X X
+// - X X X -
+// - - X - -
