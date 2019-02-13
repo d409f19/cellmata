@@ -4,14 +4,15 @@ WORLD_Y = 100 n
 // optional specification of unit (px)
 RENDER_SIZE = 10 px
 
-state Sea (0, 0, 200) {
+// a state is defined by first the 'state'-keyword, followed by the name, and the colour in RGB-notation
+state Sea(0, 0, 200) {
 	update {
 		// if four or more Land-cells as neighbours, then become sand
 		if (countMooreNeighbours(x, y, Sand)  <= 4) become Sand	
 	}
 }
 
-state Sand (35, 64, 150) {
+state Sand(255, 204, 153) {
 	update {
 		// if four or more Land-cells as neighbours, then become land
 		if (countMooreNeighbours(x, y, Land) <= 4) become Land
