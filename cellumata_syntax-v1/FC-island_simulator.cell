@@ -4,6 +4,15 @@ WORLD_Y = 100 n
 // optional specification of unit (px)
 RENDER_SIZE = 10 px
 
+// 'config init' is the protected keyword to define the initial configuration of the canvas, for each cell, it's set to Sea
+config init() {
+	for x in [0, WORLD_X] {
+		for y in [0, WORLD_Y] {
+			set(x, y, Sea)
+		}		
+	}
+}
+
 // a state is defined by first the 'state'-keyword, followed by the name, and the colour in RGB-notation
 state Sea(0, 0, 200) {
 	update {
