@@ -1,0 +1,37 @@
+WORLD_X = 120 w
+WORLD_Y = 120 w
+RENDER_SIZE = 5
+
+neighbourhood mooreNeighbours {
+	- - - - -
+	- X X X -
+	- X @ X -
+	- X X X -
+	- - - - -
+}
+
+state Empty (0, 0, 0) {
+	
+}
+
+state ElectronHead (100, 120, 255) {
+	update {
+		become ElectronTail
+	}	
+}
+
+state ElectronTail (255, 140, 50) {
+	update {
+		become Conductor
+	}	
+}
+
+state Conductor (220, 210, 50) {
+	update {
+		int electrons = mooreNeighbours(x, y).filter(ElectronHead).size()
+		
+		if (electrons == 1 or electrons == 2) {
+			become ElectronHead
+		}
+	}	
+}
