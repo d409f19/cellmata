@@ -40,7 +40,7 @@ state Dead (255, 255, 255) {
 
 state Alive (0, 0, 0) {
 	update {
-		int aliveNeighbours = mooreNeighbours(x, y, 1).filter(Alive).size()
+		int aliveNeighbours = mooreNeighbours(x, y).filter(Alive).size()
 		
 		if (aliveNeighbours < 2 or 3 < aliveNeighbours) {
 			become Dead

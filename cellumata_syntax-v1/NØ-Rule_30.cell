@@ -1,0 +1,24 @@
+WORLD_X = 129 w
+WORLD_Y = 129 w
+RENDER_SIZE = 4
+
+neighbourhood elementaryNeighbours {
+	X X X
+	- @ -
+}
+
+state Alive (0, 0, 0) {
+	
+}
+
+state Dead (255, 255, 255) {
+	// Rule 30
+	if (elementaryNeighbours(x, y) equals [Dead, Dead, Dead]) become Dead
+	if (elementaryNeighbours(x, y) equals [Dead, Dead, Alive]) become Alive
+	if (elementaryNeighbours(x, y) equals [Dead, Alive, Dead]) become Alive
+	if (elementaryNeighbours(x, y) equals [Dead, Alive, Alive]) become Alive
+	if (elementaryNeighbours(x, y) equals [Alive, Dead, Dead]) become Alive
+	if (elementaryNeighbours(x, y) equals [Alive, Dead, Alive]) become Dead
+	if (elementaryNeighbours(x, y) equals [Alive, Alive, Dead]) become Dead
+	if (elementaryNeighbours(x, y) equals [Alive, Alive, Alive]) become Dead
+}
