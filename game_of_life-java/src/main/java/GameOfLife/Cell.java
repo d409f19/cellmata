@@ -1,7 +1,7 @@
 package GameOfLife;
 
-public class Cell {
-    boolean alive;
+class Cell {
+    private boolean alive;
 
     Cell(boolean alive) {
         this.alive = alive;

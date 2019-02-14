@@ -3,28 +3,27 @@ package GameOfLife;
 import java.util.Date;
 import java.util.Random;
 
-public class Canvas {
-    int x;
-    int y;
-    Cell[][] canvas;
-    Cell[][] tempCanvas;
+class Canvas {
+    private final int x;
+    private final int y;
+    private Cell[][] canvas;
+    private final Cell[][] tempCanvas;
 
-    Random random = new Random(new Date().getTime());
-
-    public Canvas(int x, int y) {
+    Canvas(int x, int y) {
         this.x = x;
         this.y = y;
         this.canvas = new Cell[x][y];
         this.tempCanvas = this.canvas;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
+                Random random = new Random(new Date().getTime());
                 this.canvas[i][j] = new Cell(random.nextInt(2) == 1);
             }
         }
     }
 
     void tick() {
-        int neighbours = 0;
+        int neighbours;
         for (int i = 0; i < this.x; i++) {
             for (int j = 0; j < this.y; j++) {
                 neighbours = countMooreNeighbours(i, j);
@@ -44,25 +43,24 @@ public class Canvas {
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
                 // bound coordinate within constraints
-                if (this.canvas[constrainToRange(x + i, 0, this.x)][constrainToRange(y + j, 0, this.y)].isAlive())
+                if (this.canvas[constrainToRange(x + i, this.x)][constrainToRange(y + j, this.y)].isAlive())
                     neighbours++;
             }
         }
         return neighbours;
     }
 
-    private static int constrainToRange(int value, int min, int max) {
-        return Math.min(Math.max(value, min), max);
+    private static int constrainToRange(int value, int max) {
+        return Math.min(Math.max(value, 0), max);
     }
 
     private boolean cellLife(Cell cell, int neighbours) {
         if (cell.isAlive()) {
+            // underpopulation
             if (neighbours < 2) return false;
-            if (2 < neighbours && neighbours < 4) return true;
-            if (neighbours > 3) return false;
-        } else if (neighbours == 3) {
-            return true;
-        }
-        return false;
+            // just right
+            return 2 == neighbours || neighbours == 3;
+            // else overpopulation
+        } else return neighbours == 3;
     }
 }
