@@ -13,7 +13,8 @@ class Canvas {
         this.x = x;
         this.y = y;
         this.canvas = new Cell[x][y];
-        this.tempCanvas = this.canvas;
+        this.tempCanvas = new Cell[x][y];
+        // seed canvas with randomness
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 Random random = new Random(new Date().getTime());
@@ -42,16 +43,17 @@ class Canvas {
         int neighbours = 0;
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
-                // bound coordinate within constraints
-                if (this.canvas[constrainToRange(x + i, this.x)][constrainToRange(y + j, this.y)].isAlive())
-                    neighbours++;
+                int xPos = x + i;
+                int yPos = y + j;
+
+                if (!(xPos < 0 || xPos > this.x || yPos < 0 || yPos > this.y)) {
+                    // bound coordinate within constraints
+                    if (this.canvas[x + i][y + j].isAlive())
+                        neighbours++;
+                }
             }
         }
         return neighbours;
-    }
-
-    private static int constrainToRange(int value, int max) {
-        return Math.min(Math.max(value, 0), max);
     }
 
     private boolean cellLife(Cell cell, int neighbours) {
