@@ -46,7 +46,7 @@ class Canvas {
                 int xPos = x + i;
                 int yPos = y + j;
 
-                if (!(xPos < 0 || xPos > this.x || yPos < 0 || yPos > this.y)) {
+                if (!(xPos < 0 || xPos >= this.x || yPos < 0 || yPos >= this.y)) {
                     // bound coordinate within constraints
                     if (this.canvas[x + i][y + j].isAlive())
                         neighbours++;
