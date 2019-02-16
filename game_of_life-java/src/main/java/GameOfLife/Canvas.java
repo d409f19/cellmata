@@ -15,10 +15,10 @@ class Canvas {
         this.canvas = new Cell[x][y];
         this.tempCanvas = new Cell[x][y];
         // seed canvas with randomness
+        Random random = new Random(new Date().getTime());
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                Random random = new Random(new Date().getTime());
-                this.canvas[i][j] = new Cell(random.nextInt(2) == 1);
+                this.canvas[i][j] = new Cell(random.nextInt(20) == 0);
             }
         }
     }
@@ -33,7 +33,7 @@ class Canvas {
                 tempCanvas[i][j] = canvas[i][j];
 
                 // set new state based on the life of the cell
-                tempCanvas[i][j].setState(cellLife(tempCanvas[i][j], neighbours));
+                tempCanvas[i][j].setState(cellLife(canvas[i][j], neighbours));
             }
         }
         canvas = tempCanvas;
@@ -58,11 +58,19 @@ class Canvas {
 
     private boolean cellLife(Cell cell, int neighbours) {
         if (cell.isAlive()) {
-            // underpopulation
-            if (neighbours < 2) return false;
-            // just right
-            return 2 == neighbours || neighbours == 3;
-            // else overpopulation
+            return neighbours >= 2 && neighbours <= 3;
         } else return neighbours == 3;
+    }
+
+    public Cell[][] getCanvas() {
+        return canvas;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
     }
 }
