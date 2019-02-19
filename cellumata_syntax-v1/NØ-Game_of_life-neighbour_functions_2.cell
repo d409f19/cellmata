@@ -12,21 +12,6 @@ neighbourhood mooreNeighbours {
 	- - - - -
 }
 
-neighbourhood neumannNeighbours {
-	- - X - -
-	- - X - -
-	X X @ X X
-	- - X - -
-	- - X - -
-}
-
-neighbourhood customNeighbours {
-	X X - -
-	X @ X X
-	- X - - 
-	- X - -
-}
-
 state Dead (255, 255, 255) {
 	update {
 		// Using the moore neighbourhood defined above
