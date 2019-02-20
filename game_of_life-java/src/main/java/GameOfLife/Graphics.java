@@ -11,10 +11,8 @@ import static GameOfLife.Main.WORLD_Y;
 class Graphics {
 
     public static Frame setupGUI(int x, int y) {
-
         Frame frame = new Frame("Conway's Game of Life");
         frame.setSize(x, y);
-
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent windowEvent) {
                 System.exit(0);
@@ -22,7 +20,6 @@ class Graphics {
         });
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-
         return frame;
     }
 
