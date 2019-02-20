@@ -39,6 +39,10 @@ func main() {
 			}
 		}
 
+		// Print board
+		fmt.Print("\033[H\033[2J")
+		printBoard()
+
 		// Swap current and next board
 		flipBoards()
 	}
