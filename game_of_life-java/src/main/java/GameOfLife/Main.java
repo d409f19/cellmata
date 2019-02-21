@@ -20,7 +20,7 @@ class Main {
         while (true) {
             drawCanvas(canvas, frame);
             try {
-                TimeUnit.MILLISECONDS.sleep(10);
+                TimeUnit.MILLISECONDS.sleep(5);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
