@@ -24,12 +24,14 @@ class Graphics {
     }
 
     public static void drawCanvas(Canvas canvas, Frame frame) {
+        boolean[][] grid = canvas.getCanvas();
+        java.awt.Graphics graphics = frame.getGraphics();
         for (int i = 0; i < WORLD_X; i++) {
             for (int j = 0; j < WORLD_Y; j++) {
-                if (canvas.getCanvas()[i][j].isAlive()) {
-                    frame.getGraphics().fillRect(i * CELLSIZE, j * CELLSIZE, CELLSIZE, CELLSIZE);
+                if (grid[i][j]) {
+                    graphics.fillRect(i * CELLSIZE, j * CELLSIZE, CELLSIZE, CELLSIZE);
                 } else {
-                    frame.getGraphics().clearRect(i * CELLSIZE, j * CELLSIZE, CELLSIZE, CELLSIZE);
+                    graphics.clearRect(i * CELLSIZE, j * CELLSIZE, CELLSIZE, CELLSIZE);
                 }
             }
         }
