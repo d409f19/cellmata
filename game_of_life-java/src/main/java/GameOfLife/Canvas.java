@@ -37,7 +37,7 @@ class Canvas {
                 neighbours = countMooreNeighbours(i, j);
 
                 // set new state in tempCanvas based on the life of the given cell in canvas
-                tempCanvas[i][j]=(cellLife(canvas[i][j], neighbours));
+                tempCanvas[i][j] = (cellLife(canvas[i][j], neighbours));
             }
         }
         // swap references to arrays
