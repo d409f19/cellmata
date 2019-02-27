@@ -1,0 +1,19 @@
+board {
+    world = 10[edge=foo], infinite
+    tickrate = 120
+}
+
+const baz = [2]bool{ true, false }
+
+state foo {
+    let a = (not (2 - 3) / (4)) is 2;
+
+    if (23) {
+        let b = 3;
+        if (not b) {
+            return b;
+        } else { return a-x;}
+    }
+
+    return a;
+}
