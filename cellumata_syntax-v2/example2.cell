@@ -13,7 +13,30 @@ state foo {
         if (not b) {
             return b;
         } else { return a-x;}
+    } else if (false) {
+        become bar;
+    } else {
+        become baz;
     }
 
+    switch (getRel(1,1)) {
+        case foo:
+            a = 1;
+        case bar:
+            a = 2;
+            fallthrough;
+        case baz:
+            b = 27;
+        default:
+            a = 0;
+            b = 0;
+    }
+
+    baz[0] = baz[1] - 2;
+
     return a;
+}
+
+func thisisfunc(number, [3]float) (number, number) {
+    return a, b;
 }
