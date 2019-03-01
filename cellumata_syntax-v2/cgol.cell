@@ -1,0 +1,22 @@
+// Conway's game of life
+
+world {
+    size = 100 W, 100 W
+    cellsize = 8
+    tickrate = 8
+}
+
+neighbours {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Dead (255, 255, 255) {
+    if (count(neighbours, Alive) == 3) become Alive
+}
+
+state Alive (0, 0, 0) {
+    int aliveNeighbours = count(neighbours, Alive)
+    if (aliveNeighbours < 2 or 3 < aliveNeighbours) become Dead
+}
