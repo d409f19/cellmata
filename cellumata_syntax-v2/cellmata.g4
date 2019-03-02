@@ -18,12 +18,14 @@ state_ident : IDENT ;
 
 // Code
 code_block : BLOCK_START NEWLINE* (stmt NEWLINE*)* BLOCK_END ;
-stmt : (if_stmt | return_stmt | become_stmt | switch_stmt | assign_stmt) ;
+stmt : (if_stmt | return_stmt | become_stmt | switch_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
 assign_stmt : 'let'? (var_ident | array_lookup) '=' expr ';';
 if_stmt : 'if' PARAN_START expr PARAN_END code_block ('else' 'if' PARAN_START expr PARAN_END code_block)* ('else' code_block)? ;
 return_stmt : STMT_RETURN expr (LIST_SEP expr)*? ';';
 become_stmt : STMT_BECOME state_ident ';' ;
+increment_stmt : var_ident OP_INCREMENT ';' | OP_INCREMENT var_ident ';';
+decrement_stmt : var_ident OP_DECREMENT ';' | OP_DECREMENT var_ident ';';
 
 ident : var_ident ;
 var_ident : IDENT ;
