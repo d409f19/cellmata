@@ -78,6 +78,7 @@ LIST_SEP : ',' ;
 NEWLINE : ('\r'? '\n' | '\r') -> skip ;
 WHITESPACE : ('\t' | ' ') -> skip ;
 LINE_COMMENT : '//' ~[\r\n]* -> skip ;
+COMMENT : '/*' .*? '*/' -> skip ;
 BLOCK_START : '{' ;
 BLOCK_END : '}' ;
 SQ_BRACKET_START : '[' ;
