@@ -15,21 +15,3 @@ state foo {
 
     return a;
 }
-
-// example of naive CGOL ruleset syntax
-state bar {
-    let neighbours = 0;
-
-    for MooreNeighbourhood(x, y) {
-        if (this is foo) {
-            neighbours++;
-        }
-    if (neighours >= 2 and neighbours <= 4) become foo;
-}
-
-// example of enhanced CGOL ruleset syntax
-state baz {
-    let neighbours = count(MooreNeighbours(this.x, this.y), foo);
-
-    if (neighours >= 2 and neighbours <= 4) become foo;
-}
