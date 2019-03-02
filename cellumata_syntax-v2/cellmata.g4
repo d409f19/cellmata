@@ -1,4 +1,4 @@
-grammar test;
+grammar cellmata;
 
 start : board_decl (WHITESPACE | NEWLINE)* body EOF;
 
@@ -9,7 +9,7 @@ const_ident : IDENT ;
 // Board
 board_decl : STMT_BOARD WHITESPACE* BLOCK_START (WHITESPACE | NEWLINE)* board_world (WHITESPACE | NEWLINE)* board_tickrate (WHITESPACE | NEWLINE)* BLOCK_END ;
 board_world : 'world' WHITESPACE* ASSIGN WHITESPACE* board_world_dim (LIST_SEP WHITESPACE* board_world_dim)?;
-board_world_dim : DIGITS '[' ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END | 'infinite' ;
+board_world_dim : DIGITS SQ_BRACKET_START ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END | 'infinite' ;
 board_tickrate : 'tickrate' WHITESPACE* ASSIGN WHITESPACE* DIGITS ;
 
 // State
@@ -53,7 +53,7 @@ func_return_decl : (PARAN_START (type_ident (LIST_SEP type_ident)?)? PARAN_END)?
 func_body: BLOCK_START (stmt)*? BLOCK_END ;
 
 // Switch
-switch_stmt : STMT_SWITCH PARAN_START expr PARAM_END BLOCK_START switch_case* BLOCK_END;
+switch_stmt : STMT_SWITCH PARAN_START expr PARAN_END BLOCK_START switch_case* BLOCK_END;
 switch_case : ('case' expr | 'default') ':' (stmt | fallthrough_stmt)* ;
 fallthrough_stmt : STMT_FALLTHROUGH ';' ;
 
@@ -67,8 +67,8 @@ expr_5 : expr_5 OP_MORE expr_6 | expr_5 OP_MORE_EQ expr_6 | expr_5 OP_LESS expr_
 expr_6 : expr_6 OP_PLUS expr_7 | expr_6 OP_MINUS expr_7 | expr_7;
 expr_7 : expr_7 OP_MULTIPLY expr_8 | expr_7 OP_DIVIDE expr_8 | expr_8 ;
 expr_8 : OP_INCREMENT expr_9 | OP_DECREMENT expr_9 | OP_PLUS expr_9 | OP_MINUS expr_9 | OP_NOT expr_9 | expr_9 ;
-expr_9 : expr_10 OP_INCREMENT | expr_10 OP_DECREMENT | func_ident PARAN_START (expr (LIST_SEP expr)*)?  PARAM_END  | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END | array_value | expr_10;
-expr_10 : PARAN_START expr PARAM_END | expr_11 ;
+expr_9 : expr_10 OP_INCREMENT | expr_10 OP_DECREMENT | func_ident PARAN_START (expr (LIST_SEP expr)*)?  PARAN_END  | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END | array_value | expr_10;
+expr_10 : PARAN_START expr PARAN_END | expr_11 ;
 expr_11 : literal | var_ident ;
 
 // Tokens
@@ -80,9 +80,9 @@ WHITESPACE : ('\t' | ' ') -> skip ;
 BLOCK_START : '{' ;
 BLOCK_END : '}' ;
 SQ_BRACKET_START : '[' ;
-SQ_BRACKET_END : '[' ;
-PARAN_START : PARAN_START ;
-PARAM_END : PARAN_END ;
+SQ_BRACKET_END : ']' ;
+PARAN_START : '(' ;
+PARAN_END : ')' ;
 
 OP_COMPARE : 'is' ;
 OP_NOT : 'not' ;
