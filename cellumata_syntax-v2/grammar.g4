@@ -2,7 +2,7 @@ grammar test;
 
 start : board_decl (WHITESPACE | NEWLINE)* body EOF;
 
-body : ((state_decl | type_decl | const_decl | func_decl) NEWLINE*)*;
+body : ((state_decl | const_decl | func_decl) NEWLINE*)*;
 const_decl : 'const' const_ident ASSIGN expr ;
 const_ident : IDENT ;
 
@@ -29,7 +29,6 @@ ident : var_ident ;
 var_ident : IDENT ;
 
 // Type declaration
-type_decl : 'type' type_ident type_spec;
 type_ident : IDENT | type_spec ;
 type_spec : array_decl  | TYPE_BOOLEAN | TYPE_NUMBER ;
 
