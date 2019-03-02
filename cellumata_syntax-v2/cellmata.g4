@@ -21,7 +21,7 @@ code_block : BLOCK_START NEWLINE* (stmt NEWLINE*)* BLOCK_END ;
 stmt : (if_stmt | return_stmt | become_stmt | switch_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
 assign_stmt : 'let'? (var_ident | array_lookup) '=' expr ';';
-if_stmt : 'if' PARAN_START expr PARAN_END code_block ('else' 'if' PARAN_START expr PARAN_END code_block)* ('else' code_block)? ;
+if_stmt : 'if' PAREN_START expr PAREN_END code_block ('else' 'if' PAREN_START expr PAREN_END code_block)* ('else' code_block)? ;
 return_stmt : STMT_RETURN expr (LIST_SEP expr)*? ';';
 become_stmt : STMT_BECOME state_ident ';' ;
 increment_stmt : var_ident OP_INCREMENT ';' | OP_INCREMENT var_ident ';';
@@ -50,12 +50,12 @@ bool_literal : LITERAL_TRUE | LITERAL_FALSE ;
 // Functions
 func_ident : IDENT ;
 func_decl : STMT_FUNC func_ident func_args_decl func_return_decl func_body ;
-func_args_decl : PARAN_START (type_ident (LIST_SEP type_ident)?)? PARAN_END ;
-func_return_decl : (PARAN_START (type_ident (LIST_SEP type_ident)?)? PARAN_END)? ;
+func_args_decl : PAREN_START (type_ident (LIST_SEP type_ident)?)? PAREN_END ;
+func_return_decl : (PAREN_START (type_ident (LIST_SEP type_ident)?)? PAREN_END)? ;
 func_body: BLOCK_START (stmt)*? BLOCK_END ;
 
 // Switch
-switch_stmt : STMT_SWITCH PARAN_START expr PARAN_END BLOCK_START switch_case* BLOCK_END;
+switch_stmt : STMT_SWITCH PAREN_START expr PAREN_END BLOCK_START switch_case* BLOCK_END;
 switch_case : ('case' expr | 'default') ':' (stmt | fallthrough_stmt)* ;
 fallthrough_stmt : STMT_FALLTHROUGH ';' ;
 
@@ -69,8 +69,8 @@ expr_5 : expr_5 OP_MORE expr_6 | expr_5 OP_MORE_EQ expr_6 | expr_5 OP_LESS expr_
 expr_6 : expr_6 OP_PLUS expr_7 | expr_6 OP_MINUS expr_7 | expr_7;
 expr_7 : expr_7 OP_MULTIPLY expr_8 | expr_7 OP_DIVIDE expr_8 | expr_8 ;
 expr_8 : OP_INCREMENT expr_9 | OP_DECREMENT expr_9 | OP_PLUS expr_9 | OP_MINUS expr_9 | OP_NOT expr_9 | expr_9 ;
-expr_9 : expr_10 OP_INCREMENT | expr_10 OP_DECREMENT | func_ident PARAN_START (expr (LIST_SEP expr)*)?  PARAN_END  | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END | array_value | expr_10;
-expr_10 : PARAN_START expr PARAN_END | expr_11 ;
+expr_9 : expr_10 OP_INCREMENT | expr_10 OP_DECREMENT | func_ident PAREN_START (expr (LIST_SEP expr)*)?  PAREN_END  | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END | array_value | expr_10;
+expr_10 : PAREN_START expr PAREN_END | expr_11 ;
 expr_11 : literal | var_ident ;
 
 // Tokens
@@ -85,8 +85,8 @@ BLOCK_START : '{' ;
 BLOCK_END : '}' ;
 SQ_BRACKET_START : '[' ;
 SQ_BRACKET_END : ']' ;
-PARAN_START : '(' ;
-PARAN_END : ')' ;
+PAREN_START : '(' ;
+PAREN_END : ')' ;
 
 OP_COMPARE : 'is' ;
 OP_NOT : 'not' ;
