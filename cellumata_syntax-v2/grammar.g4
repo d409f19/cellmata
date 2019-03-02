@@ -20,10 +20,10 @@ state_ident : IDENT ;
 code_block : BLOCK_START NEWLINE* (stmt NEWLINE*)* BLOCK_END ;
 stmt : (if_stmt | return_stmt | become_stmt | switch_stmt | assign_stmt) ;
 
-assign_stmt : 'let'? (var_ident | array_lookup) '=' expr ';';
-if_stmt : 'if' PARAN_START expr PARAN_END code_block ('else' 'if' PARAN_START expr PARAN_END code_block)* ('else' code_block)? ;
-return_stmt : STMT_RETURN expr (LIST_SEP expr)*? ';';
-become_stmt : STMT_BECOME state_ident ';' ;
+assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END;
+if_stmt : STMT_IF PARAN_START expr PARAN_END code_block (STMT_ELSE STMT_IF PARAN_START expr PARAN_END code_block)* (STMT_ELSE code_block)? ;
+return_stmt : STMT_RETURN expr (LIST_SEP expr)*? END;
+become_stmt : STMT_BECOME state_ident END ;
 
 ident : var_ident ;
 var_ident : IDENT ;
@@ -53,8 +53,8 @@ func_body: BLOCK_START (stmt)*? BLOCK_END ;
 
 // Switch
 switch_stmt : STMT_SWITCH PARAN_START expr PARAM_END BLOCK_START switch_case* BLOCK_END;
-switch_case : ('case' expr | 'default') ':' (stmt | fallthrough_stmt)* ;
-fallthrough_stmt : STMT_FALLTHROUGH ';' ;
+switch_case : (STMT_CASE expr | STMT_DEFAULT) ':' (stmt | fallthrough_stmt)* ;
+fallthrough_stmt : STMT_FALLTHROUGH END ;
 
 // Math
 expr : expr_1 ;
@@ -79,9 +79,10 @@ WHITESPACE : ('\t' | ' ') -> skip ;
 BLOCK_START : '{' ;
 BLOCK_END : '}' ;
 SQ_BRACKET_START : '[' ;
-SQ_BRACKET_END : '[' ;
-PARAN_START : PARAN_START ;
-PARAM_END : PARAN_END ;
+SQ_BRACKET_END : ']' ;
+PARAN_START : '(' ;
+PARAN_END : ')' ;
+END : ';' ;
 
 OP_COMPARE : 'is' ;
 OP_NOT : 'not' ;
@@ -102,11 +103,15 @@ OP_XOR : 'xor' ;
 
 STMT_FALLTHROUGH : 'fallthrough' ;
 STMT_SWITCH : 'switch' ;
+STMT_CASE : 'case' ;
+STMT_DEFAULT : 'default' ;
 STMT_FUNC : 'func' ;
 STMT_STATE : 'state' ;
 STMT_BOARD : 'board' ;
 STMT_RETURN : 'return' ;
 STMT_BECOME : 'become' ;
+STMT_IF : 'if' ;
+STMT_ELSE : 'else' ;
 
 TYPE_NUMBER : 'number' ;
 TYPE_BOOLEAN : 'boolean' | 'bool' ;
