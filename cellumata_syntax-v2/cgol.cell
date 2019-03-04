@@ -3,6 +3,7 @@
 world {
     size = 100 W, 100 W
     tickrate = 8
+    cellsize = 4
 }
 
 neighbours {
