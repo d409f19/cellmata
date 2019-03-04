@@ -2,7 +2,7 @@ grammar cellmata;
 
 start : board_decl (WHITESPACE | NEWLINE)* body EOF;
 
-body : ((state_decl | const_decl | func_decl) NEWLINE*)*;
+body : ((state_decl | const_decl) NEWLINE*)*;
 const_decl : 'const' const_ident ASSIGN expr ;
 const_ident : IDENT ;
 
@@ -18,11 +18,10 @@ state_ident : IDENT ;
 
 // Code
 code_block : BLOCK_START NEWLINE* (stmt NEWLINE*)* BLOCK_END ;
-stmt : (if_stmt | return_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
+stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
 assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END;
 if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
-return_stmt : STMT_RETURN expr (LIST_SEP expr)*? END;
 become_stmt : STMT_BECOME state_ident END ;
 increment_stmt : modifiable_ident OP_INCREMENT ';' | OP_INCREMENT modifiable_ident ';';
 decrement_stmt : modifiable_ident OP_DECREMENT ';' | OP_DECREMENT modifiable_ident ';';
@@ -47,13 +46,6 @@ literal : number_literal | bool_literal ;
 number_literal : DIGITS ;
 bool_literal : LITERAL_TRUE | LITERAL_FALSE ;
 
-// Functions
-func_ident : IDENT ;
-func_decl : STMT_FUNC func_ident func_args_decl func_return_decl func_body ;
-func_args_decl : PAREN_START (type_ident (LIST_SEP type_ident)?)? PAREN_END ;
-func_return_decl : (PAREN_START (type_ident (LIST_SEP type_ident)?)? PAREN_END)? ;
-func_body: BLOCK_START (stmt)*? BLOCK_END ;
-
 // Math
 expr : expr_1 ;
 expr_1 : expr_1 OP_XOR expr_2 | expr_2 ;
@@ -64,7 +56,7 @@ expr_5 : expr_5 OP_MORE expr_6 | expr_5 OP_MORE_EQ expr_6 | expr_5 OP_LESS expr_
 expr_6 : expr_6 OP_PLUS expr_7 | expr_6 OP_MINUS expr_7 | expr_7;
 expr_7 : expr_7 OP_MULTIPLY expr_8 | expr_7 OP_DIVIDE expr_8 | expr_8 ;
 expr_8 : OP_INCREMENT expr_9 | OP_DECREMENT expr_9 | OP_PLUS expr_9 | OP_MINUS expr_9 | OP_NOT expr_9 | expr_9 ;
-expr_9 : expr_10 OP_INCREMENT | expr_10 OP_DECREMENT | func_ident PAREN_START (expr (LIST_SEP expr)*)?  PAREN_END  | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END | array_value | expr_10;
+expr_9 : expr_10 OP_INCREMENT | expr_10 OP_DECREMENT | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END | array_value | expr_10;
 expr_10 : PAREN_START expr PAREN_END | expr_11 ;
 expr_11 : literal | var_ident ;
 
@@ -101,10 +93,8 @@ OP_AND : 'and' ;
 OP_OR : 'or' ;
 OP_XOR : 'xor' ;
 
-STMT_FUNC : 'func' ;
 STMT_STATE : 'state' ;
 STMT_BOARD : 'board' ;
-STMT_RETURN : 'return' ;
 STMT_BECOME : 'become' ;
 STMT_IF : 'if' ;
 STMT_ELSE : 'else' ;
