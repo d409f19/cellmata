@@ -2,7 +2,6 @@
 
 world {
     size = 100 W, 100 W
-    cellsize = 8
     tickrate = 8
 }
 
