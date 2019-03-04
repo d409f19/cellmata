@@ -9,9 +9,9 @@ state foo {
     if (23) {
         let b = 3;
         if (not b) {
-            return b;
+            become foo;
         }
     }
 
-    return a;
+    become bar;
 }
