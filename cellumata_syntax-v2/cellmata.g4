@@ -1,16 +1,17 @@
 grammar cellmata;
 
-start : board_decl body EOF;
+start : world_dcl body EOF;
 
 body : (state_decl | const_decl)*;
 const_decl : 'const' const_ident ASSIGN expr ;
 const_ident : IDENT ;
 
 // Board
-board_decl : STMT_BOARD BLOCK_START board_world board_tickrate BLOCK_END ;
-board_world : 'world' ASSIGN board_world_dim (LIST_SEP board_world_dim)?;
-board_world_dim : DIGITS SQ_BRACKET_START ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END | 'infinite' ;
-board_tickrate : 'tickrate' ASSIGN DIGITS ;
+world_dcl : STMT_WORLD BLOCK_START world_size world_tickrate? world_cellsize? BLOCK_END ;
+world_size : 'size' ASSIGN world_size_dim (LIST_SEP world_size_dim)?;
+world_size_dim : DIGITS SQ_BRACKET_START ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END | 'infinite' ;
+world_tickrate : 'tickrate' ASSIGN DIGITS ;
+world_cellsize : 'cellsize' ASSIGN DIGITS ;
 
 // State
 state_decl : STMT_STATE state_ident code_block ;
@@ -94,7 +95,7 @@ OP_OR : 'or' ;
 OP_XOR : 'xor' ;
 
 STMT_STATE : 'state' ;
-STMT_BOARD : 'board' ;
+STMT_WORLD : 'world' ;
 STMT_BECOME : 'become' ;
 STMT_IF : 'if' ;
 STMT_ELSE : 'else' ;
