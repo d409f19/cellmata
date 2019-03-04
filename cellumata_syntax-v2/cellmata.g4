@@ -18,7 +18,7 @@ state_ident : IDENT ;
 
 // Code
 code_block : BLOCK_START NEWLINE* (stmt NEWLINE*)* BLOCK_END ;
-stmt : (if_stmt | return_stmt | become_stmt | switch_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
+stmt : (if_stmt | return_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
 assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END;
 if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
@@ -53,11 +53,6 @@ func_decl : STMT_FUNC func_ident func_args_decl func_return_decl func_body ;
 func_args_decl : PAREN_START (type_ident (LIST_SEP type_ident)?)? PAREN_END ;
 func_return_decl : (PAREN_START (type_ident (LIST_SEP type_ident)?)? PAREN_END)? ;
 func_body: BLOCK_START (stmt)*? BLOCK_END ;
-
-// Switch
-switch_stmt : STMT_SWITCH PAREN_START expr PAREN_END BLOCK_START switch_case* BLOCK_END;
-switch_case : (STMT_CASE expr | STMT_DEFAULT) ':' (stmt | fallthrough_stmt)* ;
-fallthrough_stmt : STMT_FALLTHROUGH END ;
 
 // Math
 expr : expr_1 ;
@@ -106,10 +101,6 @@ OP_AND : 'and' ;
 OP_OR : 'or' ;
 OP_XOR : 'xor' ;
 
-STMT_FALLTHROUGH : 'fallthrough' ;
-STMT_SWITCH : 'switch' ;
-STMT_CASE : 'case' ;
-STMT_DEFAULT : 'default' ;
 STMT_FUNC : 'func' ;
 STMT_STATE : 'state' ;
 STMT_BOARD : 'board' ;
