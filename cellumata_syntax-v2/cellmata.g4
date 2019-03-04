@@ -24,10 +24,11 @@ assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END;
 if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
 return_stmt : STMT_RETURN expr (LIST_SEP expr)*? END;
 become_stmt : STMT_BECOME state_ident END ;
-increment_stmt : var_ident OP_INCREMENT ';' | OP_INCREMENT var_ident ';';
-decrement_stmt : var_ident OP_DECREMENT ';' | OP_DECREMENT var_ident ';';
+increment_stmt : modifiable_ident OP_INCREMENT ';' | OP_INCREMENT modifiable_ident ';';
+decrement_stmt : modifiable_ident OP_DECREMENT ';' | OP_DECREMENT modifiable_ident ';';
 
-ident : var_ident ;
+// Identifiers
+modifiable_ident : var_ident | array_lookup ;
 var_ident : IDENT ;
 
 // Type declaration
