@@ -8,35 +8,17 @@ const baz = [2]bool{ true, false }
 state foo {
     let a = (not (2 - 3) / (4)) is 2;
 
+    baz[0] = baz[1] - 2;
+
     if (23) {
         let b = 3;
         if (not b) {
-            return b;
-        } else { return a-x;}
+            become foo;
+        } else { become bar;}
     } else if (false) {
-        become bar;
-    } else {
         become baz;
+    } else {
+        become foobar;
     }
-
-    switch (getRel(1,1)) {
-        case foo:
-            a = 1;
-        case bar:
-            a = 2;
-            fallthrough;
-        case baz:
-            b = 27;
-        default:
-            a = 0;
-            b = 0;
-    }
-
-    baz[0] = baz[1] - 2;
-
-    return a;
 }
 
-func thisisfunc(number, [3]float) (number, number) {
-    return a, b;
-}
