@@ -1,23 +1,23 @@
 grammar cellmata;
 
-start : board_decl (WHITESPACE | NEWLINE)* body EOF;
+start : board_decl body EOF;
 
-body : ((state_decl | const_decl) NEWLINE*)*;
+body : (state_decl | const_decl)*;
 const_decl : 'const' const_ident ASSIGN expr ;
 const_ident : IDENT ;
 
 // Board
-board_decl : STMT_BOARD WHITESPACE* BLOCK_START (WHITESPACE | NEWLINE)* board_world (WHITESPACE | NEWLINE)* board_tickrate (WHITESPACE | NEWLINE)* BLOCK_END ;
-board_world : 'world' WHITESPACE* ASSIGN WHITESPACE* board_world_dim (LIST_SEP WHITESPACE* board_world_dim)?;
+board_decl : STMT_BOARD BLOCK_START board_world board_tickrate BLOCK_END ;
+board_world : 'world' ASSIGN board_world_dim (LIST_SEP board_world_dim)?;
 board_world_dim : DIGITS SQ_BRACKET_START ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END | 'infinite' ;
-board_tickrate : 'tickrate' WHITESPACE* ASSIGN WHITESPACE* DIGITS ;
+board_tickrate : 'tickrate' ASSIGN DIGITS ;
 
 // State
 state_decl : STMT_STATE state_ident code_block ;
 state_ident : IDENT ;
 
 // Code
-code_block : BLOCK_START NEWLINE* (stmt NEWLINE*)* BLOCK_END ;
+code_block : BLOCK_START stmt* BLOCK_END ;
 stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
 assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END;
