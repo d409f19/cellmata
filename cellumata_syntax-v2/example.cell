@@ -1,17 +1,17 @@
-board {
-    world = 10[edge=foo], infinite
+world {
+    size = 10[edge=foo], infinite
     tickrate = 120
 }
 
-state foo {
+state foo (0, 0, 0) {
     let a = (not (2 - 3) / (4)) is 2;
 
     if (23) {
         let b = 3;
         if (not b) {
-            return b;
+            become foo;
         }
     }
 
-    return a;
+    become bar;
 }

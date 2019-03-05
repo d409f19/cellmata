@@ -1,22 +1,27 @@
 // Conway's game of life
 
 world {
-    size = 100 W, 100 W
-    cellsize = 8
+    size = 100[edge=w], 100[edge=w]
     tickrate = 8
+    cellsize = 4
 }
 
-neighbours {
+// custom definition of neighbours, like below, is not yet recognised by the grammar
+neighbourhood Moore {
     (-1, 1), (0, 1), (1, 1),
     (-1, 0),          (1, 0),
     (-1, -1), (0, -1), (1, -1)
 }
 
 state Dead (255, 255, 255) {
-    if (count(neighbours, Alive) == 3) become Alive
+    if (count(Moore, Alive) is 3) {
+        become Alive;
+    }
 }
 
 state Alive (0, 0, 0) {
-    int aliveNeighbours = count(neighbours, Alive)
-    if (aliveNeighbours < 2 or 3 < aliveNeighbours) become Dead
+    let aliveNeighbours = count(Moore, Alive);
+    if (aliveNeighbours < 2 or 3 < aliveNeighbours) {
+        become Dead;
+    }
 }

@@ -1,31 +1,40 @@
 grammar cellmata;
 
-start : board_decl (WHITESPACE | NEWLINE)* body EOF;
+start : world_dcl body EOF;
 
-body : ((state_decl | const_decl | func_decl) NEWLINE*)*;
+body : (state_decl | neighbourhood_decl | const_decl)*;
 const_decl : 'const' const_ident ASSIGN expr ;
 const_ident : IDENT ;
 
-// Board
-board_decl : STMT_BOARD WHITESPACE* BLOCK_START (WHITESPACE | NEWLINE)* board_world (WHITESPACE | NEWLINE)* board_tickrate (WHITESPACE | NEWLINE)* BLOCK_END ;
-board_world : 'world' WHITESPACE* ASSIGN WHITESPACE* board_world_dim (LIST_SEP WHITESPACE* board_world_dim)?;
-board_world_dim : DIGITS SQ_BRACKET_START ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END | 'infinite' ;
-board_tickrate : 'tickrate' WHITESPACE* ASSIGN WHITESPACE* DIGITS ;
+// World
+world_dcl : STMT_WORLD BLOCK_START world_size world_tickrate? world_cellsize? BLOCK_END ;
+world_size : 'size' ASSIGN world_size_dim (LIST_SEP world_size_dim)?;
+world_size_dim : DIGITS SQ_BRACKET_START ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END | 'infinite' ;
+world_tickrate : 'tickrate' ASSIGN DIGITS ;
+world_cellsize : 'cellsize' ASSIGN DIGITS ;
 
 // State
-state_decl : STMT_STATE state_ident code_block ;
+state_decl : STMT_STATE state_ident state_rgb code_block ;
 state_ident : IDENT ;
+state_rgb : PAREN_START (DIGITS LIST_SEP DIGITS LIST_SEP DIGITS) PAREN_END ;
 
 // Code
-code_block : BLOCK_START NEWLINE* (stmt NEWLINE*)* BLOCK_END ;
-stmt : (if_stmt | return_stmt | become_stmt | switch_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
+code_block : BLOCK_START stmt* BLOCK_END ;
+stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
-assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END;
+assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END ;
 if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
-return_stmt : STMT_RETURN expr (LIST_SEP expr)*? END;
 become_stmt : STMT_BECOME state_ident END ;
 increment_stmt : modifiable_ident OP_INCREMENT ';' | OP_INCREMENT modifiable_ident ';';
 decrement_stmt : modifiable_ident OP_DECREMENT ';' | OP_DECREMENT modifiable_ident ';';
+
+// Neighbourhood
+neighbourhood_decl : STMT_NEIGHBOUR neighbourhood_ident neighbourhood_code ;
+neighbourhood_ident : IDENT ;
+
+// Neighbourhood declaration
+neighbourhood_code : BLOCK_START coords_decl (LIST_SEP coords_decl)* BLOCK_END ;
+coords_decl : PAREN_START DIGITS (LIST_SEP DIGITS)? PAREN_END ;
 
 // Identifiers
 modifiable_ident : var_ident | array_lookup ;
@@ -47,18 +56,6 @@ literal : number_literal | bool_literal ;
 number_literal : DIGITS ;
 bool_literal : LITERAL_TRUE | LITERAL_FALSE ;
 
-// Functions
-func_ident : IDENT ;
-func_decl : STMT_FUNC func_ident func_args_decl func_return_decl func_body ;
-func_args_decl : PAREN_START (type_ident (LIST_SEP type_ident)?)? PAREN_END ;
-func_return_decl : (PAREN_START (type_ident (LIST_SEP type_ident)?)? PAREN_END)? ;
-func_body: BLOCK_START (stmt)*? BLOCK_END ;
-
-// Switch
-switch_stmt : STMT_SWITCH PAREN_START expr PAREN_END BLOCK_START switch_case* BLOCK_END;
-switch_case : (STMT_CASE expr | STMT_DEFAULT) ':' (stmt | fallthrough_stmt)* ;
-fallthrough_stmt : STMT_FALLTHROUGH END ;
-
 // Math
 expr : expr_1 ;
 expr_1 : expr_1 OP_XOR expr_2 | expr_2 ;
@@ -69,12 +66,17 @@ expr_5 : expr_5 OP_MORE expr_6 | expr_5 OP_MORE_EQ expr_6 | expr_5 OP_LESS expr_
 expr_6 : expr_6 OP_PLUS expr_7 | expr_6 OP_MINUS expr_7 | expr_7;
 expr_7 : expr_7 OP_MULTIPLY expr_8 | expr_7 OP_DIVIDE expr_8 | expr_8 ;
 expr_8 : OP_INCREMENT expr_9 | OP_DECREMENT expr_9 | OP_PLUS expr_9 | OP_MINUS expr_9 | OP_NOT expr_9 | expr_9 ;
-expr_9 : expr_10 OP_INCREMENT | expr_10 OP_DECREMENT | func_ident PAREN_START (expr (LIST_SEP expr)*)?  PAREN_END  | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END | array_value | expr_10;
+expr_9 : expr_10 OP_INCREMENT | expr_10 OP_DECREMENT | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END | array_value | expr_10;
 expr_10 : PAREN_START expr PAREN_END | expr_11 ;
-expr_11 : literal | var_ident ;
+expr_11 : literal | var_ident | func ;
+
+// Built-in funcitons
+func : (func_count | func_rand) ;
+func_count : FUNC_COUNT PAREN_START neighbourhood_ident LIST_SEP state_ident PAREN_END ;
+func_rand : FUNC_RAND PAREN_START DIGITS PAREN_END ;
 
 // Tokens
-DIGITS : [1-9][0-9]* | [0] ;
+DIGITS : '-'? [1-9][0-9]* | [0] ;
 ASSIGN : '=' ;
 LIST_SEP : ',' ;
 NEWLINE : ('\r'? '\n' | '\r') -> skip ;
@@ -106,17 +108,15 @@ OP_AND : 'and' ;
 OP_OR : 'or' ;
 OP_XOR : 'xor' ;
 
-STMT_FALLTHROUGH : 'fallthrough' ;
-STMT_SWITCH : 'switch' ;
-STMT_CASE : 'case' ;
-STMT_DEFAULT : 'default' ;
-STMT_FUNC : 'func' ;
 STMT_STATE : 'state' ;
-STMT_BOARD : 'board' ;
-STMT_RETURN : 'return' ;
+STMT_NEIGHBOUR : 'neighbourhood' ;
+STMT_WORLD : 'world' ;
 STMT_BECOME : 'become' ;
 STMT_IF : 'if' ;
 STMT_ELSE : 'else' ;
+
+FUNC_COUNT : 'count' ;
+FUNC_RAND :  'rand' ;
 
 TYPE_NUMBER : 'number' ;
 TYPE_BOOLEAN : 'boolean' | 'bool' ;
@@ -124,4 +124,4 @@ TYPE_BOOLEAN : 'boolean' | 'bool' ;
 LITERAL_TRUE : 'true' ;
 LITERAL_FALSE : 'false' ;
 
-IDENT : [a-zA-Z] ([a-zA-Z0-9]+)? ;
+IDENT : [a-zA-Z]([a-zA-Z0-9]+)? ;
