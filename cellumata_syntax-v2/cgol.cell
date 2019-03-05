@@ -1,11 +1,12 @@
 // Conway's game of life
 
 world {
-    size = 100 W, 100 W
+    size = 100[edge=w], 100[edge=w]
     tickrate = 8
     cellsize = 4
 }
 
+// custom definition of neighbours, like below, is not yet recognised by the grammar
 neighbours {
     (-1, 1), (0, 1), (1, 1),
     (-1, 0),          (1, 0),
