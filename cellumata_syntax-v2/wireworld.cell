@@ -1,4 +1,6 @@
-wolrd {
+// Wireworld
+
+world {
 	size = 120 [wrap], 120 [wrap]
 	tickrate = 20
 	cellsize = 6
@@ -15,17 +17,17 @@ state Empty (0, 0, 0) {
 }
 
 state ElectronHead (100, 120, 255) {
-	become ElectronTail
+	become ElectronTail;
 }
 
 state ElectronTail (255, 140, 50) {
-	become Conductor
+	become Conductor;
 }
 
 state Conductor (220, 210, 50) {
-	int electrons = count(mooreNeighbours, ElectronHead)
+	int electrons = count(mooreNeighbours, ElectronHead);
 	
 	if (electrons is 1 or electrons is 2) {
-		become ElectronHead
+		become ElectronHead;
 	}
 }
