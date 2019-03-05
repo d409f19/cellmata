@@ -14,8 +14,9 @@ world_tickrate : 'tickrate' ASSIGN DIGITS ;
 world_cellsize : 'cellsize' ASSIGN DIGITS ;
 
 // State
-state_decl : STMT_STATE state_ident code_block ;
+state_decl : STMT_STATE state_ident state_rgb code_block ;
 state_ident : IDENT ;
+state_rgb : PAREN_START (DIGITS LIST_SEP DIGITS LIST_SEP DIGITS) PAREN_END ;
 
 // Code
 code_block : BLOCK_START stmt* BLOCK_END ;
