@@ -2,11 +2,11 @@ grammar cellmata;
 
 start : world_dcl body EOF;
 
-body : (state_decl | const_decl)*;
+body : (state_decl | neighbourhood_decl | const_decl)*;
 const_decl : 'const' const_ident ASSIGN expr ;
 const_ident : IDENT ;
 
-// Board
+// World
 world_dcl : STMT_WORLD BLOCK_START world_size world_tickrate? world_cellsize? BLOCK_END ;
 world_size : 'size' ASSIGN world_size_dim (LIST_SEP world_size_dim)?;
 world_size_dim : DIGITS SQ_BRACKET_START ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END | 'infinite' ;
@@ -26,6 +26,13 @@ if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN
 become_stmt : STMT_BECOME state_ident END ;
 increment_stmt : modifiable_ident OP_INCREMENT ';' | OP_INCREMENT modifiable_ident ';';
 decrement_stmt : modifiable_ident OP_DECREMENT ';' | OP_DECREMENT modifiable_ident ';';
+
+// Neighbourhood
+neighbourhood_decl : STMT_NEIGHBOUR neighbourhood_code ;
+
+// Neighbourhood declaration
+neighbourhood_code : BLOCK_START coords_decl (LIST_SEP coords_decl)* BLOCK_END ;
+coords_decl : PAREN_START DIGITS (LIST_SEP DIGITS)? PAREN_END ;
 
 // Identifiers
 modifiable_ident : var_ident | array_lookup ;
@@ -62,7 +69,7 @@ expr_10 : PAREN_START expr PAREN_END | expr_11 ;
 expr_11 : literal | var_ident ;
 
 // Tokens
-DIGITS : [1-9][0-9]* | [0] ;
+DIGITS : '-'? [1-9][0-9]* | [0] ;
 ASSIGN : '=' ;
 LIST_SEP : ',' ;
 NEWLINE : ('\r'? '\n' | '\r') -> skip ;
@@ -96,6 +103,7 @@ OP_XOR : 'xor' ;
 
 STMT_STATE : 'state' ;
 STMT_WORLD : 'world' ;
+STMT_NEIGHBOUR : 'neighbours' ;
 STMT_BECOME : 'become' ;
 STMT_IF : 'if' ;
 STMT_ELSE : 'else' ;
