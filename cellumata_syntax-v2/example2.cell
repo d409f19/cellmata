@@ -5,7 +5,7 @@ world {
 
 const baz = [2]bool{ true, false }
 
-state foo {
+state foo (0, 0, 0) {
     let a = (not (2 - 3) / (4)) is 2;
 
     baz[0] = baz[1] - 2;

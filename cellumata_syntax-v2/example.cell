@@ -3,7 +3,7 @@ world {
     tickrate = 120
 }
 
-state foo {
+state foo (0, 0, 0) {
     let a = (not (2 - 3) / (4)) is 2;
 
     if (23) {
