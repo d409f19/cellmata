@@ -5,29 +5,30 @@ world {
 }
 
 neighbours {
-(-2, 2),(-1, 1),(0, 2),(1, 2),(2, 2),
-(-2, 1),(-1, 1),(0, 1),(1, 1),(2, 1),
-(-2, 0),( 1, 0),       (1, 0),(2, 0),
-(-2,-1),(-1,-1),(0,-1),(1,-1),(2,-1),
-(-2,-2),(-1,-2),(0,-2),(1,-2),(2,-2)
+    (-2, 2), (-1, 1), (0, 2), (1, 2), (2, 2),
+    (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1),
+    (-2, 0), ( 1, 0),         (1, 0), (2, 0),
+    (-2,-1), (-1,-1), (0,-1), (1,-1), (2,-1),
+    (-2,-2), (-1,-2), (0,-2), (1,-2), (2,-2)
 }
 
 state Air (192, 192, 192) {
     if (count(neighbours, Zombie) == 1) become InfectedAir;
 }
 
-state Zombie (34,139,34) {
+state Zombie (34, 139, 34) {
     if (count(neighbours, Human) > count(neightbours,Zombie)) become Air;
 }
 
-state InfectedAir(0,255,0){
-  if (count(neighbours, zombie) < 1) become Air;
+state InfectedAir (0, 255, 0) {
+    if (count(neighbours, zombie) < 1) become Air;
 }
 
-state Human(34,139,34){
-  if (count(neighbours, Human) == 4) become Human;
-  else if 
-    (count(neighbours,Zombie) > count(neighbours,human)) become Zombie;
-  else if
-    (count(neighbours, InfectedAir)) > 10) become Zombie;
+state Human (34, 139, 34){
+    if (count(neighbours, Human) == 4) 
+        become Human;
+    else if (count(neighbours, Zombie) > count(neighbours,human)) 
+        become Zombie;
+    else if (count(neighbours, InfectedAir)) > 10) 
+        become Zombie;
  }
