@@ -1,7 +1,7 @@
 world {
-    size = 100 W, 100 W
-    cellsize = 8
-    tickrate = 8
+    size = 100 [wrap], 100 [wrap]
+    cellsize = 10
+    tickrate = 20
 }
 
 neighbours {
