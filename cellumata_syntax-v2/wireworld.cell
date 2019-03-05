@@ -25,7 +25,7 @@ state ElectronTail (255, 140, 50) {
 }
 
 state Conductor (220, 210, 50) {
-	int electrons = count(mooreNeighbours, ElectronHead);
+	let electrons = count(mooreNeighbours, ElectronHead);
 	
 	if (electrons is 1 or electrons is 2) {
 		become ElectronHead;

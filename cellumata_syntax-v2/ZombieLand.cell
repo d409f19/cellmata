@@ -31,4 +31,4 @@ state Human (34, 139, 34){
         become Zombie;
     else if (count(neighbours, InfectedAir)) > 10) 
         become Zombie;
- }
+}
