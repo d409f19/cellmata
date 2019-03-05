@@ -1,7 +1,7 @@
 // Conway's game of life
 
 world {
-    size = 100[edge=w], 100[edge=w]
+    size = 100[wrap], 100[wrap]
     tickrate = 8
     cellsize = 4
 }
