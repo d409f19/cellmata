@@ -71,9 +71,10 @@ expr_10 : PAREN_START expr PAREN_END | expr_11 ;
 expr_11 : literal | var_ident | func ;
 
 // Built-in funcitons
-func : (func_count | func_rand) ;
+func : (func_count | func_rand | func_abs) ;
 func_count : FUNC_COUNT PAREN_START neighbourhood_ident LIST_SEP state_ident PAREN_END ;
 func_rand : FUNC_RAND PAREN_START DIGITS PAREN_END ;
+func_abs : FUNC_ABS PAREN_START expr PAREN_END ;
 
 // Tokens
 DIGITS : '-'? [1-9][0-9]* | [0] ;
@@ -116,7 +117,8 @@ STMT_IF : 'if' ;
 STMT_ELSE : 'else' ;
 
 FUNC_COUNT : 'count' ;
-FUNC_RAND :  'rand' ;
+FUNC_RAND : 'rand' ;
+FUNC_ABS : 'abs' ;
 
 TYPE_NUMBER : 'number' ;
 TYPE_BOOLEAN : 'boolean' | 'bool' ;
