@@ -22,14 +22,15 @@ state_rgb : PAREN_START (DIGITS LIST_SEP DIGITS LIST_SEP DIGITS) PAREN_END ;
 code_block : BLOCK_START stmt* BLOCK_END ;
 stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
-assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END;
+assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END ;
 if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
 become_stmt : STMT_BECOME state_ident END ;
 increment_stmt : modifiable_ident OP_INCREMENT ';' | OP_INCREMENT modifiable_ident ';';
 decrement_stmt : modifiable_ident OP_DECREMENT ';' | OP_DECREMENT modifiable_ident ';';
 
 // Neighbourhood
-neighbourhood_decl : STMT_NEIGHBOUR neighbourhood_code ;
+neighbourhood_decl : STMT_NEIGHBOUR neighbourhood_ident neighbourhood_code ;
+neighbourhood_ident : IDENT ;
 
 // Neighbourhood declaration
 neighbourhood_code : BLOCK_START coords_decl (LIST_SEP coords_decl)* BLOCK_END ;
@@ -67,7 +68,12 @@ expr_7 : expr_7 OP_MULTIPLY expr_8 | expr_7 OP_DIVIDE expr_8 | expr_8 ;
 expr_8 : OP_INCREMENT expr_9 | OP_DECREMENT expr_9 | OP_PLUS expr_9 | OP_MINUS expr_9 | OP_NOT expr_9 | expr_9 ;
 expr_9 : expr_10 OP_INCREMENT | expr_10 OP_DECREMENT | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END | array_value | expr_10;
 expr_10 : PAREN_START expr PAREN_END | expr_11 ;
-expr_11 : literal | var_ident ;
+expr_11 : literal | var_ident | func ;
+
+// Built-in funcitons
+func : (func_count | func_rand) ;
+func_count : FUNC_COUNT PAREN_START neighbourhood_ident LIST_SEP state_ident PAREN_END ;
+func_rand : FUNC_RAND PAREN_START DIGITS PAREN_END ;
 
 // Tokens
 DIGITS : '-'? [1-9][0-9]* | [0] ;
@@ -103,11 +109,14 @@ OP_OR : 'or' ;
 OP_XOR : 'xor' ;
 
 STMT_STATE : 'state' ;
+STMT_NEIGHBOUR : 'neighbourhood' ;
 STMT_WORLD : 'world' ;
-STMT_NEIGHBOUR : 'neighbours' ;
 STMT_BECOME : 'become' ;
 STMT_IF : 'if' ;
 STMT_ELSE : 'else' ;
+
+FUNC_COUNT : 'count' ;
+FUNC_RAND :  'rand' ;
 
 TYPE_NUMBER : 'number' ;
 TYPE_BOOLEAN : 'boolean' | 'bool' ;
@@ -115,4 +124,4 @@ TYPE_BOOLEAN : 'boolean' | 'bool' ;
 LITERAL_TRUE : 'true' ;
 LITERAL_FALSE : 'false' ;
 
-IDENT : [a-zA-Z] ([a-zA-Z0-9]+)? ;
+IDENT : [a-zA-Z]([a-zA-Z0-9]+)? ;

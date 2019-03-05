@@ -7,7 +7,7 @@ world {
 }
 
 // custom definition of neighbours, like below, is not yet recognised by the grammar
-neighbours Moore {
+neighbourhood Moore {
     (-1, 1), (0, 1), (1, 1),
     (-1, 0),          (1, 0),
     (-1, -1), (0, -1), (1, -1)
