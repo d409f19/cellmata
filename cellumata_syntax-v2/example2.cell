@@ -1,5 +1,5 @@
-board {
-    world = 10[edge=foo], infinite
+world {
+    size = 10[edge=foo], infinite
     tickrate = 120
 }
 
