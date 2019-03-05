@@ -1,0 +1,33 @@
+world {
+    size = 100 W, 100 W
+    cellsize = 8
+    tickrate = 8
+}
+
+neighbours {
+(-2, 2),(-1, 1),(0, 2),(1, 2),(2, 2),
+(-2, 1),(-1, 1),(0, 1),(1, 1),(2, 1),
+(-2, 0),( 1, 0),       (1, 0),(2, 0),
+(-2,-1),(-1,-1),(0,-1),(1,-1),(2,-1),
+(-2,-2),(-1,-2),(0,-2),(1,-2),(2,-2)
+}
+
+state Air (192, 192, 192) {
+    if (count(neighbours, Zombie) == 1) become InfectedAir
+}
+
+state Zombie (34,139,34) {
+    if (count(neighbours, Human) >count(neightbours,Infected)) become air
+}
+
+state InfectedAir(0,255,0){
+  if (count(neighbours, zombie)<1) become Air
+}
+
+state Human(34,139,34){
+  if (count(neighbours, Human)==4) become human
+  else if 
+    (count(neighbours,Zombie)>count(neighbours,human) become zombie)
+  else if
+    (count(neighbours, InfectedAir)>10) become zombie)
+ }
