@@ -13,7 +13,7 @@ neighbours {
 }
 
 state Air (192, 192, 192) {
-    if (count(neighbours, Zombie) == 1) become InfectedAir;
+    if (count(neighbours, Zombie) is 1) become InfectedAir;
 }
 
 state Zombie (34, 139, 34) {
@@ -25,7 +25,7 @@ state InfectedAir (0, 255, 0) {
 }
 
 state Human (34, 139, 34){
-    if (count(neighbours, Human) == 4) 
+    if (count(neighbours, Human) is 4) 
         become Human;
     else if (count(neighbours, Zombie) > count(neighbours,human)) 
         become Zombie;
