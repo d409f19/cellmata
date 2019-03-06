@@ -1,0 +1,29 @@
+// Rule 30
+
+// Rule 30 is a one dimensional automata, but we draw each iteration on a different row
+world {
+    size = 200 [wrap], 200 [wrap]
+    tickrate = 8
+    cellsize = 5
+}
+
+// The row above is our previous iteration in "one dimension"
+neighbourhood elementaryNeighbours {
+	(-1, 1), (0, 1), (1, 1)
+}
+
+state Alive (0, 0, 0) {
+	
+}
+
+state Dead (255, 255, 255) {
+	// Check the exact pattern in the row above
+	if (elementaryNeighbours is [Dead, Dead, Dead]) become Dead;
+	if (elementaryNeighbours is [Dead, Dead, Alive]) become Alive;
+	if (elementaryNeighbours is [Dead, Alive, Dead]) become Alive;
+	if (elementaryNeighbours is [Dead, Alive, Alive]) become Alive;
+	if (elementaryNeighbours is [Alive, Dead, Dead]) become Alive;
+	if (elementaryNeighbours is [Alive, Dead, Alive]) become Dead;
+	if (elementaryNeighbours is [Alive, Alive, Dead]) become Dead;
+	if (elementaryNeighbours is [Alive, Alive, Alive]) become Dead;
+}
