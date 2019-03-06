@@ -1,5 +1,5 @@
 world {
-    size = 10[edge=foo], infinite
+    size = 10
     tickrate = 120
 }
 
