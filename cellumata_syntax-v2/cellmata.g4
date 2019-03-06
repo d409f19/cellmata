@@ -9,7 +9,7 @@ const_ident : IDENT ;
 // World
 world_dcl : STMT_WORLD BLOCK_START world_size world_tickrate? world_cellsize? BLOCK_END ;
 world_size : 'size' ASSIGN world_size_dim (LIST_SEP world_size_dim)?;
-world_size_dim : DIGITS SQ_BRACKET_START ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END | 'infinite' ;
+world_size_dim : DIGITS SQ_BRACKET_START ('wrap' | 'edge' ASSIGN IDENT) SQ_BRACKET_END ;
 world_tickrate : 'tickrate' ASSIGN DIGITS ;
 world_cellsize : 'cellsize' ASSIGN DIGITS ;
 
