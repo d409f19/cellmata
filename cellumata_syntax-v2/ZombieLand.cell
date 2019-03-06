@@ -3,8 +3,8 @@
 //Sets up the world at at the size 100 x 100
 world {
     size = 100 [wrap], 100 [wrap]
-    cellsize = 10
     tickrate = 20
+    cellsize = 10
 }
 
 //Sets up a neighbourhood
@@ -17,7 +17,7 @@ neighbourhood zombieNeighbours {
 }
 
 //set up neighbourhood for humans shooting zombies
-neightbourhood humanShootZombie{
+neighbourhood humanShootZombie{
                           (0,3),
                           (0,2),
                           (0,1),
