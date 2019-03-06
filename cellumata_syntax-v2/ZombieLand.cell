@@ -45,7 +45,7 @@ neighbourhood humanNeighboursKilledByZombie{
 
 //Sets up the state air, and it's conditions to become infected Air
 state Air (192, 192, 192) {
-    randomNumber = Rand(10);
+    let randomNumber = rand(10);
     if (count(neighbours, Zombie) <= 1) 
         become InfectedAir;
     else if(count(airNeighboursMakeMoreHumans) is 2)
@@ -55,7 +55,7 @@ state Air (192, 192, 192) {
 
 //Sets up the state Zombie, and conditions 
 state Zombie (34, 139, 34) {
-    randomNumber = Rand(2);
+    let randomNumber = rand(2);
     if (count(humanShootZombie, Human)<=1) 
         if (randomNumber is 1)
             become Air;
@@ -68,7 +68,7 @@ state InfectedAir (0, 255, 0) {
 
 //Sets up the state human, which becomes   
 state Human (34, 139, 34){
-    randomNumber = Rand(10);
+    let randomNumber = rand(10);
     if (count(neighbours, Zombie) > count(neighbours,human)) 
         become Zombie;
     else if (count(neighbours, InfectedAir)) > 5)
