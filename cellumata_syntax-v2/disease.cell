@@ -1,18 +1,20 @@
+// Disease simulation
+
 world {
   size = 200 [wrap], 200 [wrap]
   tickrate = 5
 }
 
-neighbours {
+neighbourhood MooreExtended {
   (-1, 1), (0, 1), (1, 1),
   (-1, 0), (0, 0), (1, 0),
   (-1, -1), (0, -1), (1, -1)
 }
 
-state SUCCEPTIBLE (0, 0, 255) {
-  if (count(neighbours, INFECTED) >= 1 
-      or count(neighbours, NEWLYINFECTED) >= 1)
+state SUSCEPTIBLE (0, 0, 255) {
+  if (count(MooreExtended, INFECTED) >= 1 or count(MooreExtended, NEWLYINFECTED) >= 1) {
     become NEWLYINFECTED;
+  }
 }
 
 state NEWLYINFECTED (255, 0, 0) {
@@ -20,10 +22,12 @@ state NEWLYINFECTED (255, 0, 0) {
 }
 
 state INFECTED (0, 155, 100) {
-  if (count(neighbours, SUCCEPTIBLE) >= 8)
+  // if four or more SUSCEPTIBLE cells near, and 10% chance succeeds, become IMMUNE 
+  if (count(MooreExtended, SUSCEPTIBLE) >= 4 and rand(10) is 0) {
     become IMMUNE;
-  else
-    become SUCCEPTIBLE;
+  } else {
+    become SUSCEPTIBLE;
+  }
 }
 
 state IMMUNE (255, 255, 255) {
