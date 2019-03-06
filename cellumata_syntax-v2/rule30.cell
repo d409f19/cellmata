@@ -13,8 +13,8 @@ neighbourhood elementaryNeighbours {
 }
 
 state Alive (0, 0, 0) {
-	if (elementaryNeighbours is [Alive, Alive, Dead]) become Dead;
-	if (elementaryNeighbours is [Alive, Alive, Alive]) become Dead;
+	if (elementaryNeighbours is [Alive, Dead]) become Dead;
+	if (elementaryNeighbours is [Alive, Alive]) become Dead;
 }
 
 state Dead (255, 255, 255) {
