@@ -1,4 +1,4 @@
-// Wireworld
+// Wireworld, draws electrons running along conductors with an ElectronHead state in front, and an ElectronTail state behind
 
 world {
 	size = 120 [wrap], 120 [wrap]
