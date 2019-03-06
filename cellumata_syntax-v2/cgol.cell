@@ -29,7 +29,7 @@ state Dead (255, 255, 255) {
         become Alive;
     }
     
-    // if not become keyword is met, the cell will stay in the same state
+    // if a 'become' statement is not met, the cell will stay in the same state
 }
 
 state Alive (0, 0, 0) {
