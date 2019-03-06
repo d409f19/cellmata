@@ -9,7 +9,7 @@ world {
 }
 
 neighbourhood elementaryNeighbours {
-	(-1, 1), (1, 1)
+	(-1, 0), (1, 0)
 }
 
 state Alive (0, 0, 0) {
