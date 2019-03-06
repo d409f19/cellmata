@@ -1,34 +1,77 @@
+//This program simulates the idea of a Zombie apocolypse, where Zombies have infected air around them, and if there is more
+//infectedAir humans will become zombies, if there is more zombies than humans around the zombies turns humans into zombies
+//Sets up the world at at the size 100 x 100
 world {
     size = 100 [wrap], 100 [wrap]
     cellsize = 10
     tickrate = 20
 }
 
-neighbourhood neighbours {
+//Sets up a neighbourhood
+neighbourhood zombieNeighbours {
     (-2, 2), (-1, 1), (0, 2), (1, 2), (2, 2),
     (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1),
-    (-2, 0), ( 1, 0),         (1, 0), (2, 0),
+    (-2, 0), (-1, 0),         (1, 0), (2, 0),
     (-2,-1), (-1,-1), (0,-1), (1,-1), (2,-1),
     (-2,-2), (-1,-2), (0,-2), (1,-2), (2,-2)
 }
 
+//set up neighbourhood for humans shooting zombies
+neightbourhood humanShootZombie{
+                          (0,3),
+                          (0,2),
+                          (0,1),
+    (-3,0), (-2,0), (-1,0),      (1,0), (2,0), (3,0),
+                          (0,-1),
+                          (0,-2),
+                          (0,-3)
+}
+
+
+//Sets up a neighbourhood for human birth
+neighbourhood airNeighboursMakeMoreHumans{
+           (0,1),
+    (-1,0),       (1,0),
+           (0,-1)
+}
+
+
+//Sets up a neighbourhood for human birth
+neighbourhood humanNeighboursKilledByZombie{
+    (-1, 1), (0,1), (1, 1),
+    (-1, 0),        (1, 0),
+    (-1,-1), (0,-1),(1,-1)
+}
+
+//Sets up the state air, and it's conditions to become infected Air
 state Air (192, 192, 192) {
-    if (count(neighbours, Zombie) is 1) become InfectedAir;
+    randomNumber is Ran(10);
+    if (count(neighbours, Zombie) <= 1) 
+        become InfectedAir;
+    else if(count(airNeighboursMakeMoreHumans) is 2)
+        if (randomNumber is 2)
+        become Human;
 }
 
+//Sets up the state Zombie, and conditions 
 state Zombie (34, 139, 34) {
-    if (count(neighbours, Human) > count(neightbours,Zombie)) become Air;
+    randomNumber is Ran(2);
+    if (count(humanShootZombie, Human)<=1) 
+        if (randomNumber is 1)
+            become Air;
 }
 
+//Sets up the state Infected air, which becomes air when their no longer is zombies next to it
 state InfectedAir (0, 255, 0) {
     if (count(neighbours, zombie) < 1) become Air;
 }
 
+//Sets up the state human, which becomes   
 state Human (34, 139, 34){
-    if (count(neighbours, Human) is 4) 
-        become Human;
-    else if (count(neighbours, Zombie) > count(neighbours,human)) 
+    randomNumber is Ran(10);
+    if (count(neighbours, Zombie) > count(neighbours,human)) 
         become Zombie;
-    else if (count(neighbours, InfectedAir)) > 10) 
-        become Zombie;
+    else if (count(neighbours, InfectedAir)) > 5)
+        if (randomNumber is 3)
+            become Zombie;
 }
