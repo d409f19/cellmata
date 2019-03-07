@@ -23,7 +23,7 @@ code_block : BLOCK_START stmt* BLOCK_END ;
 stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
 assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END ;
-if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
+if_stmt : STMT_IF PAREN_START expr PAREN_END (stmt | code_block) (STMT_ELSE STMT_IF PAREN_START expr PAREN_END (stmt | code_block))* (STMT_ELSE (stmt | code_block))? ;
 become_stmt : STMT_BECOME state_ident END ;
 increment_stmt : modifiable_ident OP_INCREMENT ';' | OP_INCREMENT modifiable_ident ';';
 decrement_stmt : modifiable_ident OP_DECREMENT ';' | OP_DECREMENT modifiable_ident ';';
