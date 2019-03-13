@@ -33,7 +33,7 @@ code_block : BLOCK_START stmt* BLOCK_END ;
 stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
 assign_stmt : STMT_LET? (var_ident | array_lookup) ASSIGN expr END ;
-if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
+if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
 become_stmt : STMT_BECOME state_ident END ;
 increment_stmt
     : modifiable_ident OP_INCREMENT END # postIncStmt
@@ -195,6 +195,7 @@ STMT_NEIGHBOUR : 'neighbourhood' ;
 STMT_WORLD : 'world' ;
 STMT_BECOME : 'become' ;
 STMT_IF : 'if' ;
+STMT_ELSE_IF : 'elif' ;
 STMT_ELSE : 'else' ;
 
 FUNC_COUNT : 'count' ;
