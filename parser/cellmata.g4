@@ -116,7 +116,7 @@ expr_6
 expr_7
     : expr_7 OP_MULTIPLY expr_8 # multiplictionExpr
     | expr_7 OP_DIVIDE expr_8 # divisionExpr
-    | expr_7 OP_MODULUS expr_8 # modulusExpr
+    | expr_7 OP_MODULO expr_8 # moduloExpr
     | expr_8 #expr8Cont
     ;
 expr_8
@@ -174,7 +174,7 @@ OP_PLUS : '+' ;
 OP_MINUS : '-' ;
 OP_MULTIPLY : '*' ;
 OP_DIVIDE : '/' ;
-OP_MODULUS : '%' ; // PRAISE!
+OP_MODULO : '%' ;
 OP_LESS : '<' ;
 OP_LESS_EQ : '<=' ;
 OP_MORE : '>' ;
