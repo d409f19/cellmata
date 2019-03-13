@@ -143,11 +143,9 @@ expr_11
     | func # funcExpr
     ;
 
-// Built-in funcitons
-func : (func_count | func_rand | func_abs) ;
-func_count : FUNC_COUNT PAREN_START neighbourhood_ident LIST_SEP state_ident PAREN_END ;
-func_rand : FUNC_RAND PAREN_START DIGITS PAREN_END ;
-func_abs : FUNC_ABS PAREN_START expr PAREN_END ;
+// Functions
+func : func_ident PAREN_START (expr (LIST_SEP expr)* )? PAREN_END ;
+func_ident : IDENT ;
 
 // Tokens
 DIGITS : '-'? [1-9][0-9]* | [0] ;
