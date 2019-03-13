@@ -19,7 +19,7 @@ world_tickrate
             ;
 world_tickrate_value : DIGITS ;
 world_cellsize
-            : 'cellsize' ASSIGN world_cellsize_value # cellSize
+            : 'cellsize' ASSIGN world_cellsize_value # cellsize
             ;
 world_cellsize_value : DIGITS ;
 
@@ -56,7 +56,7 @@ coords_decl : PAREN_START DIGITS (LIST_SEP DIGITS)? PAREN_END ;
 modifiable_ident : var_ident | array_lookup ;
 var_ident : IDENT ;
 
-// Type declarationo
+// Type declaration
 type_ident : IDENT | type_spec ;
 type_spec
     : array_decl # typeArray
