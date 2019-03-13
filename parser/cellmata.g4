@@ -162,7 +162,7 @@ PAREN_END : ')' ;
 END : ';' ;
 
 OP_COMPARE : '==' ;
-OP_COMPARE_not : '!=' ;
+OP_COMPARE_NOT : '!=' ;
 OP_NOT : '!' ;
 OP_INCREMENT : '++' ;
 OP_DECREMENT : '--' ;
