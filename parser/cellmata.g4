@@ -9,7 +9,7 @@ const_ident : IDENT ;
 // World
 world_dcl : STMT_WORLD BLOCK_START world_size world_tickrate? world_cellsize? BLOCK_END ;
 world_size : WORLD_SIZE ASSIGN world_size_dim (LIST_SEP world_size_dim)?;
-world_size_dim : DIGITS SQ_BRACKET_START world_size_dim_finite SQ_BRACKET_END # dimFinite ;
+world_size_dim : integer_literal SQ_BRACKET_START world_size_dim_finite SQ_BRACKET_END # dimFinite ;
 world_size_dim_finite
     : WORLD_WRAP # dimFiniteWrapping
     | WORLD_EDGE ASSIGN IDENT # dimFiniteEdge
@@ -17,16 +17,16 @@ world_size_dim_finite
 world_tickrate
             : WORLD_TICKRATE ASSIGN world_tickrate_value # tickrate
             ;
-world_tickrate_value : DIGITS ;
+world_tickrate_value : integer_literal ;
 world_cellsize
             : WORLD_CELLSIZE ASSIGN world_cellsize_value # cellsize
             ;
-world_cellsize_value : DIGITS ;
+world_cellsize_value : integer_literal ;
 
 // State
 state_decl : STMT_STATE state_ident state_rgb code_block ;
 state_ident : IDENT ;
-state_rgb : PAREN_START DIGITS LIST_SEP DIGITS LIST_SEP DIGITS PAREN_END ;
+state_rgb : PAREN_START integer_literal LIST_SEP integer_literal LIST_SEP integer_literal PAREN_END ;
 
 // Code
 code_block : BLOCK_START stmt* BLOCK_END ;
@@ -50,7 +50,7 @@ neighbourhood_ident : IDENT ;
 
 // Neighbourhood declaration
 neighbourhood_code : BLOCK_START coords_decl (LIST_SEP coords_decl)* BLOCK_END ;
-coords_decl : PAREN_START DIGITS (LIST_SEP DIGITS)? PAREN_END ;
+coords_decl : PAREN_START integer_literal (LIST_SEP integer_literal)? PAREN_END ;
 
 // Identifiers
 modifiable_ident : var_ident | array_lookup ;
@@ -68,15 +68,22 @@ type_spec
 array_decl : array_prefix type_ident ;
 array_value : array_prefix type_ident array_body ;
 array_body : BLOCK_START (expr (LIST_SEP expr)*)? BLOCK_END ;
-array_prefix : SQ_BRACKET_START DIGITS? SQ_BRACKET_END ;
-array_lookup: var_ident SQ_BRACKET_START DIGITS SQ_BRACKET_END ;
+array_prefix : SQ_BRACKET_START integer_literal? SQ_BRACKET_END ;
+array_lookup: var_ident SQ_BRACKET_START integer_literal SQ_BRACKET_END ;
 
 // Literals
 literal
     : number_literal # numberLiteral
     | bool_literal # boolLiteral
     ;
-number_literal : DIGITS ;
+number_literal
+    : integer_literal
+    | float_literal
+    ;
+
+integer_literal : DIGITS # digitLiteral ;
+float_literal : FLOAT # floatLiteral ;
+
 bool_literal
     : LITERAL_TRUE # trueLiteral
     | LITERAL_FALSE # falseLiteral
@@ -129,7 +136,7 @@ expr_8
 expr_9
     : expr_10 OP_INCREMENT # postIncExpr
     | expr_10 OP_DECREMENT # postDecExpr
-    | expr_10 SQ_BRACKET_START DIGITS SQ_BRACKET_END # arrayLookupExpr
+    | expr_10 SQ_BRACKET_START integer_literal SQ_BRACKET_END # arrayLookupExpr
     | array_value # arrayValueExpr
     | expr_10 # expr10Cont
     ;
@@ -146,11 +153,12 @@ expr_11
 // Built-in funcitons
 func : (func_count | func_rand | func_abs) ;
 func_count : FUNC_COUNT PAREN_START neighbourhood_ident LIST_SEP state_ident PAREN_END ;
-func_rand : FUNC_RAND PAREN_START DIGITS PAREN_END ;
+func_rand : FUNC_RAND PAREN_START integer_literal PAREN_END ;
 func_abs : FUNC_ABS PAREN_START expr PAREN_END ;
 
 // Tokens
 DIGITS : '-'? [1-9][0-9]* | [0] ;
+FLOAT : DIGITS '.' [0-9]* ;
 ASSIGN : '=' ;
 LIST_SEP : ',' ;
 NEWLINE : ('\r'? '\n' | '\r') -> skip ;
