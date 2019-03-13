@@ -3,23 +3,23 @@ grammar cellmata;
 start : world_dcl body EOF;
 
 body : (state_decl | neighbourhood_decl | const_decl)*;
-const_decl : 'const' const_ident ASSIGN expr ;
+const_decl : STMT_CONST const_ident ASSIGN expr ;
 const_ident : IDENT ;
 
 // World
 world_dcl : STMT_WORLD BLOCK_START world_size world_tickrate? world_cellsize? BLOCK_END ;
-world_size : 'size' ASSIGN world_size_dim (LIST_SEP world_size_dim)?;
+world_size : WORLD_SIZE ASSIGN world_size_dim (LIST_SEP world_size_dim)?;
 world_size_dim : DIGITS SQ_BRACKET_START world_size_dim_finite SQ_BRACKET_END # dimFinite ;
 world_size_dim_finite
-    : 'wrap' # dimFiniteWrapping
-    | 'edge' ASSIGN IDENT # dimFiniteEdge
+    : WORLD_WRAP # dimFiniteWrapping
+    | WORLD_EDGE ASSIGN IDENT # dimFiniteEdge
     ;
 world_tickrate
-            : 'tickrate' ASSIGN world_tickrate_value # tickrate
+            : WORLD_TICKRATE ASSIGN world_tickrate_value # tickrate
             ;
 world_tickrate_value : DIGITS ;
 world_cellsize
-            : 'cellsize' ASSIGN world_cellsize_value # cellsize
+            : WORLD_CELLSIZE ASSIGN world_cellsize_value # cellsize
             ;
 world_cellsize_value : DIGITS ;
 
@@ -32,16 +32,16 @@ state_rgb : PAREN_START DIGITS LIST_SEP DIGITS LIST_SEP DIGITS PAREN_END ;
 code_block : BLOCK_START stmt* BLOCK_END ;
 stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
 
-assign_stmt : 'let'? (var_ident | array_lookup) ASSIGN expr END ;
+assign_stmt : STMT_LET? (var_ident | array_lookup) ASSIGN expr END ;
 if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
 become_stmt : STMT_BECOME state_ident END ;
 increment_stmt
-    : modifiable_ident OP_INCREMENT ';' # postIncStmt
-    | OP_INCREMENT modifiable_ident ';' # preIncStmt
+    : modifiable_ident OP_INCREMENT END # postIncStmt
+    | OP_INCREMENT modifiable_ident END # preIncStmt
     ;
 decrement_stmt
-    : modifiable_ident OP_DECREMENT ';' # postDecStmt
-    | OP_DECREMENT modifiable_ident ';' # preDecStmt
+    : modifiable_ident OP_DECREMENT END # postDecStmt
+    | OP_DECREMENT modifiable_ident END # preDecStmt
     ;
 
 // Neighbourhood
@@ -182,6 +182,14 @@ OP_AND : 'and' ;
 OP_OR : 'or' ;
 OP_XOR : 'xor' ;
 
+WORLD_SIZE : 'size' ;
+WORLD_WRAP : 'wrap' ;
+WORLD_EDGE : 'edge' ;
+WORLD_TICKRATE : 'tickrate' ;
+WORLD_CELLSIZE : 'cellsize' ;
+
+STMT_CONST : 'const' ;
+STMT_LET : 'let' ;
 STMT_STATE : 'state' ;
 STMT_NEIGHBOUR : 'neighbourhood' ;
 STMT_WORLD : 'world' ;
