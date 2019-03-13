@@ -116,6 +116,7 @@ expr_6
 expr_7
     : expr_7 OP_MULTIPLY expr_8 # multiplictionExpr
     | expr_7 OP_DIVIDE expr_8 # divisionExpr
+    | expr_7 OP_MODULUS expr_8 # modulusExpr
     | expr_8 #expr8Cont
     ;
 expr_8
