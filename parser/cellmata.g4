@@ -2,7 +2,7 @@ grammar cellmata;
 
 start : world_dcl body EOF;
 
-body : (state_decl | neighbourhood_decl | const_decl)*;
+body : (state_decl | neighbourhood_decl | const_decl | func_decl)*;
 const_decl : STMT_CONST const_ident ASSIGN expr ;
 const_ident : IDENT ;
 
@@ -146,6 +146,8 @@ expr_11
 // Functions
 func : func_ident PAREN_START (expr (LIST_SEP expr)* )? PAREN_END ;
 func_ident : IDENT ;
+func_decl : STMT_FUNC func_ident PAREN_START func_decl_arg (LIST_SEP func_decl_arg)* PAREN_END type_ident code_block ;
+func_decl_arg : type_ident IDENT ;
 
 // Tokens
 DIGITS : '-'? [1-9][0-9]* | [0] ;
@@ -194,6 +196,7 @@ STMT_WORLD : 'world' ;
 STMT_BECOME : 'become' ;
 STMT_IF : 'if' ;
 STMT_ELSE : 'else' ;
+STMT_FUNC : 'function' ;
 
 FUNC_COUNT : 'count' ;
 FUNC_RAND : 'rand' ;
