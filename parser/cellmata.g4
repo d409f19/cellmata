@@ -30,7 +30,7 @@ state_rgb : PAREN_START DIGITS LIST_SEP DIGITS LIST_SEP DIGITS PAREN_END ;
 
 // Code
 code_block : BLOCK_START stmt* BLOCK_END ;
-stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
+stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt | return_stmt) ;
 
 assign_stmt : STMT_LET? (var_ident | array_lookup) ASSIGN expr END ;
 if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE STMT_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
@@ -43,6 +43,7 @@ decrement_stmt
     : modifiable_ident OP_DECREMENT END # postDecStmt
     | OP_DECREMENT modifiable_ident END # preDecStmt
     ;
+return_stmt : STMT_RETURN expr END ;
 
 // Neighbourhood
 neighbourhood_decl : STMT_NEIGHBOUR neighbourhood_ident neighbourhood_code ;
@@ -197,6 +198,7 @@ STMT_BECOME : 'become' ;
 STMT_IF : 'if' ;
 STMT_ELSE : 'else' ;
 STMT_FUNC : 'function' ;
+STMT_RETURN : 'return' ;
 
 FUNC_COUNT : 'count' ;
 FUNC_RAND : 'rand' ;
