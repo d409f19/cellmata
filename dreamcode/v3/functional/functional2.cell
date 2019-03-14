@@ -1,0 +1,31 @@
+
+world {
+    size = 100 W, 100 W
+    tickrate = 8
+    cellsize = 4
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Dead (255, 255, 255) {
+    count(Moore, Alive) is 3 => Alive;
+}
+
+state Alive (0, 0, 0) {
+    not (count(Moorse, Alive) in 2..3) => Dead;
+}
+
+state SpecialState (123, 123, 123) {
+    let m = count(Moore, Alive) + count(Moore, SpecialState);
+    abs(m - count(Moorse, Dead)) is 3 => SpecialState;
+    m <= 1 => Alive;
+    m in 2..4 => Dead;
+    m is rand(10) => Alive;
+    Moore is [Dead, Alive, Dead,
+              Alive,       Alive,
+              Dead, Alive, Dead] => Dead;
+}
