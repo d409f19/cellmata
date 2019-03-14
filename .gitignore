@@ -1,0 +1,6 @@
+/compiler/.gradle/
+build/
+gradle-app.settings
+.gradletaskcache
+/compiler/out/
+/compiler/src/main/gen/

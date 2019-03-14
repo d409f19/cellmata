@@ -1,4 +1,4 @@
-grammar cellmata;
+grammar Cellmata;
 
 start : world_dcl body EOF;
 

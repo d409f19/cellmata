@@ -1,0 +1,22 @@
+
+world {
+    size = 100 W, 100 W
+    tickrate = 8
+    cellsize = 4
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Dead = 0 (255, 255, 255) {
+    Moore == [0, 1, 1, 0, 0, 0, 0, 1] => Alive;
+    Moore == [1, 0, 1, 0, 0, 1, 1, 0] => Alive;
+    Moore == [1, 1, 0, 1, 1, 0, 1, 1] => Alive;
+}
+
+state Alive = 1 (0, 0, 0) {
+    not Moore $ Alive in 2..3 => Dead;
+}
