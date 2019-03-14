@@ -7,11 +7,6 @@ import kotlin.streams.toList
 
 private fun visitExpr(node: ParseTree): Expr {
     return when (node) {
-        is CellmataParser.XorExprContext -> XorExpr(
-            ctx = node,
-            left = visitExpr(node.expr_1()),
-            right = visitExpr(node.expr_2())
-        )
         is CellmataParser.OrExprContext -> OrExpr(
             ctx = node,
             left = visitExpr(node.expr_2()),
@@ -123,8 +118,7 @@ private fun visitExpr(node: ParseTree): Expr {
             else -> throw NotImplementedError()
         }
 
-        is CellmataParser.ExprContext -> visitExpr(node.expr_1())
-        is CellmataParser.Expr2ContContext -> visitExpr(node.expr_2())
+        is CellmataParser.ExprContext -> visitExpr(node.expr_2())
         is CellmataParser.Expr3ContContext -> visitExpr(node.expr_3())
         is CellmataParser.Expr4ContContext -> visitExpr(node.expr_4())
         is CellmataParser.Expr5ContContext -> visitExpr(node.expr_5())
