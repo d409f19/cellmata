@@ -2,7 +2,7 @@ grammar cellmata;
 
 start : world_dcl body EOF;
 
-body : (state_decl | neighbourhood_decl | const_decl)*;
+body : (state_decl | neighbourhood_decl | const_decl | func_decl)*;
 const_decl : STMT_CONST const_ident ASSIGN expr ;
 const_ident : IDENT ;
 
@@ -30,7 +30,7 @@ state_rgb : PAREN_START DIGITS LIST_SEP DIGITS LIST_SEP DIGITS PAREN_END ;
 
 // Code
 code_block : BLOCK_START stmt* BLOCK_END ;
-stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt) ;
+stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt | return_stmt) ;
 
 assign_stmt : STMT_LET? (var_ident | array_lookup) ASSIGN expr END ;
 if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
@@ -43,6 +43,7 @@ decrement_stmt
     : modifiable_ident OP_DECREMENT END # postDecStmt
     | OP_DECREMENT modifiable_ident END # preDecStmt
     ;
+return_stmt : STMT_RETURN expr END ;
 
 // Neighbourhood
 neighbourhood_decl : STMT_NEIGHBOUR neighbourhood_ident neighbourhood_code ;
@@ -144,11 +145,11 @@ expr_11
     | func # funcExpr
     ;
 
-// Built-in funcitons
-func : (func_count | func_rand | func_abs) ;
-func_count : FUNC_COUNT PAREN_START neighbourhood_ident LIST_SEP state_ident PAREN_END ;
-func_rand : FUNC_RAND PAREN_START DIGITS PAREN_END ;
-func_abs : FUNC_ABS PAREN_START expr PAREN_END ;
+// Functions
+func : func_ident PAREN_START (expr (LIST_SEP expr)* )? PAREN_END ;
+func_ident : IDENT ;
+func_decl : STMT_FUNC func_ident PAREN_START func_decl_arg (LIST_SEP func_decl_arg)* PAREN_END type_ident code_block ;
+func_decl_arg : type_ident IDENT ;
 
 // Tokens
 DIGITS : '-'? [1-9][0-9]* | [0] ;
@@ -198,6 +199,8 @@ STMT_BECOME : 'become' ;
 STMT_IF : 'if' ;
 STMT_ELSE_IF : 'elif' ;
 STMT_ELSE : 'else' ;
+STMT_FUNC : 'function' ;
+STMT_RETURN : 'return' ;
 
 FUNC_COUNT : 'count' ;
 FUNC_RAND : 'rand' ;
