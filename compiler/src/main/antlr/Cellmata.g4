@@ -198,10 +198,6 @@ STMT_ELSE : 'else' ;
 STMT_FUNC : 'function' ;
 STMT_RETURN : 'return' ;
 
-FUNC_COUNT : 'count' ;
-FUNC_RAND : 'rand' ;
-FUNC_ABS : 'abs' ;
-
 TYPE_NUMBER : 'number' ;
 TYPE_BOOLEAN : 'boolean' | 'bool' ;
 
