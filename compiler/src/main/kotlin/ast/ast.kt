@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.tree.ParseTree
 /**
  * This is a debugging string.
  * If you see this string in running code it means that the variable hasn't been initialized.
-  */
+ */
 const val MAGIC_UNDEFINED_STRING = "<<THIS IS A MAGIC STRING, UNDEFINED>>"
 
 sealed class AST
@@ -13,8 +13,8 @@ sealed class AST
 data class RootNode(val world: WorldNode, val body: List<Decl>) : AST()
 
 /*
-* World definition
-* */
+ * World definition
+ */
 enum class WorldType {
     WRAPPING,
     EDGE,
@@ -32,8 +32,8 @@ data class WorldNode(
 
 
 /*
-* Expressions
-* */
+ * Expressions
+ */
 sealed class Expr : AST()
 
 data class XorExpr(val ctx: ParseTree, val left: Expr, val right: Expr) : Expr()
@@ -84,7 +84,7 @@ data class ParenExpr(val ctx: ParseTree, val expr: Expr) : Expr()
 
 data class VarExpr(val ctx: ParseTree, val ident: String) : Expr()
 
-//Literals
+// Literals
 data class IntLiteral(val ctx: ParseTree, val literal: Int = -1) : Expr()
 
 data class BoolLiteral(val ctx: ParseTree, val value: Boolean = false) : Expr()
@@ -101,8 +101,8 @@ data class RandFunc(val ctx: ParseTree, val max: Int = -1) : Expr()
 data class AbsFunc(val ctx: ParseTree, val value: Int = -1) : Expr()
 
 /*
-* Declarations
-* */
+ * Declarations
+ */
 sealed class Decl : AST() // state, const, func
 
 data class ConstDecl(val ctx: ParseTree, val ident: String = MAGIC_UNDEFINED_STRING, val expr: Expr) : Decl()
@@ -114,8 +114,7 @@ data class StateDecl(
     val blue: Short = -1,
     val green: Short = -1,
     val body: List<Stmt>
-) :
-    Decl()
+) : Decl()
 
 data class Coordinate(val axes: List<Int>)
 
@@ -126,8 +125,8 @@ data class NeighbourhoodDecl(
 ) : Decl()
 
 /*
-* Statements
-* */
+ * Statements
+ */
 sealed class Stmt : AST()
 
 data class AssignStmt(val ctx: ParseTree, val ident: String = MAGIC_UNDEFINED_STRING, val expr: Expr) : Stmt()
