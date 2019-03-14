@@ -111,12 +111,7 @@ private fun visitExpr(node: ParseTree): Expr {
             ctx = node,
             ident = node.var_ident().text
         )
-        is CellmataParser.FuncExprContext -> when (node.func()) {
-            // CountFunc
-            // RandFunc
-            // AbsFunc
-            else -> throw NotImplementedError()
-        }
+        is CellmataParser.FuncExprContext -> throw NotImplementedError()
 
         is CellmataParser.ExprContext -> visitExpr(node.expr_2())
         is CellmataParser.Expr3ContContext -> visitExpr(node.expr_3())
