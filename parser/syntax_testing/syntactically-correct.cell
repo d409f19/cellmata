@@ -14,27 +14,21 @@ neighbourhood foobar {
     (-2,-2), (-1,-2), (0,-2), (1,-2), (2,-2)
 }
 
-/* This state has a 
-long, multi-line
-comment */
-state foo (255, 0, 0) {
-    let a = (not (2 - 3) / (4)) is 2;
-
-    if (23) {
-        let b = 3;
-        if (not b) {
-            become foo;
-        }
-    }
-    become bar;
-}
-
 state bar (255,255,255) {
     // multiple stmts in if-stmt code-block
     if (count(foobar, foo) >= 2) {
-        let x = 
+        let x = 3.33;
         become bar;
     }
     // single stmt after if-stmt
-    if (count(foobar, foo) is 2) become foo;   
+    if (func(foobar, foo) == 2) {
+        become foo;
+    }
 }
+
+function func (neighbourhood foo, state bar) state {
+    if (func2(foobar)) {
+        return bar;
+    }
+}
+
