@@ -70,7 +70,7 @@ array_decl : array_prefix type_ident ;
 array_value : array_prefix type_ident array_body ;
 array_body : BLOCK_START (expr (LIST_SEP expr)*)? BLOCK_END ;
 array_prefix : SQ_BRACKET_START integer_literal? SQ_BRACKET_END ;
-array_lookup: var_ident SQ_BRACKET_START integer_literal SQ_BRACKET_END ;
+array_lookup: var_ident SQ_BRACKET_START expr SQ_BRACKET_END ;
 
 // Literals
 literal
@@ -134,7 +134,7 @@ expr_8
 expr_9
     : expr_10 OP_INCREMENT # postIncExpr
     | expr_10 OP_DECREMENT # postDecExpr
-    | expr_10 SQ_BRACKET_START integer_literal SQ_BRACKET_END # arrayLookupExpr
+    | expr_10 SQ_BRACKET_START expr SQ_BRACKET_END # arrayLookupExpr
     | array_value # arrayValueExpr
     | expr_10 # expr10Cont
     ;
