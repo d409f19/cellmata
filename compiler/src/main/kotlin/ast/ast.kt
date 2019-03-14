@@ -36,8 +36,6 @@ data class WorldNode(
  */
 sealed class Expr : AST()
 
-data class XorExpr(val ctx: ParseTree, val left: Expr, val right: Expr) : Expr()
-
 data class OrExpr(val ctx: ParseTree, val left: Expr, val right: Expr) : Expr()
 
 data class AndExpr(val ctx: ParseTree, val left: Expr, val right: Expr) : Expr()
