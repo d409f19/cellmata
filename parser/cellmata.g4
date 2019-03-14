@@ -84,11 +84,7 @@ bool_literal
     ;
 
 // Math
-expr : expr_1 ;
-expr_1
-    : expr_1 OP_XOR expr_2 # xorExpr
-    | expr_2 # expr2Cont
-    ;
+expr : expr_2 ;
 expr_2
     : expr_2 OP_OR expr_3 # orExpr
     | expr_3 #expr3Cont
@@ -98,7 +94,7 @@ expr_3
     | expr_4 # expr4Cont
     ;
 expr_4
-    : expr_4 OP_COMPARE OP_NOT expr_5 # notEqExpr
+    : expr_4 OP_COMPARE_NOT expr_5 # notEqExpr
     | expr_4 OP_COMPARE expr_5 # eqExpr
     | expr_5 # expr5Cont
     ;
@@ -167,8 +163,9 @@ PAREN_START : '(' ;
 PAREN_END : ')' ;
 END : ';' ;
 
-OP_COMPARE : 'is' ;
-OP_NOT : 'not' ;
+OP_COMPARE : '==' ;
+OP_COMPARE_NOT : '!=' ;
+OP_NOT : '!' ;
 OP_INCREMENT : '++' ;
 OP_DECREMENT : '--' ;
 OP_PLUS : '+' ;
@@ -180,9 +177,8 @@ OP_LESS : '<' ;
 OP_LESS_EQ : '<=' ;
 OP_MORE : '>' ;
 OP_MORE_EQ : '>=' ;
-OP_AND : 'and' ;
-OP_OR : 'or' ;
-OP_XOR : 'xor' ;
+OP_AND : '&&' ;
+OP_OR : '||' ;
 
 WORLD_SIZE : 'size' ;
 WORLD_WRAP : 'wrap' ;
