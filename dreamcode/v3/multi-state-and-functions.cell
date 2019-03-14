@@ -1,0 +1,34 @@
+world {
+	size = 60 [wrap], 60 [wrap]
+	tickrate = 5
+	cellsize = 10
+}
+
+const DECAY_NUMBER = 10;
+
+// Alive multi-state, slowly decays to a Dead cell
+state Alive[DECAY_NUMBER] (# * 20, 0, 0) {
+	if (# == DECAY_NUMBER - 1) {
+		become Dead;
+	} else {
+		become Alive[bump(#)];
+	}
+}
+
+state Dead (255, 255, 255) {
+	// Dead cells have a 10% chance to become Alive if they are surrounded by
+	// three or more alive cells
+	let aliveNeighbours = 0;
+	for (let i = 0; i < DECAY_NUMBER; i = bump(i)) {
+		aliveNeighbours = count(mooreNeighbours, Alive[i]);
+	}
+	
+	if (aliveNeighbours >= 3 && rand(10) == 0) {
+		become Alive[0];
+	}
+}
+
+// Adds one to the given integer
+function bump(int a) int {
+	return a + 1;
+}
