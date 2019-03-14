@@ -62,7 +62,9 @@ type_ident : IDENT | type_spec ;
 type_spec
     : array_decl # typeArray
     | TYPE_BOOLEAN # typeBoolean
-    | TYPE_NUMBER # tyopeNumber
+    | TYPE_NUMBER # typeNumber
+    | STMT_NEIGHBOUR # typeNeighbour
+    | STMT_STATE # typeState
     ;
 
 // Array
