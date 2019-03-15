@@ -32,9 +32,18 @@ state foo (255, 0, 0) {
 state bar (255,255,255) {
     // multiple stmts in if-stmt code-block
     if (count(foobar, foo) >= 2) {
-        let x = 
+        let x = 3.33;
         become bar;
     }
     // single stmt after if-stmt
-    if (count(foobar, foo) is 2) become foo;   
+    if (func(foobar, foo) == 2) {
+        become foo;
+    }
 }
+
+function func (neighbourhood foo, state bar) state {
+    if (func(foobar)) {
+        return bar;
+    }
+}
+
