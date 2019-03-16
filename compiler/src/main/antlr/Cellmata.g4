@@ -93,59 +93,30 @@ bool_literal
     ;
 
 // Math
-expr : expr_2 ;
-expr_2
-    : expr_2 OP_OR expr_3 # orExpr
-    | expr_3 #expr3Cont
-    ;
-expr_3
-    : expr_3 OP_AND expr_4 # andExpr
-    | expr_4 # expr4Cont
-    ;
-expr_4
-    : expr_4 OP_COMPARE_NOT expr_5 # notEqExpr
-    | expr_4 OP_COMPARE expr_5 # eqExpr
-    | expr_5 # expr5Cont
-    ;
-expr_5
-    : expr_5 OP_MORE expr_6 # moreExpr
-    | expr_5 OP_MORE_EQ expr_6 # moreEqExpr
-    | expr_5 OP_LESS expr_6 # lessExpr
-    | expr_5 OP_LESS_EQ expr_6 # lessEqExpr
-    | expr_6 # expr6Cont
-    ;
-expr_6
-    : expr_6 OP_PLUS expr_7 # additionExpr
-    | expr_6 OP_MINUS expr_7 # substractionExpr
-    | expr_7 #expr7Cont
-    ;
-expr_7
-    : expr_7 OP_MULTIPLY expr_8 # multiplictionExpr
-    | expr_7 OP_DIVIDE expr_8 # divisionExpr
-    | expr_7 OP_MODULO expr_8 # moduloExpr
-    | expr_8 #expr8Cont
-    ;
-expr_8
-    : OP_INCREMENT expr_9 # preIncExpr
-    | OP_DECREMENT expr_9 # preDecExpr
-    | OP_PLUS expr_9 # positiveExpr
-    | OP_MINUS expr_9 # negativeExpr
-    | OP_NOT expr_9 # inverseExpr
-    | expr_9 # expr9Cont
-    ;
-expr_9
-    : expr_10 OP_INCREMENT # postIncExpr
-    | expr_10 OP_DECREMENT # postDecExpr
-    | expr_10 SQ_BRACKET_START expr SQ_BRACKET_END # arrayLookupExpr
+expr : expr OP_OR expr # orExpr
+    | expr OP_AND expr # andExpr
+    | expr OP_COMPARE_NOT expr # notEqExpr
+    | expr OP_COMPARE expr # eqExpr
+    | expr OP_MORE expr # moreExpr
+    | expr OP_MORE_EQ expr # moreEqExpr
+    | expr OP_LESS expr # lessExpr
+    | expr OP_LESS_EQ expr # lessEqExpr
+    | expr OP_PLUS expr # additionExpr
+    | expr OP_MINUS expr # substractionExpr
+    | expr OP_MULTIPLY expr # multiplictionExpr
+    | expr OP_DIVIDE expr # divisionExpr
+    | expr OP_MODULO expr # moduloExpr
+    | OP_INCREMENT expr # preIncExpr
+    | OP_DECREMENT expr # preDecExpr
+    | OP_PLUS expr # positiveExpr
+    | OP_MINUS expr # negativeExpr
+    | OP_NOT expr # inverseExpr
+    | expr OP_INCREMENT # postIncExpr
+    | expr OP_DECREMENT # postDecExpr
+    | expr SQ_BRACKET_START expr SQ_BRACKET_END # arrayLookupExpr
     | array_value # arrayValueExpr
-    | expr_10 # expr10Cont
-    ;
-expr_10
-    : PAREN_START expr PAREN_END # parenExpr
-    | expr_11 # expr11Cont
-    ;
-expr_11
-    : literal # literalExpr
+    | PAREN_START expr PAREN_END # parenExpr
+    | literal # literalExpr
     | var_ident # varExpr
     | func # funcExpr
     ;
