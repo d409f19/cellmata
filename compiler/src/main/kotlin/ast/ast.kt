@@ -30,7 +30,6 @@ data class WorldNode(
     val cellSize: Int? = null
 ) : AST()
 
-
 /*
  * Expressions
  */
@@ -76,27 +75,22 @@ data class InverseExpr(val ctx: ParseTree, val value: Expr) : Expr()
 
 data class ArrayLookupExpr(val ctx: ParseTree, val ident: String = MAGIC_UNDEFINED_STRING, val index: Int = -1) : Expr()
 
-data class ArrayBodyExpr(val ctx: ParseTree, val type: String?, val values: List<Expr>) : Expr()
+data class ArrayBodyExpr(val ctx: ParseTree, val type: String? = MAGIC_UNDEFINED_STRING, val values: List<Expr>) : Expr()
 
 data class ParenExpr(val ctx: ParseTree, val expr: Expr) : Expr()
 
 data class VarExpr(val ctx: ParseTree, val ident: String) : Expr()
 
+data class ModuloExpr(val ctx: ParseTree, val left: Expr, val right: Expr) : Expr()
+
+data class FuncExpr(val ctx: ParseTree, val args: List<Expr>) : Expr()
+
+data class StateIndexExpr(val ctx: ParseTree) : Expr()
+
 // Literals
 data class IntLiteral(val ctx: ParseTree, val literal: Int = -1) : Expr()
 
 data class BoolLiteral(val ctx: ParseTree, val value: Boolean = false) : Expr()
-
-// Builtins
-data class CountFunc(
-    val ctx: ParseTree,
-    val neighbourhood: String = MAGIC_UNDEFINED_STRING,
-    val state: String = MAGIC_UNDEFINED_STRING
-) : Expr()
-
-data class RandFunc(val ctx: ParseTree, val max: Int = -1) : Expr()
-
-data class AbsFunc(val ctx: ParseTree, val value: Int = -1) : Expr()
 
 /*
  * Declarations
@@ -114,12 +108,21 @@ data class StateDecl(
     val body: List<Stmt>
 ) : Decl()
 
-data class Coordinate(val axes: List<Int>)
+data class Coordinate(val ctx: ParseTree, val axes: List<Int> = emptyList())
 
 data class NeighbourhoodDecl(
     val ctx: ParseTree,
     val ident: String = MAGIC_UNDEFINED_STRING,
     val coords: List<Coordinate> = emptyList()
+) : Decl()
+
+data class FunctionArgs(val ident: String, val type: String)
+
+data class FuncDecl(
+    val ctx: ParseTree,
+    val ident: String = MAGIC_UNDEFINED_STRING,
+    val args: List<FunctionArgs> = emptyList(),
+    val body: List<Stmt> = emptyList()
 ) : Decl()
 
 /*
@@ -142,3 +145,5 @@ data class PostIncStmt(val ctx: ParseTree, val variable: String = MAGIC_UNDEFINE
 data class PreDecStmt(val ctx: ParseTree, val variable: String = MAGIC_UNDEFINED_STRING) : Stmt()
 
 data class PostDecStmt(val ctx: ParseTree, val variable: String = MAGIC_UNDEFINED_STRING) : Stmt()
+
+data class ReturnStmt(val ctx: ParseTree, val value: Expr) : Stmt()
