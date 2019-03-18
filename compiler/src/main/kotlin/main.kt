@@ -17,5 +17,4 @@ fun main() {
 
     println(ast)
 
-    listOf<Unit>()
 }
