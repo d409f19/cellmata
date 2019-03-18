@@ -124,7 +124,7 @@ private fun visitExpr(node: ParseTree): Expr {
         is CellmataParser.NumberLiteralContext -> visitExpr(node.value)
         is CellmataParser.BoolLiteralContext -> visitExpr(node.value)
         is CellmataParser.Bool_literalContext -> BoolLiteral(ctx = node)
-        is CellmataParser.Number_literalContext -> visitExpr(node.getChild(0)) // ToDo is this correct?
+        is CellmataParser.Number_literalContext -> visitExpr(node.getChild(0))
         is CellmataParser.IntegerLiteralContext -> visitExpr(node.value)
         is CellmataParser.FloatLiteralContext -> visitExpr(node.value)
         is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
