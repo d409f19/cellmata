@@ -24,7 +24,7 @@ world_cellsize
 world_cellsize_value : integer_literal ;
 
 // State
-state_decl : STMT_STATE state_ident state_rgb code_block ;
+state_decl : STMT_STATE state_ident (SQ_BRACKET_START integer_literal SQ_BRACKET_END)? state_rgb code_block ;
 state_ident : IDENT ;
 state_rgb : PAREN_START integer_literal LIST_SEP integer_literal LIST_SEP integer_literal PAREN_END ;
 
@@ -148,6 +148,7 @@ expr_11
     : literal # literalExpr
     | var_ident # varExpr
     | func # funcExpr
+    | '#' # stateIndexExpr
     ;
 
 // Functions
