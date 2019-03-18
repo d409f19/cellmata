@@ -1,5 +1,6 @@
 package dk.aau.cs.d409f19.cellumata.walkers
 
+import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.*
 
 open class ParsingException(msg: String = ""): Exception(msg)
