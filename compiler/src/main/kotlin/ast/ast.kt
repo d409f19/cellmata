@@ -124,12 +124,12 @@ data class NeighbourhoodDecl(
     var coords: List<Coordinate> = emptyList()
 ) : Decl()
 
-data class FunctionArgs(val ident: String, val type: String)
+data class FunctionArgs(val ident: String, val type: String): AST()
 
 data class FuncDecl(
     val ctx: CellmataParser.Func_declContext,
     var ident: String = MAGIC_UNDEFINED_STRING,
-    val args: List<FunctionArgs> = emptyList(),
+    var args: List<FunctionArgs> = emptyList(),
     val body: List<Stmt> = emptyList(),
     var returnType: String = MAGIC_UNDEFINED_STRING
 ) : Decl()
