@@ -3,7 +3,6 @@ package dk.aau.cs.d409f19.cellumata.ast
 import cs.aau.dk.d409f19.antlr.CellmataParser
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
-import kotlin.streams.toList
 
 private fun visitExpr(node: ParseTree): Expr {
     return when (node) {
@@ -101,30 +100,37 @@ private fun visitExpr(node: ParseTree): Expr {
             value = visitExpr(node.value)
         )
         is CellmataParser.ArrayLookupExprContext -> ArrayLookupExpr(
-            ctx = node
+            ctx = node,
+            index = visitExpr(node.index)
         )
         is CellmataParser.ParenExprContext -> ParenExpr(
             ctx = node,
             expr = visitExpr(node.expr())
         ) // ToDo: Should we flatten this?
-        is CellmataParser.LiteralExprContext -> when (node.literal()) {
-            is CellmataParser.NumberLiteralContext -> IntLiteral(ctx = node)
-            is CellmataParser.BoolLiteralContext -> BoolLiteral(ctx = node)
-            else -> throw AssertionError()
-        }
+        is CellmataParser.LiteralExprContext -> visitExpr(node.value)
         is CellmataParser.VarExprContext -> VarExpr(
             ctx = node,
             ident = node.ident.text
         )
         is CellmataParser.FuncExprContext -> FuncExpr(
-            ctx = node.value,
+            ctx = node,
             args = node.value.expr().map { visitExpr(it) }
         )
         is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = node)
         is CellmataParser.ArrayValueExprContext -> ArrayBodyExpr(
-            ctx = node.array_value(),
+            ctx = node,
             values = node.array_value().array_body().expr().map(::visitExpr)
         )
+        is CellmataParser.NumberLiteralContext -> visitExpr(node.value)
+        is CellmataParser.BoolLiteralContext -> visitExpr(node.value)
+        is CellmataParser.Bool_literalContext -> BoolLiteral(ctx = node)
+        is CellmataParser.Number_literalContext -> visitExpr(node.getChild(0)) // ToDo is this correct?
+        is CellmataParser.IntegerLiteralContext -> visitExpr(node.value)
+        is CellmataParser.FloatLiteralContext -> visitExpr(node.value)
+        is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
+        is CellmataParser.Float_literalContext -> FloatLiteral(ctx = node)
+        is CellmataParser.Modifiable_identContext -> visitExpr(node.getChild(0))
+        is CellmataParser.Var_identContext -> VarExpr(ctx = node)
         else -> throw AssertionError("Unexpected tree node")
     }
 }
@@ -144,23 +150,23 @@ private fun visitStmt(node: ParseTree): Stmt {
                 ),
                 node.if_stmt_elif().map { // Elif clauses
                     ConditionalBlock(
-                        ctx = node,
+                        ctx = it,
                         expr = visitExpr(it.if_stmt_block().if_stmt_condition().expr()),
                         block = visitCodeBlock(it.if_stmt_block().code_block())
                     )
                 }
             ).flatten(),
             elseBlock = when (node.if_stmt_else()) {
-                // null???
+                null -> null
                 is CellmataParser.If_stmt_elseContext -> visitCodeBlock(node.if_stmt_else().code_block())
                 else -> throw AssertionError("Unexpected tree node")
             }
         )
-        is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = node)
-        is CellmataParser.PreIncStmtContext -> PreIncStmt(ctx = node)
-        is CellmataParser.PostIncStmtContext -> PostIncStmt(ctx = node)
-        is CellmataParser.PreDecStmtContext -> PreDecStmt(ctx = node)
-        is CellmataParser.PostDecStmtContext -> PostDecStmt(ctx = node)
+        is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = node, state = visitExpr(node.state))
+        is CellmataParser.PreIncStmtContext -> PreIncStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
+        is CellmataParser.PostIncStmtContext -> PostIncStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
+        is CellmataParser.PreDecStmtContext -> PreDecStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
+        is CellmataParser.PostDecStmtContext -> PostDecStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
         is CellmataParser.StmtContext -> visitStmt(node.getChild(0))
         is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = node, value = visitExpr(node.expr()))
         else -> throw AssertionError("Unexpected tree node")
@@ -192,8 +198,6 @@ private fun visitDecl(node: ParseTree): Decl {
 fun visitCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
     return block.children
         .filter { it !is TerminalNode } // Remove terminals
-        .filter { !(it is CellmataParser.StmtContext && it.childCount == 0) }
-        .filter { !(it is CellmataParser.StmtContext && it.getChild(0) is TerminalNode ) }
         .map { visitStmt(it) }
 }
 

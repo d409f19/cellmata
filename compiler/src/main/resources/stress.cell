@@ -52,8 +52,8 @@ state s1 (255, 0, 12) {
 
 
     if (true) {
-        ;
     } elif (true) {
+        let scoped = f;
     } else {
         become s1;
     }

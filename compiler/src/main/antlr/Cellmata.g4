@@ -7,8 +7,6 @@ const_decl : STMT_CONST const_ident ASSIGN expr END ;
 const_ident : IDENT ;
 
 // World
-world_dcl : STMT_WORLD BLOCK_START world_size world_tickrate? world_cellsize? BLOCK_END ;
-world_size_dim : integer_literal SQ_BRACKET_START world_size_dim_finite SQ_BRACKET_END # dimFinite ;
 world_dcl : STMT_WORLD BLOCK_START size=world_size tickrate=world_tickrate? cellsize=world_cellsize? BLOCK_END ;
 world_size : WORLD_SIZE ASSIGN width=world_size_dim (LIST_SEP height=world_size_dim)?;
 world_size_dim : integer_literal SQ_BRACKET_START world_size_dim_finite SQ_BRACKET_END # dimFinite ;
@@ -28,11 +26,11 @@ world_cellsize_value : integer_literal ;
 // State
 state_decl : STMT_STATE state_ident (SQ_BRACKET_START integer_literal SQ_BRACKET_END)? state_rgb code_block ;
 state_ident : IDENT ;
-state_rgb : PAREN_START integer_literal LIST_SEP integer_literal LIST_SEP integer_literal PAREN_END ;
+state_rgb : PAREN_START red=integer_literal LIST_SEP green=integer_literal LIST_SEP blue=integer_literal PAREN_END ;
 
 // Code
 code_block : BLOCK_START stmt* BLOCK_END ;
-stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt | return_stmt | END) ;
+stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt | return_stmt) ;
 
 assign_stmt : STMT_LET? (var_ident | array_lookup) ASSIGN expr END ;
 if_stmt : if_stmt_if if_stmt_elif* if_stmt_else? ;
@@ -41,7 +39,7 @@ if_stmt_elif: STMT_ELSE_IF if_stmt_block ;
 if_stmt_if : STMT_IF if_stmt_block ;
 if_stmt_block : PAREN_START if_stmt_condition PAREN_END code_block ;
 if_stmt_else : STMT_ELSE code_block ;
-become_stmt : STMT_BECOME state_ident END ;
+become_stmt : STMT_BECOME state=expr END ;
 increment_stmt
     : modifiable_ident OP_INCREMENT END # postIncStmt
     | OP_INCREMENT modifiable_ident END # preIncStmt
@@ -83,16 +81,16 @@ array_lookup: var_ident SQ_BRACKET_START expr SQ_BRACKET_END ;
 
 // Literals
 literal
-    : number_literal # numberLiteral
-    | bool_literal # boolLiteral
+    : value=number_literal # numberLiteral
+    | value=bool_literal # boolLiteral
     ;
 number_literal
-    : integer_literal
-    | float_literal
+    : value=integer_literal # integerLiteral
+    | value=float_literal # floatLiteral
     ;
 
-integer_literal : DIGITS # digitLiteral ;
-float_literal : FLOAT # floatLiteral ;
+integer_literal : value=DIGITS ;
+float_literal : value=FLOAT ;
 
 bool_literal
     : LITERAL_TRUE # trueLiteral
@@ -120,7 +118,7 @@ expr : left=expr OP_OR right=expr # orExpr
     | OP_NOT value=expr # inverseExpr
     | value=expr OP_INCREMENT # postIncExpr
     | value=expr OP_DECREMENT # postDecExpr
-    | value=expr SQ_BRACKET_START DIGITS SQ_BRACKET_END # arrayLookupExpr
+    | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
     | value=array_value # arrayValueExpr
     | PAREN_START value=expr PAREN_END # parenExpr
     | value=literal # literalExpr
