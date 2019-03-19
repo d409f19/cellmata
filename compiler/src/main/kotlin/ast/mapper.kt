@@ -1,6 +1,6 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
-import cs.aau.dk.d409f19.antlr.CellmataParser
+import dk.aau.cs.d409f19.antlr.CellmataParser
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 

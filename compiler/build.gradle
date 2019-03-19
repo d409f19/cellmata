@@ -28,8 +28,8 @@ compileTestKotlin {
 
 generateGrammarSource {
     maxHeapSize = "64m"
-    arguments += ["-visitor", "-long-messages", "-package", "cs.aau.dk.d409f19.antlr"]
-    outputDirectory = file("${project.buildDir}/generated-src/antlr/main/cs/aau/dk/d409f19/antlr")
+    arguments += ["-visitor", "-long-messages", "-package", "dk.aau.cs.d409f19.antlr"]
+    outputDirectory = file("${project.buildDir}/generated-src/antlr/main/dk/aau/cs/d409f19/antlr")
 }
 
 test {
