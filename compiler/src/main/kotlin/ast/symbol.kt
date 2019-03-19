@@ -7,7 +7,32 @@ data class Table(
     val tables: MutableList<Table> = mutableListOf()
 )
 
-class SymbolRedefinitionException(val ident: String): Exception("\"$ident\" is already defined")
+class SymbolRedefinitionException(val ident: String) : Exception("\"$ident\" is already defined")
+
+private val RESERVED_SYMBOLS: List<String> = listOf(
+    "world",
+    "neighbourhood",
+    "state",
+    "function",
+    "int",
+    "float",
+    "bool",
+    "become",
+    "return",
+    "if",
+    "elif",
+    "else",
+    "let",
+    "for",
+    "continue",
+    "break",
+    "rand",
+    "abs",
+    "floor",
+    "ceil",
+    "sqrt",
+    "pow"
+)
 
 class SymbolTable {
     private val root: Table = Table()
@@ -20,7 +45,11 @@ class SymbolTable {
     fun insertSymbol(ident: String, node: AST) {
         val table = scopeStack.peek()
 
-        if(table.symbols.containsKey(ident)) {
+        if (RESERVED_SYMBOLS.contains(ident)) {
+            throw SymbolRedefinitionException(ident = ident)
+        }
+
+        if (table.symbols.containsKey(ident)) {
             throw SymbolRedefinitionException(ident = ident)
         }
 
