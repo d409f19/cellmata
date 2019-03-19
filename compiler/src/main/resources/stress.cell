@@ -1,0 +1,85 @@
+world {
+    size = 10 [wrap], 999 [edge=foo]
+    tickrate = 120
+    cellsize = 5
+}
+
+const bar = false;
+
+const arr1 = [3]boolean{ true, false, true };
+const arr2 = [2]boolean{ true, true };
+const arr3 = []boolean{ false, true };
+
+const t1 = [2][2]boolean{};
+const t2 = [2]boolean{};
+const t3 = [2]number{};
+const t4 = [2]float{};
+const t5 = [2]neighbourhood{};
+const t6 = [2]state{};
+
+state s1 (255, 0, 12) {
+    let a = true || false;
+    let b = true && false;
+    let c = true == false;
+    let d = true != false;
+    let e = 2 > 3.0;
+    let f = 2 >= 3.0;
+    let g = 2 < 3.0;
+    let h = 2 <= 3.0;
+    let i = 2 + 3.0;
+    let j = 2 - 3.0;
+    let k = 2 * 3.0;
+    let l = 2 / 3.0;
+    let m = 2 % 3.0;
+    let n = ++2;
+    let o = --2;
+    let p = 2++;
+    let p = 2--;
+    let q = +n;
+    let r = -n;
+    let s = !true;
+    let t = baz[0];
+    //let u = { 1, 2, 3 };
+    let v = 2 * (123 + 321);
+    let w = bar;
+    let x = baz(132);
+    let y = #;
+
+    let b = true;
+    let b = false;
+    let i = 123;
+    let f = 12.3;
+
+
+    if (true) {
+    } elif (true) {
+        let scoped = f;
+    } else {
+        become s1;
+    }
+
+    ++a;
+    a++;
+    --a;
+    a--;
+
+    become s1;
+
+    return a;
+}
+
+function f1(number a, number b) boolean {
+    return a + b;
+}
+
+neighbourhood n1 {
+    (1,2), (3,4)
+}
+
+neighbourhood n2 {
+    (1,2)
+}
+
+neighbourhood n3 {
+    (1)
+}

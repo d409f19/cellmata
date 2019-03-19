@@ -3,16 +3,16 @@ grammar Cellmata;
 start : world_dcl body EOF;
 
 body : (state_decl | neighbourhood_decl | const_decl | func_decl)*;
-const_decl : STMT_CONST const_ident ASSIGN expr ;
+const_decl : STMT_CONST const_ident ASSIGN expr END ;
 const_ident : IDENT ;
 
 // World
-world_dcl : STMT_WORLD BLOCK_START world_size world_tickrate? world_cellsize? BLOCK_END ;
-world_size : WORLD_SIZE ASSIGN world_size_dim (LIST_SEP world_size_dim)?;
+world_dcl : STMT_WORLD BLOCK_START size=world_size tickrate=world_tickrate? cellsize=world_cellsize? BLOCK_END ;
+world_size : WORLD_SIZE ASSIGN width=world_size_dim (LIST_SEP height=world_size_dim)?;
 world_size_dim : integer_literal SQ_BRACKET_START world_size_dim_finite SQ_BRACKET_END # dimFinite ;
 world_size_dim_finite
     : WORLD_WRAP # dimFiniteWrapping
-    | WORLD_EDGE ASSIGN IDENT # dimFiniteEdge
+    | WORLD_EDGE ASSIGN state=IDENT # dimFiniteEdge
     ;
 world_tickrate
             : WORLD_TICKRATE ASSIGN world_tickrate_value # tickrate
@@ -26,15 +26,20 @@ world_cellsize_value : integer_literal ;
 // State
 state_decl : STMT_STATE state_ident (SQ_BRACKET_START integer_literal SQ_BRACKET_END)? state_rgb code_block ;
 state_ident : IDENT ;
-state_rgb : PAREN_START integer_literal LIST_SEP integer_literal LIST_SEP integer_literal PAREN_END ;
+state_rgb : PAREN_START red=integer_literal LIST_SEP green=integer_literal LIST_SEP blue=integer_literal PAREN_END ;
 
 // Code
 code_block : BLOCK_START stmt* BLOCK_END ;
 stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt | return_stmt) ;
 
 assign_stmt : STMT_LET? (var_ident | array_lookup) ASSIGN expr END ;
-if_stmt : STMT_IF PAREN_START expr PAREN_END code_block (STMT_ELSE_IF PAREN_START expr PAREN_END code_block)* (STMT_ELSE code_block)? ;
-become_stmt : STMT_BECOME state_ident END ;
+if_stmt : if_stmt_if if_stmt_elif* if_stmt_else? ;
+if_stmt_condition: expr ;
+if_stmt_elif: STMT_ELSE_IF if_stmt_block ;
+if_stmt_if : STMT_IF if_stmt_block ;
+if_stmt_block : PAREN_START if_stmt_condition PAREN_END code_block ;
+if_stmt_else : STMT_ELSE code_block ;
+become_stmt : STMT_BECOME state=expr END ;
 increment_stmt
     : modifiable_ident OP_INCREMENT END # postIncStmt
     | OP_INCREMENT modifiable_ident END # preIncStmt
@@ -76,16 +81,16 @@ array_lookup: var_ident SQ_BRACKET_START expr SQ_BRACKET_END ;
 
 // Literals
 literal
-    : number_literal # numberLiteral
-    | bool_literal # boolLiteral
+    : value=number_literal # numberLiteral
+    | value=bool_literal # boolLiteral
     ;
 number_literal
-    : integer_literal
-    | float_literal
+    : value=integer_literal # integerLiteral
+    | value=float_literal # floatLiteral
     ;
 
-integer_literal : DIGITS # digitLiteral ;
-float_literal : FLOAT # floatLiteral ;
+integer_literal : value=DIGITS ;
+float_literal : value=FLOAT ;
 
 bool_literal
     : LITERAL_TRUE # trueLiteral
@@ -93,37 +98,37 @@ bool_literal
     ;
 
 // Math
-expr : expr OP_OR expr # orExpr
-    | expr OP_AND expr # andExpr
-    | expr OP_COMPARE_NOT expr # notEqExpr
-    | expr OP_COMPARE expr # eqExpr
-    | expr OP_MORE expr # moreExpr
-    | expr OP_MORE_EQ expr # moreEqExpr
-    | expr OP_LESS expr # lessExpr
-    | expr OP_LESS_EQ expr # lessEqExpr
-    | expr OP_PLUS expr # additionExpr
-    | expr OP_MINUS expr # substractionExpr
-    | expr OP_MULTIPLY expr # multiplictionExpr
-    | expr OP_DIVIDE expr # divisionExpr
-    | expr OP_MODULO expr # moduloExpr
-    | OP_INCREMENT expr # preIncExpr
-    | OP_DECREMENT expr # preDecExpr
-    | OP_PLUS expr # positiveExpr
-    | OP_MINUS expr # negativeExpr
-    | OP_NOT expr # inverseExpr
-    | expr OP_INCREMENT # postIncExpr
-    | expr OP_DECREMENT # postDecExpr
-    | expr SQ_BRACKET_START expr SQ_BRACKET_END # arrayLookupExpr
-    | array_value # arrayValueExpr
-    | PAREN_START expr PAREN_END # parenExpr
-    | literal # literalExpr
-    | var_ident # varExpr
-    | func # funcExpr
+expr : left=expr OP_OR right=expr # orExpr
+    | left=expr OP_AND right=expr # andExpr
+    | left=expr OP_COMPARE_NOT right=expr # notEqExpr
+    | left=expr OP_COMPARE right=expr # eqExpr
+    | left=expr OP_MORE right=expr # moreExpr
+    | left=expr OP_MORE_EQ right=expr # moreEqExpr
+    | left=expr OP_LESS right=expr # lessExpr
+    | left=expr OP_LESS_EQ right=expr # lessEqExpr
+    | left=expr OP_PLUS right=expr # additionExpr
+    | left=expr OP_MINUS right=expr # substractionExpr
+    | left=expr OP_MULTIPLY right=expr # multiplictionExpr
+    | left=expr OP_DIVIDE right=expr # divisionExpr
+    | left=expr OP_MODULO right=expr # moduloExpr
+    | OP_INCREMENT value=expr # preIncExpr
+    | OP_DECREMENT value=expr # preDecExpr
+    | OP_PLUS value=expr # positiveExpr
+    | OP_MINUS value=expr # negativeExpr
+    | OP_NOT value=expr # inverseExpr
+    | value=expr OP_INCREMENT # postIncExpr
+    | value=expr OP_DECREMENT # postDecExpr
+    | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
+    | value=array_value # arrayValueExpr
+    | PAREN_START value=expr PAREN_END # parenExpr
+    | value=literal # literalExpr
+    | ident=var_ident # varExpr
+    | value=func # funcExpr
     | '#' # stateIndexExpr
     ;
 
 // Functions
-func : func_ident PAREN_START (expr (LIST_SEP expr)* )? PAREN_END ;
+func : ident=func_ident PAREN_START (expr (LIST_SEP expr)* )? PAREN_END ;
 func_ident : IDENT ;
 func_decl : STMT_FUNC func_ident PAREN_START func_decl_arg (LIST_SEP func_decl_arg)* PAREN_END type_ident code_block ;
 func_decl_arg : type_ident IDENT ;
