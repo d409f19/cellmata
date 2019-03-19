@@ -3,9 +3,9 @@ world {
     tickrate = 17
     cellsize=19
 }
-
-const baz = [2]bool{true, false} 
-
+ 
+const baz = [2]bool{true, false};
+ 
 neighbourhood foobar {
     (-2, 2), (-1, 1), (0, 2), (1, 2), (2, 2),
     (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1),
@@ -13,22 +13,22 @@ neighbourhood foobar {
     (-2,-1), (-1,-1), (0,-1), (1,-1), (2,-1),
     (-2,-2), (-1,-2), (0,-2), (1,-2), (2,-2)
 }
-
-/* This state has a 
+ 
+/* This state has a
 long, multi-line
 comment */
 state foo (255, 0, 0) {
-    let a = (not (2 - 3) / (4)) is 2;
-
+    let a = (not (2 - 3) / (4)) == 2;
+ 
     if (23) {
         let b = 3;
-        if (not b) {
+        if (!b) {
             become foo;
         }
     }
     become bar;
 }
-
+ 
 state bar (255,255,255) {
     // multiple stmts in if-stmt code-block
     if (count(foobar, foo) >= 2) {
@@ -40,10 +40,9 @@ state bar (255,255,255) {
         become foo;
     }
 }
-
+ 
 function func (neighbourhood foo, state bar) state {
     if (func(foobar)) {
         return bar;
     }
 }
-
