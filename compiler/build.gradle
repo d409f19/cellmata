@@ -16,9 +16,12 @@ dependencies {
 }
 
 compileKotlin {
+    dependsOn generateGrammarSource
     kotlinOptions.jvmTarget = "1.8"
 }
+
 compileTestKotlin {
+    dependsOn generateGrammarSource
     kotlinOptions.jvmTarget = "1.8"
 }
 
