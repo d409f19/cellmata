@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:11-jdk
+
+    working_directory: ~/repo/compiler
+
+    environment:
+      TERM: dumb
+
+    steps:
+      - checkout:
+          path: ~/repo
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: gradle dependencies
+
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+
+      - run: gradle test
+
+      - run: gradle jar
+
+      - store_artifacts:
+          path: ./build/libs/
+
+      - store_test_results:
+          path: ./build/test-results/test/
