@@ -1,6 +1,6 @@
 package dk.aau.cs.d409f19.cellumata
 
-import cs.aau.dk.d409f19.antlr.*
+import dk.aau.cs.d409f19.antlr.*
 import dk.aau.cs.d409f19.cellumata.ast.visit
 import org.antlr.v4.runtime.ANTLRFileStream
 import org.antlr.v4.runtime.CommonTokenStream

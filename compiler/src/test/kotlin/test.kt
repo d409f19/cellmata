@@ -1,7 +1,7 @@
-package cs.aau.dk.d409f19
+package dk.aau.cs.d409f19
 
-import cs.aau.dk.d409f19.antlr.CellmataLexer
-import cs.aau.dk.d409f19.antlr.CellmataParser
+import dk.aau.cs.d409f19.antlr.CellmataLexer
+import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.visit
 import org.antlr.v4.runtime.ANTLRFileStream
 import org.antlr.v4.runtime.CommonTokenStream
