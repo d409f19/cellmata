@@ -13,6 +13,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     antlr "org.antlr:antlr4:4.7.2"
+    testImplementation("org.junit.jupiter:junit-jupiter:5.4.1")
 }
 
 compileKotlin {
@@ -29,6 +30,13 @@ generateGrammarSource {
     maxHeapSize = "64m"
     arguments += ["-visitor", "-long-messages", "-package", "cs.aau.dk.d409f19.antlr"]
     outputDirectory = file("${project.buildDir}/generated-src/antlr/main/cs/aau/dk/d409f19/antlr")
+}
+
+test {
+	useJUnitPlatform()
+	testLogging {
+		events "passed", "skipped", "failed"
+	}
 }
 
 sourceSets {
