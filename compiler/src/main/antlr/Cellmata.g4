@@ -89,8 +89,8 @@ number_literal
     | value=float_literal # floatLiteral
     ;
 
-integer_literal : value=DIGITS ;
-float_literal : value=FLOAT ;
+integer_literal : '-'? value=DIGITS ;
+float_literal : '-'? value=FLOAT ;
 
 bool_literal
     : LITERAL_TRUE # trueLiteral
@@ -134,7 +134,7 @@ func_decl : STMT_FUNC func_ident PAREN_START func_decl_arg (LIST_SEP func_decl_a
 func_decl_arg : type_ident IDENT ;
 
 // Tokens
-DIGITS : '-'? [1-9][0-9]* | [0] ;
+DIGITS : [1-9][0-9]* | [0] ;
 FLOAT : DIGITS '.' [0-9]* ;
 ASSIGN : '=' ;
 LIST_SEP : ',' ;
