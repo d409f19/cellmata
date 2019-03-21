@@ -30,9 +30,10 @@ state_rgb : PAREN_START red=integer_literal LIST_SEP green=integer_literal LIST_
 
 // Code
 code_block : BLOCK_START stmt* BLOCK_END ;
-stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt | return_stmt) ;
+stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt | return_stmt | for_stmt) ;
 
-assign_stmt : STMT_LET? (var_ident | array_lookup) ASSIGN expr END ;
+assign_stmt : assignment END ;
+assignment : STMT_LET? (var_ident | array_lookup) ASSIGN expr ;
 if_stmt : if_stmt_if if_stmt_elif* if_stmt_else? ;
 if_stmt_condition: expr ;
 if_stmt_elif: STMT_ELSE_IF if_stmt_block ;
@@ -49,6 +50,12 @@ decrement_stmt
     | OP_DECREMENT modifiable_ident END # preDecStmt
     ;
 return_stmt : STMT_RETURN expr END ;
+
+//For-loop
+for_stmt : STMT_FOR PAREN_START for_variable? END for_condition END for_increment? PAREN_END code_block ;
+for_variable : assignment ;
+for_condition : expr ;
+for_increment : expr | assignment ;
 
 // Neighbourhood
 neighbourhood_decl : STMT_NEIGHBOUR neighbourhood_ident neighbourhood_code ;
@@ -184,6 +191,7 @@ STMT_ELSE_IF : 'elif' ;
 STMT_ELSE : 'else' ;
 STMT_FUNC : 'function' ;
 STMT_RETURN : 'return' ;
+STMT_FOR : 'for' ;
 
 TYPE_NUMBER : 'number' ;
 TYPE_BOOLEAN : 'boolean' | 'bool' ;
