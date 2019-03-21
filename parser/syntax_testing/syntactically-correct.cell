@@ -33,6 +33,8 @@ state bar (255,255,255) {
     // multiple stmts in if-stmt code-block
     if (count(foobar, foo) >= 2) {
         let x = 3.33;
+        let y = -(-5.5+5);
+        let z = -5 - -5;
         become bar;
     }
     // single stmt after if-stmt
@@ -46,3 +48,4 @@ function func (neighbourhood foo, state bar) state {
         return bar;
     }
 }
+

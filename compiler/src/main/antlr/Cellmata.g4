@@ -89,8 +89,8 @@ number_literal
     | value=float_literal # floatLiteral
     ;
 
-integer_literal : value=DIGITS ;
-float_literal : value=FLOAT ;
+integer_literal : '-'? value=DIGITS ;
+float_literal : '-'? value=FLOAT ;
 
 bool_literal
     : LITERAL_TRUE # trueLiteral
@@ -98,33 +98,33 @@ bool_literal
     ;
 
 // Math
-expr : left=expr OP_OR right=expr # orExpr
-    | left=expr OP_AND right=expr # andExpr
-    | left=expr OP_COMPARE_NOT right=expr # notEqExpr
-    | left=expr OP_COMPARE right=expr # eqExpr
-    | left=expr OP_MORE right=expr # moreExpr
-    | left=expr OP_MORE_EQ right=expr # moreEqExpr
-    | left=expr OP_LESS right=expr # lessExpr
-    | left=expr OP_LESS_EQ right=expr # lessEqExpr
-    | left=expr OP_PLUS right=expr # additionExpr
-    | left=expr OP_MINUS right=expr # substractionExpr
-    | left=expr OP_MULTIPLY right=expr # multiplictionExpr
-    | left=expr OP_DIVIDE right=expr # divisionExpr
-    | left=expr OP_MODULO right=expr # moduloExpr
-    | OP_INCREMENT value=expr # preIncExpr
-    | OP_DECREMENT value=expr # preDecExpr
-    | OP_PLUS value=expr # positiveExpr
-    | OP_MINUS value=expr # negativeExpr
-    | OP_NOT value=expr # inverseExpr
-    | value=expr OP_INCREMENT # postIncExpr
-    | value=expr OP_DECREMENT # postDecExpr
-    | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
-    | value=array_value # arrayValueExpr
-    | PAREN_START value=expr PAREN_END # parenExpr
-    | value=literal # literalExpr
-    | ident=var_ident # varExpr
+expr : '#' # stateIndexExpr
     | value=func # funcExpr
-    | '#' # stateIndexExpr
+    | ident=var_ident # varExpr
+    | value=literal # literalExpr
+    | PAREN_START value=expr PAREN_END # parenExpr
+    | value=array_value # arrayValueExpr
+    | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
+    | value=expr OP_DECREMENT # postDecExpr
+    | value=expr OP_INCREMENT # postIncExpr
+    | OP_NOT value=expr # inverseExpr
+    | OP_MINUS value=expr # negativeExpr
+    | OP_PLUS value=expr # positiveExpr
+    | OP_DECREMENT value=expr # preDecExpr
+    | OP_INCREMENT value=expr # preIncExpr
+    | left=expr OP_MODULO right=expr # moduloExpr
+    | left=expr OP_DIVIDE right=expr # divisionExpr
+    | left=expr OP_MULTIPLY right=expr # multiplictionExpr
+    | left=expr OP_MINUS right=expr # substractionExpr
+    | left=expr OP_PLUS right=expr # additionExpr
+    | left=expr OP_LESS_EQ right=expr # lessEqExpr
+    | left=expr OP_LESS right=expr # lessExpr
+    | left=expr OP_MORE_EQ right=expr # moreEqExpr
+    | left=expr OP_MORE right=expr # moreExpr
+    | left=expr OP_COMPARE right=expr # eqExpr
+    | left=expr OP_COMPARE_NOT right=expr # notEqExpr
+    | left=expr OP_AND right=expr # andExpr
+    | left=expr OP_OR right=expr # orExpr
     ;
 
 // Functions
@@ -134,7 +134,7 @@ func_decl : STMT_FUNC func_ident PAREN_START func_decl_arg (LIST_SEP func_decl_a
 func_decl_arg : type_ident IDENT ;
 
 // Tokens
-DIGITS : '-'? [1-9][0-9]* | [0] ;
+DIGITS : [1-9][0-9]* | [0] ;
 FLOAT : DIGITS '.' [0-9]* ;
 ASSIGN : '=' ;
 LIST_SEP : ',' ;
