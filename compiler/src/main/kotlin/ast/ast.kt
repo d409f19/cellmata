@@ -134,11 +134,13 @@ data class FuncDecl(
  */
 sealed class Stmt : AST()
 
-data class AssignStmt(val ctx: CellmataParser.Assign_stmtContext, var ident: String = MAGIC_UNDEFINED_STRING, val expr: Expr) : Stmt()
+data class AssignStmt(val ctx: CellmataParser.AssignmentContext, var ident: String = MAGIC_UNDEFINED_STRING, val expr: Expr) : Stmt()
 
 data class ConditionalBlock(val ctx: ParseTree, val expr: Expr, val block: List<Stmt>)
 
 data class IfStmt(val ctx: CellmataParser.If_stmtContext, val conditionals: List<ConditionalBlock>, val elseBlock: List<Stmt>?) : Stmt()
+
+data class ForStmt(val ctx: CellmataParser.For_stmtContext, val initPart: AssignStmt, val condition: Expr, val postIterationPart: AssignStmt) : Stmt()
 
 data class BecomeStmt(val ctx: CellmataParser.Become_stmtContext, val state: Expr) : Stmt()
 

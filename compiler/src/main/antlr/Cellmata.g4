@@ -52,10 +52,10 @@ decrement_stmt
 return_stmt : STMT_RETURN expr END ;
 
 //For-loop
-for_stmt : STMT_FOR PAREN_START for_variable? END for_condition END for_increment? PAREN_END code_block ;
-for_variable : assignment ;
+for_stmt : STMT_FOR PAREN_START for_init? END for_condition END for_post_iteration? PAREN_END code_block ;
+for_init : assignment ;
 for_condition : expr ;
-for_increment : expr | assignment ;
+for_post_iteration : assignment ;
 
 // Neighbourhood
 neighbourhood_decl : STMT_NEIGHBOUR neighbourhood_ident neighbourhood_code ;
