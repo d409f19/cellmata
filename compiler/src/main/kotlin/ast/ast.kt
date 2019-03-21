@@ -142,6 +142,10 @@ data class IfStmt(val ctx: CellmataParser.If_stmtContext, val conditionals: List
 
 data class ForStmt(val ctx: CellmataParser.For_stmtContext, val initPart: AssignStmt, val condition: Expr, val postIterationPart: AssignStmt) : Stmt()
 
+data class BreakStmt(val ctx: CellmataParser.Break_stmtContext) : Stmt()
+
+data class ContinueStmt(val ctx: CellmataParser.Continue_stmtContext) : Stmt()
+
 data class BecomeStmt(val ctx: CellmataParser.Become_stmtContext, val state: Expr) : Stmt()
 
 data class PreIncStmt(val ctx: CellmataParser.PreIncStmtContext, val variable: Expr) : Stmt()

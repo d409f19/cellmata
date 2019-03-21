@@ -170,6 +170,8 @@ private fun visitStmt(node: ParseTree): Stmt {
             condition = visitExpr(node.for_condition().expr()),
             postIterationPart = AssignStmt(node.for_post_iteration().assignment(), expr = visitExpr(node.for_post_iteration().assignment().expr()))
         )
+        is CellmataParser.Break_stmtContext -> BreakStmt(ctx = node)
+        is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = node)
         is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = node, state = visitExpr(node.state))
         is CellmataParser.PreIncStmtContext -> PreIncStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
         is CellmataParser.PostIncStmtContext -> PostIncStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
