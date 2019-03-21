@@ -119,7 +119,8 @@ private fun reduceExpr(node: ParseTree): Expr {
         is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = node)
         is CellmataParser.ArrayValueExprContext -> ArrayBodyExpr(
             ctx = node,
-            values = node.array_value().array_body().expr().map(::reduceExpr)
+            values = node.array_value().array_body().expr().map(::reduceExpr),
+            declaredType = typeFromCtx(node.value.type_ident())
         )
         is CellmataParser.NumberLiteralContext -> reduceExpr(node.value)
         is CellmataParser.BoolLiteralContext -> reduceExpr(node.value)
@@ -138,7 +139,10 @@ private fun reduceExpr(node: ParseTree): Expr {
 private fun reduceStmt(node: ParseTree): Stmt {
     return when (node) {
         is CellmataParser.Assign_stmtContext -> reduceStmt(node.assignment())
-        is CellmataParser.AssignmentContext -> AssignStmt(ctx = node, expr = reduceExpr(node.expr()))
+        is CellmataParser.AssignmentContext -> AssignStmt(
+            ctx = node,
+            expr = reduceExpr(node.expr())
+        )
         is CellmataParser.If_stmtContext -> IfStmt(
             ctx = node,
             conditionals = listOf( // Create list of list of ConditionalBlocks, then flatten to list of ConditionalBlocks
@@ -184,7 +188,10 @@ private fun reduceStmt(node: ParseTree): Stmt {
 
 private fun reduceDecl(node: ParseTree): Decl {
     return when (node) {
-        is CellmataParser.Const_declContext -> ConstDecl(ctx = node, expr = reduceExpr(node.expr()))
+        is CellmataParser.Const_declContext -> ConstDecl(
+            ctx = node,
+            expr = reduceExpr(node.expr())
+        )
         is CellmataParser.State_declContext -> StateDecl(
             ctx = node,
             body = reduceCodeBlock(node.children // Get the body/code block

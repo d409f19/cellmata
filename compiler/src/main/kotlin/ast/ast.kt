@@ -22,6 +22,11 @@ enum class WorldType {
     UNDEFINED
 }
 
+interface TypedNode {
+    fun getType(): Type?
+    fun setType(type: Type?)
+}
+
 data class WorldDimension(val size: Int = -1, val type: WorldType = WorldType.UNDEFINED)
 
 data class WorldNode(
@@ -34,7 +39,21 @@ data class WorldNode(
 /*
  * Expressions
  */
-abstract class Expr(var type: Type = UncheckedType) : AST()
+abstract class Expr(type: Type? = UncheckedType) : AST(), TypedNode {
+    private var atype: Type?
+
+    init {
+        atype = type
+    }
+
+    override fun getType(): Type? {
+        return this.atype
+    }
+
+    override fun setType(type: Type?) {
+        this.atype = type
+    }
+}
 
 data class OrExpr(val ctx: CellmataParser.OrExprContext, val left: Expr, val right: Expr) : Expr()
 
@@ -76,7 +95,7 @@ data class InverseExpr(val ctx: CellmataParser.InverseExprContext, val value: Ex
 
 data class ArrayLookupExpr(val ctx: CellmataParser.ArrayLookupExprContext, val ident: String = MAGIC_UNDEFINED_STRING, val index: Expr) : Expr()
 
-data class ArrayBodyExpr(val ctx: CellmataParser.ArrayValueExprContext, val values: List<Expr>) : Expr()
+data class ArrayBodyExpr(val ctx: CellmataParser.ArrayValueExprContext, val values: List<Expr>, val declaredType: Type? = UncheckedType) : Expr()
 
 data class ParenExpr(val ctx: CellmataParser.ParenExprContext, val expr: Expr) : Expr()
 
@@ -86,14 +105,14 @@ data class ModuloExpr(val ctx: CellmataParser.ModuloExprContext, val left: Expr,
 
 data class FuncExpr(val ctx: CellmataParser.FuncExprContext, val args: List<Expr>, var ident: String = MAGIC_UNDEFINED_STRING) : Expr()
 
-data class StateIndexExpr(val ctx: CellmataParser.StateIndexExprContext) : Expr()
+data class StateIndexExpr(val ctx: CellmataParser.StateIndexExprContext) : Expr(type = IntegerType)
 
 // Literals
-data class IntLiteral(val ctx: CellmataParser.Integer_literalContext, var value: Int = -1) : Expr()
+data class IntLiteral(val ctx: CellmataParser.Integer_literalContext, var value: Int = -1) : Expr(type = IntegerType)
 
-data class BoolLiteral(val ctx: CellmataParser.Bool_literalContext, var value: Boolean = false) : Expr()
+data class BoolLiteral(val ctx: CellmataParser.Bool_literalContext, var value: Boolean = false) : Expr(type = BooleanType)
 
-data class FloatLiteral(val ctx: CellmataParser.Float_literalContext, var value: Float = 0.0F): Expr()
+data class FloatLiteral(val ctx: CellmataParser.Float_literalContext, var value: Float = 0.0F): Expr(type = FloatType)
 
 // Type conversion
 data class IntToFloatConversion(val expr: Expr) : Expr()
@@ -105,7 +124,12 @@ data class StateArrayToActualNeighbourhoodConversion(val expr: Expr) : Expr()
  */
 sealed class Decl : AST() // state, const, func
 
-data class ConstDecl(val ctx: CellmataParser.Const_declContext, var ident: String = MAGIC_UNDEFINED_STRING, val expr: Expr) : Decl()
+data class ConstDecl(
+    val ctx: CellmataParser.Const_declContext,
+    var ident: String = MAGIC_UNDEFINED_STRING,
+    val expr: Expr,
+    var type: Type? = UncheckedType
+) : Decl()
 
 data class StateDecl(
     val ctx: CellmataParser.State_declContext,
@@ -124,14 +148,22 @@ data class NeighbourhoodDecl(
     var coords: List<Coordinate> = emptyList()
 ) : Decl()
 
-data class FunctionArgs(val ident: String, val type: String): AST()
+data class FunctionArgs(val ident: String, private var type: Type?): AST(), TypedNode {
+    override fun getType(): Type? {
+        return type
+    }
+
+    override fun setType(type: Type?) {
+        this.type = type
+    }
+}
 
 data class FuncDecl(
     val ctx: CellmataParser.Func_declContext,
     var ident: String = MAGIC_UNDEFINED_STRING,
     var args: List<FunctionArgs> = emptyList(),
     val body: List<Stmt> = emptyList(),
-    var returnType: String = MAGIC_UNDEFINED_STRING
+    var returnType: Type = UncheckedType
 ) : Decl()
 
 /*
@@ -139,7 +171,20 @@ data class FuncDecl(
  */
 sealed class Stmt : AST()
 
-data class AssignStmt(val ctx: CellmataParser.AssignmentContext, var ident: String = MAGIC_UNDEFINED_STRING, val expr: Expr) : Stmt()
+data class AssignStmt(
+    val ctx: CellmataParser.AssignmentContext,
+    var ident: String = MAGIC_UNDEFINED_STRING,
+    val expr: Expr,
+    private var type: Type? = UncheckedType
+) : Stmt(), TypedNode {
+    override fun getType(): Type? {
+        return type
+    }
+
+    override fun setType(type: Type?) {
+        this.type = type
+    }
+}
 
 data class ConditionalBlock(val ctx: ParseTree, val expr: Expr, val block: List<Stmt>)
 

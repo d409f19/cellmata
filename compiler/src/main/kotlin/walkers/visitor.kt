@@ -87,7 +87,7 @@ interface ASTVisitor {
 
     fun visit(node: PreDecStmt)
 
-    fun visit(ndoe: PostDecStmt)
+    fun visit(node: PostDecStmt)
 
     fun visit(node: ReturnStmt)
     fun visit(node: AST)
@@ -341,11 +341,33 @@ abstract class BaseASTVisitor: ASTVisitor {
         // no-op
     }
 
-    override fun visit(ndoe: PostDecStmt) {
+    override fun visit(node: PostDecStmt) {
         // no-op
     }
 
     override fun visit(node: ReturnStmt) {
         visit(node.value)
+    }
+}
+
+open class ScopedASTVisitor(symbolTable: Table): BaseASTVisitor() {
+    protected val symbolTableSession = ViewingSymbolTableSession(symbolTable = symbolTable)
+
+    override fun visit(node: StateDecl) {
+        symbolTableSession.openScope()
+        super.visit(node)
+        symbolTableSession.closeScope()
+    }
+
+    override fun visit(node: FuncDecl) {
+        symbolTableSession.openScope()
+        super.visit(node)
+        symbolTableSession.closeScope()
+    }
+
+    override fun visit(node: ConditionalBlock) {
+        symbolTableSession.openScope()
+        super.visit(node)
+        symbolTableSession.closeScope()
     }
 }

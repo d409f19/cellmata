@@ -83,10 +83,10 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
     override fun visit(node: FuncDecl) {
         super.visit(node)
 
-        node.args = node.ctx.func_decl_arg().map { FunctionArgs(it.IDENT().text, it.type_ident().text) }.toList()
+        node.args = node.ctx.func_decl_arg().map { FunctionArgs(it.IDENT().text, typeFromCtx(it.type_ident())) }.toList()
 
         node.ident = node.ctx.func_ident().text
-        node.returnType = node.ctx.type_ident().text
+        node.returnType = typeFromCtx(node.ctx.type_ident())
     }
 
     override fun visit(node: StateDecl) {

@@ -12,7 +12,7 @@ const arr3 = []boolean{ false, true };
 
 const t1 = [2][2]boolean{};
 const t2 = [2]boolean{};
-const t3 = [2]number{};
+const t3 = [2]integer{};
 const t4 = [2]float{};
 const t5 = [2]neighbourhood{};
 const t6 = [2]state{};
@@ -69,7 +69,7 @@ state s1 (255, 0, 12) {
     return a;
 }
 
-function f1(number a, number b) boolean {
+function f1(integer a, integer b) boolean {
     return a + b;
 }
 
