@@ -128,6 +128,11 @@ data class ArrayLookupExpr(
     val index: Expr
 ) : Expr()
 
+/**
+ * @param ctx Node in the parse tree this node corresponds to.
+ * @param values Elements of the array.
+ * @param declaredType Type listed before the body/values of the array.
+ */
 data class ArrayBodyExpr(
     val ctx: CellmataParser.ArrayValueExprContext,
     val values: List<Expr>,
@@ -258,6 +263,11 @@ sealed class Stmt : AST()
 
 /**
  * Represent a variable declaration and/or assignment
+ *
+ * @param ctx The node in the parse tree that this node corresponds to
+ * @param ident Name of the variable
+ * @param expr New value of the variable
+ * @param type Type of the variable
  */
 data class AssignStmt(
     val ctx: CellmataParser.AssignmentContext,

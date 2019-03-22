@@ -4,7 +4,29 @@ import dk.aau.cs.d409f19.antlr.CellmataParser
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
+<<<<<<< HEAD:compiler/src/main/kotlin/ast/reduce.kt
 private fun reduceExpr(node: ParseTree): Expr {
+=======
+/*
+ * Parse Tree to Abstract Syntax Tree transformer/mapper
+ *
+ * This file implements a recursive traversal of the the parse tree,
+ * where each step of the traversal emit a node in the AST if that node
+ * in the parse tree is relevant to preserve.
+ * It's important to note that this mapper only handles the process of
+ * creating the tree part of the AST, it doesn't extract the values from
+ * the parse tree nodes, that is handled by ParseTreeValueWalker.
+ * This file handles the structure of the AST, and ParseTreeValueWalker
+ * handles the value of each node in the AST.
+ */
+
+/**
+ * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ *
+ * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
+ */
+private fun visitExpr(node: ParseTree): Expr {
+>>>>>>> Documented ast/mapper.kt:compiler/src/main/kotlin/ast/mapper.kt
     return when (node) {
         is CellmataParser.OrExprContext -> OrExpr(
             ctx = node,
@@ -114,7 +136,11 @@ private fun reduceExpr(node: ParseTree): Expr {
         )
         is CellmataParser.FuncExprContext -> FuncExpr(
             ctx = node,
+<<<<<<< HEAD:compiler/src/main/kotlin/ast/reduce.kt
             args = node.value.expr().map(::reduceExpr)
+=======
+            args = node.value.expr().map { visitExpr(it) } // Visit each argument
+>>>>>>> Documented ast/mapper.kt:compiler/src/main/kotlin/ast/mapper.kt
         )
         is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = node)
         is CellmataParser.ArrayValueExprContext -> ArrayBodyExpr(
@@ -122,8 +148,14 @@ private fun reduceExpr(node: ParseTree): Expr {
             values = node.array_value().array_body().expr().map(::reduceExpr),
             declaredType = typeFromCtx(node.value.type_ident())
         )
+<<<<<<< HEAD:compiler/src/main/kotlin/ast/reduce.kt
         is CellmataParser.NumberLiteralContext -> reduceExpr(node.value)
         is CellmataParser.BoolLiteralContext -> reduceExpr(node.value)
+=======
+        // Some literals has to be expanded before we reach the actual literal
+        is CellmataParser.NumberLiteralContext -> visitExpr(node.value)
+        is CellmataParser.BoolLiteralContext -> visitExpr(node.value)
+>>>>>>> Documented ast/mapper.kt:compiler/src/main/kotlin/ast/mapper.kt
         is CellmataParser.Bool_literalContext -> BoolLiteral(ctx = node)
         is CellmataParser.Number_literalContext -> reduceExpr(node.getChild(0))
         is CellmataParser.IntegerLiteralContext -> reduceExpr(node.value)
@@ -136,6 +168,11 @@ private fun reduceExpr(node: ParseTree): Expr {
     }
 }
 
+/**
+ * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ *
+ * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
+ */
 private fun reduceStmt(node: ParseTree): Stmt {
     return when (node) {
         is CellmataParser.Assign_stmtContext -> reduceStmt(node.assignment())
@@ -186,6 +223,11 @@ private fun reduceStmt(node: ParseTree): Stmt {
     }
 }
 
+/**
+ * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ *
+ * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
+ */
 private fun reduceDecl(node: ParseTree): Decl {
     return when (node) {
         is CellmataParser.Const_declContext -> ConstDecl(
@@ -211,12 +253,22 @@ private fun reduceDecl(node: ParseTree): Decl {
     }
 }
 
+/**
+ * Transform all statements in a code block into abstract syntax tree nodes.
+ *
+ * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
+ */
 fun reduceCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
     return block.children
         .filter { it !is TerminalNode } // Remove terminals
         .map { reduceStmt(it) }
 }
 
+/**
+ * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ *
+ * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
+ */
 fun reduce(node: ParseTree): AST {
     return when (node) {
         is CellmataParser.StartContext -> RootNode(
