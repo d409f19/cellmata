@@ -3,11 +3,20 @@ package dk.aau.cs.d409f19.cellumata.walkers
 import dk.aau.cs.d409f19.cellumata.ast.*
 import java.lang.Exception
 
+/**
+ * Thrown when a undefined symbol is encountered. This exception indicates there is a use-before-declaration scenario.
+ */
 class SymbolException(val ident: String) : Exception("\"$ident\" was used before it was declared")
 
+/**
+ * Walks through the abstract syntax tree, extracts symbols, and checks for use-before-declaration.
+ */
 class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
     private val symbolTableSession: CreatingSymbolTableSession = CreatingSymbolTableSession(symbolTable = symbolTable)
 
+    /**
+     * @return The filed symbol table
+     */
     fun getSymbolTable(): Table {
         return symbolTableSession.getRootTable()
     }
