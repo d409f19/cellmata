@@ -157,3 +157,11 @@ data class PreDecStmt(val ctx: CellmataParser.PreDecStmtContext, val variable: E
 data class PostDecStmt(val ctx: CellmataParser.PostDecStmtContext, val variable: Expr) : Stmt()
 
 data class ReturnStmt(val ctx: CellmataParser.Return_stmtContext, val value: Expr) : Stmt()
+
+/*
+ * Error nodes are used when something goes wrong in mapper.kt and is returned by the failing function.
+ */
+object ErrorAST : AST()
+object ErrorDecl : Decl()
+object ErrorStmt : Stmt()
+object ErrorExpr : Expr()

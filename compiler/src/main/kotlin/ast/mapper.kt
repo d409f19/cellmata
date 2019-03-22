@@ -1,6 +1,10 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
 import dk.aau.cs.d409f19.antlr.CellmataParser
+import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
+import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
+import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
@@ -131,7 +135,9 @@ private fun visitExpr(node: ParseTree): Expr {
         is CellmataParser.Float_literalContext -> FloatLiteral(ctx = node)
         is CellmataParser.Modifiable_identContext -> visitExpr(node.getChild(0))
         is CellmataParser.Var_identContext -> VarExpr(ctx = node)
-        else -> throw AssertionError("Unexpected tree node")
+        // Errors
+        is ParserRuleContext -> { mapperError(node); ErrorExpr }
+        else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
 
@@ -178,7 +184,9 @@ private fun visitStmt(node: ParseTree): Stmt {
         is CellmataParser.PostDecStmtContext -> PostDecStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
         is CellmataParser.StmtContext -> visitStmt(node.getChild(0))
         is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = node, value = visitExpr(node.expr()))
-        else -> throw AssertionError("Unexpected tree node")
+        // Errors
+        is ParserRuleContext -> { mapperError(node); ErrorStmt }
+        else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
 
@@ -200,7 +208,9 @@ private fun visitDecl(node: ParseTree): Decl {
             ctx = node,
             body = visitCodeBlock(node.code_block())
         )
-        else -> throw AssertionError("Unexpected tree node")
+        // Errors
+        is ParserRuleContext -> { mapperError(node); ErrorDecl }
+        else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
 
@@ -210,12 +220,20 @@ fun visitCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
         .map { visitStmt(it) }
 }
 
-fun visit(node: ParseTree): AST {
+fun visit(node: ParserRuleContext): AST {
     return when (node) {
         is CellmataParser.StartContext -> RootNode(
             world = WorldNode(ctx = node.world_dcl()),
             body = node.body().children.map(::visitDecl)
         )
-        else -> throw AssertionError("Unexpected tree node. Have the grammar been changed without updating the AST mapper?")
+        else -> { mapperError(node); ErrorAST }
     }
+}
+
+/**
+ * Register a mapper error: Unexpected parsing context. This should only happen if we forget to update the mapper.kt
+ * after changing the grammar.
+ */
+fun mapperError(ctx: ParserRuleContext) {
+    ErrorLogger.registerError(ErrorFromContext(ctx, "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST."))
 }

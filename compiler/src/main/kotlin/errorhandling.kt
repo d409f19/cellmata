@@ -1,6 +1,8 @@
 package dk.aau.cs.d409f19.cellumata
 
 import org.antlr.v4.runtime.ParserRuleContext
+import java.nio.file.Files
+import java.nio.file.Path
 
 /**
  * Interface for all compiler errors that does not terminate a compiler phase.
@@ -51,8 +53,14 @@ object ErrorLogger {
 
     private val errors: MutableList<CompileError> = mutableListOf()
 
-    fun add(err: CompileError) {
+    fun registerError(err: CompileError) {
         errors += err
+    }
+
+    fun assertNoErrors() {
+        if (hasErrors()) {
+            throw TerminatedCompilationException("Errors occurred.")
+        }
     }
 
     fun hasErrors(): Boolean {
@@ -61,7 +69,13 @@ object ErrorLogger {
 
     fun printAllErrors() {
         for (e in errors) {
-            println("Error (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.message()}")
+            println("Error at (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.message()}")
         }
     }
 }
+
+/**
+ * When a critical error occurs, since error is thrown to terminate the compilation immediately. This differs from
+ * ErrorLogger and it's CompileErrors since multiple of these can occur before the compilation terminates.
+ */
+class TerminatedCompilationException(msg: String) : RuntimeException(msg)
