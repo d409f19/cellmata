@@ -10,11 +10,15 @@ import org.antlr.v4.runtime.ANTLRFileStream
 import org.antlr.v4.runtime.CommonTokenStream
 
 fun main() {
+    // Read from stress.cell
     val inputStream = ANTLRFileStream("src/main/resources/stress.cell")
+    // Setup lexer
     val lexer = CellmataLexer(inputStream)
     val tokenStream = CommonTokenStream(lexer)
+    // Setup parser
     val parser = CellmataParser(tokenStream)
 
+    // Run the lexer and parser
     val startContext = parser.start()
 
     val ast = reduce(startContext)
@@ -28,5 +32,6 @@ fun main() {
     val symbolTable = scopeChecker.getSymbolTable()
     println(symbolTable)
 
+    // Run the type checker
     TypeChecker(symbolTable).visit(ast)
 }

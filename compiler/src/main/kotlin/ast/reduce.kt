@@ -4,9 +4,6 @@ import dk.aau.cs.d409f19.antlr.CellmataParser
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
-<<<<<<< HEAD:compiler/src/main/kotlin/ast/reduce.kt
-private fun reduceExpr(node: ParseTree): Expr {
-=======
 /*
  * Parse Tree to Abstract Syntax Tree transformer/mapper
  *
@@ -25,8 +22,7 @@ private fun reduceExpr(node: ParseTree): Expr {
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
-private fun visitExpr(node: ParseTree): Expr {
->>>>>>> Documented ast/mapper.kt:compiler/src/main/kotlin/ast/mapper.kt
+private fun reduceExpr(node: ParseTree): Expr {
     return when (node) {
         is CellmataParser.OrExprContext -> OrExpr(
             ctx = node,
@@ -136,11 +132,7 @@ private fun visitExpr(node: ParseTree): Expr {
         )
         is CellmataParser.FuncExprContext -> FuncExpr(
             ctx = node,
-<<<<<<< HEAD:compiler/src/main/kotlin/ast/reduce.kt
             args = node.value.expr().map(::reduceExpr)
-=======
-            args = node.value.expr().map { visitExpr(it) } // Visit each argument
->>>>>>> Documented ast/mapper.kt:compiler/src/main/kotlin/ast/mapper.kt
         )
         is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = node)
         is CellmataParser.ArrayValueExprContext -> ArrayBodyExpr(
@@ -148,14 +140,9 @@ private fun visitExpr(node: ParseTree): Expr {
             values = node.array_value().array_body().expr().map(::reduceExpr),
             declaredType = typeFromCtx(node.value.type_ident())
         )
-<<<<<<< HEAD:compiler/src/main/kotlin/ast/reduce.kt
+        // Some literals has to be expanded before we reach the actual literal
         is CellmataParser.NumberLiteralContext -> reduceExpr(node.value)
         is CellmataParser.BoolLiteralContext -> reduceExpr(node.value)
-=======
-        // Some literals has to be expanded before we reach the actual literal
-        is CellmataParser.NumberLiteralContext -> visitExpr(node.value)
-        is CellmataParser.BoolLiteralContext -> visitExpr(node.value)
->>>>>>> Documented ast/mapper.kt:compiler/src/main/kotlin/ast/mapper.kt
         is CellmataParser.Bool_literalContext -> BoolLiteral(ctx = node)
         is CellmataParser.Number_literalContext -> reduceExpr(node.getChild(0))
         is CellmataParser.IntegerLiteralContext -> reduceExpr(node.value)
