@@ -3,6 +3,9 @@ package dk.aau.cs.d409f19.cellumata.ast
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import org.antlr.v4.runtime.tree.ParseTree
 
+/**
+ * Base class for all type classes. This class should be viewed as effectively being an enum.
+ */
 sealed class Type
 
 object IntegerType : Type()
@@ -12,8 +15,14 @@ object StateType : Type()
 object ActualNeighbourhoodType : Type() // An evaluated neighbourhood
 data class ArrayType(val subtype: Type) : Type()
 
-object UncheckedType : Type() // Type of expressions until type checking is done
+/**
+ * Default value for types before they're checked by the type checker
+ */
+object UncheckedType : Type()
 
+/**
+ * Convert a parse tree node to the type it represents
+ */
 fun typeFromCtx(ctx: ParseTree): Type {
     return when(ctx) {
         is CellmataParser.TypeArrayContext -> ArrayType(subtype = typeFromCtx(ctx.array_decl().type_ident()))
