@@ -137,7 +137,8 @@ private fun visitExpr(node: ParseTree): Expr {
 
 private fun visitStmt(node: ParseTree): Stmt {
     return when (node) {
-        is CellmataParser.Assign_stmtContext -> AssignStmt(ctx = node, expr = visitExpr(node.expr()))
+        is CellmataParser.Assign_stmtContext -> visitStmt(node.assignment())
+        is CellmataParser.AssignmentContext -> AssignStmt(ctx = node, expr = visitExpr(node.expr()))
         is CellmataParser.If_stmtContext -> IfStmt(
             ctx = node,
             conditionals = listOf( // Create list of list of ConditionalBlocks, then flatten to list of ConditionalBlocks
@@ -162,6 +163,14 @@ private fun visitStmt(node: ParseTree): Stmt {
                 else -> throw AssertionError("Unexpected tree node")
             }
         )
+        is CellmataParser.For_stmtContext -> ForStmt(
+            ctx = node,
+            initPart = AssignStmt(node.for_init().assignment(), expr = visitExpr(node.for_init().assignment().expr())),
+            condition = visitExpr(node.for_condition().expr()),
+            postIterationPart = AssignStmt(node.for_post_iteration().assignment(), expr = visitExpr(node.for_post_iteration().assignment().expr()))
+        )
+        is CellmataParser.Break_stmtContext -> BreakStmt(ctx = node)
+        is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = node)
         is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = node, state = visitExpr(node.state))
         is CellmataParser.PreIncStmtContext -> PreIncStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
         is CellmataParser.PostIncStmtContext -> PostIncStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
