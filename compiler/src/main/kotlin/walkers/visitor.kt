@@ -61,7 +61,7 @@ interface ASTVisitor {
 
     fun visit(node: ParenExpr)
 
-    fun visit(node: VarExpr)
+    fun visit(node: NamedExpr)
 
     fun visit(node: ModuloExpr)
 
@@ -159,7 +159,7 @@ abstract class BaseASTVisitor: ASTVisitor {
             is ArrayLookupExpr -> visit(node)
             is ArrayBodyExpr -> visit(node)
             is ParenExpr -> visit(node)
-            is VarExpr -> visit(node)
+            is NamedExpr -> visit(node)
             is ModuloExpr -> visit(node)
             is FuncExpr -> visit(node)
             is StateIndexExpr -> visit(node)
@@ -268,7 +268,7 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.expr)
     }
 
-    override fun visit(node: VarExpr) {
+    override fun visit(node: NamedExpr) {
         // no-op
     }
 

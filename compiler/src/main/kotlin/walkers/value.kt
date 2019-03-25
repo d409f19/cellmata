@@ -18,7 +18,7 @@ class CoordinateParsingException: ParsingException("Inconsistent amount axes in 
 class LiteralExtractorVisitor : BaseASTVisitor() {
     // World
 
-    override fun visit(node: VarExpr) {
+    override fun visit(node: NamedExpr) {
         node.ident = node.ctx.text
     }
 

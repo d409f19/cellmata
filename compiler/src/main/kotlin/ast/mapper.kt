@@ -108,7 +108,7 @@ private fun visitExpr(node: ParseTree): Expr {
             expr = visitExpr(node.expr())
         ) // ToDo: Should we flatten this?
         is CellmataParser.LiteralExprContext -> visitExpr(node.value)
-        is CellmataParser.VarExprContext -> VarExpr(
+        is CellmataParser.VarExprContext -> NamedExpr(
             ctx = node,
             ident = node.ident.text
         )
@@ -130,7 +130,7 @@ private fun visitExpr(node: ParseTree): Expr {
         is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
         is CellmataParser.Float_literalContext -> FloatLiteral(ctx = node)
         is CellmataParser.Modifiable_identContext -> visitExpr(node.getChild(0))
-        is CellmataParser.Var_identContext -> VarExpr(ctx = node)
+        is CellmataParser.Var_identContext -> NamedExpr(ctx = node)
         else -> throw AssertionError("Unexpected tree node")
     }
 }

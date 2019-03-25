@@ -80,7 +80,7 @@ data class ArrayBodyExpr(val ctx: CellmataParser.ArrayValueExprContext, val valu
 
 data class ParenExpr(val ctx: CellmataParser.ParenExprContext, val expr: Expr) : Expr()
 
-data class VarExpr(val ctx: ParseTree, var ident: String = MAGIC_UNDEFINED_STRING) : Expr()
+data class NamedExpr(val ctx: ParseTree, var ident: String = MAGIC_UNDEFINED_STRING) : Expr()
 
 data class ModuloExpr(val ctx: CellmataParser.ModuloExprContext, val left: Expr, val right: Expr) : Expr()
 

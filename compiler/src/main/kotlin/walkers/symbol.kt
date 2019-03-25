@@ -19,7 +19,7 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
         node.body.filter { it !is ConstDecl }.forEach { visit(it) }
     }
 
-    override fun visit(node: VarExpr) {
+    override fun visit(node: NamedExpr) {
         if (symbolTable.getSymbol(node.ident) == null) {
             throw SymbolException(node.ident)
         }
