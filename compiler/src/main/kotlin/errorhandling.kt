@@ -1,8 +1,6 @@
 package dk.aau.cs.d409f19.cellumata
 
 import org.antlr.v4.runtime.ParserRuleContext
-import java.nio.file.Files
-import java.nio.file.Path
 
 /**
  * Interface for all compiler errors that does not terminate a compiler phase.
@@ -43,7 +41,6 @@ class ErrorFromContext(private val ctx: ParserRuleContext, private val descripti
     override fun getCharPositionInLine(): Int {
         return ctx.start.charPositionInLine
     }
-
 }
 
 /**
@@ -77,6 +74,10 @@ object ErrorLogger {
         for (e in errors) {
             println("Error at (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.description()}")
         }
+    }
+
+    fun allErrors(): List<CompileError> {
+        return errors
     }
 
     /**
