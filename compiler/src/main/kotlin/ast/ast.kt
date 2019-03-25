@@ -34,7 +34,7 @@ data class WorldNode(
 /*
  * Expressions
  */
-sealed class Expr : AST()
+abstract class Expr(var type: Type = UncheckedType) : AST()
 
 data class OrExpr(val ctx: CellmataParser.OrExprContext, val left: Expr, val right: Expr) : Expr()
 
@@ -76,7 +76,7 @@ data class InverseExpr(val ctx: CellmataParser.InverseExprContext, val value: Ex
 
 data class ArrayLookupExpr(val ctx: CellmataParser.ArrayLookupExprContext, val ident: String = MAGIC_UNDEFINED_STRING, val index: Expr) : Expr()
 
-data class ArrayBodyExpr(val ctx: CellmataParser.ArrayValueExprContext, var type: String? = MAGIC_UNDEFINED_STRING, val values: List<Expr>) : Expr()
+data class ArrayBodyExpr(val ctx: CellmataParser.ArrayValueExprContext, val values: List<Expr>) : Expr()
 
 data class ParenExpr(val ctx: CellmataParser.ParenExprContext, val expr: Expr) : Expr()
 
@@ -94,6 +94,11 @@ data class IntLiteral(val ctx: CellmataParser.Integer_literalContext, var value:
 data class BoolLiteral(val ctx: CellmataParser.Bool_literalContext, var value: Boolean = false) : Expr()
 
 data class FloatLiteral(val ctx: CellmataParser.Float_literalContext, var value: Float = 0.0F): Expr()
+
+// Type conversion
+data class IntToFloatConversion(val expr: Expr) : Expr()
+
+data class StateArrayToActualNeighbourhoodConversion(val expr: Expr) : Expr()
 
 /*
  * Declarations
