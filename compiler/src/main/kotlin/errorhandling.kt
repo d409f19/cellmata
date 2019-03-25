@@ -13,7 +13,7 @@ interface CompileError {
     /**
      * The description of the error in plain text
      */
-    fun message(): String
+    fun description(): String
 
     /**
      * The line number on which the first character that produced this error, line=1..n
@@ -30,10 +30,10 @@ interface CompileError {
 /**
  * An compiler error based on the context from the antlr parser.
  */
-class ErrorFromContext(private val ctx: ParserRuleContext, private val message: String) : CompileError {
+class ErrorFromContext(private val ctx: ParserRuleContext, private val description: String) : CompileError {
 
-    override fun message(): String {
-        return message
+    override fun description(): String {
+        return description
     }
 
     override fun getLine(): Int {
@@ -57,6 +57,9 @@ object ErrorLogger {
         errors += err
     }
 
+    /**
+     * Assert that there is no errors. Throws a TerminatedCompilationException if there is any errors.
+     */
     fun assertNoErrors() {
         if (hasErrors()) {
             throw TerminatedCompilationException("Errors occurred.")
@@ -67,15 +70,31 @@ object ErrorLogger {
         return errors.size > 0
     }
 
+    /**
+     * Prints all errors in a nicely formatted way.
+     */
     fun printAllErrors() {
         for (e in errors) {
-            println("Error at (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.message()}")
+            println("Error at (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.description()}")
         }
+    }
+
+    /**
+     * Returns a string consisting of a number of spaces followed by a ^. This string is used to point to the exact
+     * position of the error in error messages. E.g. "      ^"
+     */
+    private fun errorPointerString(charPosition: Int): String {
+        val pointerStringBuilder = StringBuilder()
+        repeat(charPosition) {
+            pointerStringBuilder.append(" ")
+        }
+        pointerStringBuilder.append("^")
+        return pointerStringBuilder.toString()
     }
 }
 
 /**
- * When a critical error occurs, since error is thrown to terminate the compilation immediately. This differs from
- * ErrorLogger and it's CompileErrors since multiple of these can occur before the compilation terminates.
+ * When a critical error occurs, this error is thrown to terminate the compilation immediately. This differs from
+ * the ErrorLogger and CompileErrors since multiple of these can occur before the compilation terminates.
  */
 class TerminatedCompilationException(msg: String) : RuntimeException(msg)
