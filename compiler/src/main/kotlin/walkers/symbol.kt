@@ -23,6 +23,7 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
         if (symbolTable.getSymbol(node.ident) == null) {
             throw SymbolException(node.ident)
         }
+        super.visit(node)
     }
 
     override fun visit(node: ConstDecl) {
@@ -56,5 +57,12 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
         symbolTable.createScope()
         super.visit(node)
         symbolTable.closeScope()
+    }
+
+    override fun visit(node: FuncExpr) {
+        if (symbolTable.getSymbol(node.ident) == null) {
+            throw SymbolException(node.ident)
+        }
+        super.visit(node)
     }
 }
