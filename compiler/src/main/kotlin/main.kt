@@ -27,6 +27,7 @@ fun main() {
     } catch (e:  TerminatedCompilationException) {
 
         println("Compilation failed: ${e.message}")
+        ErrorLogger.printAllErrors()
 
     } catch (e: Exception) {
         e.printStackTrace()
