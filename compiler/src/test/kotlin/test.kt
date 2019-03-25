@@ -2,7 +2,7 @@ package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
-import dk.aau.cs.d409f19.cellumata.ast.visit
+import dk.aau.cs.d409f19.cellumata.ast.reduce
 import org.antlr.v4.runtime.ANTLRFileStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Test
@@ -18,6 +18,6 @@ class CompilerTests {
 
         val startContext = parser.start()
 
-        val ast = visit(startContext)
+        val ast = reduce(startContext)
     }
 }
