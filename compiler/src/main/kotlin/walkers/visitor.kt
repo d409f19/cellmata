@@ -95,7 +95,7 @@ interface ASTVisitor {
     fun visit(node: ConditionalBlock)
 }
 
-abstract class BaseASTVisitor(): ASTVisitor {
+abstract class BaseASTVisitor: ASTVisitor {
     override fun visit(node: AST) {
         when (node) {
             is RootNode -> visit(node)

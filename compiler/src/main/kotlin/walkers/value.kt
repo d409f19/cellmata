@@ -1,6 +1,5 @@
 package dk.aau.cs.d409f19.cellumata.walkers
 
-import cs.aau.dk.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.*
 
 open class ParsingException(msg: String = ""): Exception(msg)
@@ -16,7 +15,7 @@ class ColorParsingException(val value: String, val ctx: StateDecl): ParsingExcep
 class CoordinateParsingException: ParsingException("Inconsistent amount axes in neighbourhood")
 
 
-class ParseTreeValueWalker : BaseASTVisitor() {
+class LiteralExtractorVisitor : BaseASTVisitor() {
     // World
 
     override fun visit(node: VarExpr) {

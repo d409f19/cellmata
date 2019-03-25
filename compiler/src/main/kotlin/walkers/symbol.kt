@@ -5,7 +5,7 @@ import java.lang.Exception
 
 class SymbolException(val ident: String) : Exception("\"$ident\" was used before it was declared")
 
-class SymbolWalker(val symbolTable: SymbolTable) : BaseASTVisitor() {
+class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
     override fun visit(node: RootNode) {
         // Extract all states, functions, and neighbourhoods names first
         node.body.filter { it is StateDecl }.forEach { symbolTable.insertSymbol((it as StateDecl).ident, it) }

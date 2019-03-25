@@ -3,8 +3,8 @@ package dk.aau.cs.d409f19.cellumata
 import dk.aau.cs.d409f19.antlr.*
 import dk.aau.cs.d409f19.cellumata.ast.SymbolTable
 import dk.aau.cs.d409f19.cellumata.ast.visit
-import dk.aau.cs.d409f19.cellumata.walkers.ParseTreeValueWalker
-import dk.aau.cs.d409f19.cellumata.walkers.SymbolWalker
+import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
+import dk.aau.cs.d409f19.cellumata.walkers.ScopeCheckVisitor
 import org.antlr.v4.runtime.ANTLRFileStream
 import org.antlr.v4.runtime.CommonTokenStream
 
@@ -20,9 +20,9 @@ fun main() {
 
     println(ast)
 
-    ParseTreeValueWalker().visit(ast)
+    LiteralExtractorVisitor().visit(ast)
 
     val symbolTable = SymbolTable()
-    SymbolWalker(symbolTable).visit(ast)
+    ScopeCheckVisitor(symbolTable).visit(ast)
     println(symbolTable)
 }
