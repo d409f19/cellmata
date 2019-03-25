@@ -1,11 +1,16 @@
 package dk.aau.cs.d409f19.cellumata.walkers
 
 import dk.aau.cs.d409f19.cellumata.ast.*
-import java.lang.Exception
 import kotlin.AssertionError
 
+/**
+ * Thrown when a violation of the type rules is found
+ */
 class TypeError : Exception()
 
+/**
+ * Move types up the abstract syntax tree according to the type rules, and check that there is no violation of the type rules
+ */
 class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTable) {
     override fun visit(node: OrExpr) {
         super.visit(node)
@@ -289,6 +294,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     }
 
     override fun visit(node: NamedExpr) {
+        // Get type of name
         node.setType(symbolTableSession.getSymbolType(node.ident))
     }
 
@@ -307,6 +313,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: FuncExpr) {
         super.visit(node)
 
+        // Get return type of function
         node.setType(symbolTableSession.getSymbolType(node.ident))
     }
 
