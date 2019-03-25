@@ -35,6 +35,7 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
     }
 
     override fun visit(node: NamedExpr) {
+        // Check if is defined or throw SymbolException
         node.setType(symbolTableSession.getSymbolType(node.ident) ?: throw SymbolException(node.ident))
         super.visit(node)
     }
