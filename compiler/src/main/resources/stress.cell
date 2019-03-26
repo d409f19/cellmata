@@ -6,13 +6,13 @@ world {
 
 const bar = false;
 
-const arr1 = [3]boolean{ true, false, true };
-const arr2 = [2]boolean{ true, true };
-const arr3 = []boolean{ false, true };
+const arr1 = [3]bool{ true, false, true };
+const arr2 = [2]bool{ true, true };
+const arr3 = []bool{ false, true };
 
-const t1 = [2][2]boolean{};
-const t2 = [2]boolean{};
-const t3 = [2]integer{};
+const t1 = [2][2]bool{};
+const t2 = [2]bool{};
+const t3 = [2]int{};
 const t4 = [2]float{};
 const t5 = [2]neighbourhood{};
 const t6 = [2]state{};
@@ -42,7 +42,7 @@ state s1 (255, 0, 12) {
     //let u = { 1, 2, 3 };
     let v = 2 * (123 + 321);
     let w = bar;
-    let x = baz(132);
+    //let x = baz(132);
     let y = #;
 
     let bt = true;
@@ -69,7 +69,7 @@ state s1 (255, 0, 12) {
     return a;
 }
 
-function f1(integer a, integer b) boolean {
+function f1(int a, int b) bool {
     return a + b;
 }
 
