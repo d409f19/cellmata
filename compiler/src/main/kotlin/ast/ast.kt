@@ -80,7 +80,7 @@ data class ArrayBodyExpr(val ctx: CellmataParser.ArrayValueExprContext, val valu
 
 data class ParenExpr(val ctx: CellmataParser.ParenExprContext, val expr: Expr) : Expr()
 
-data class VarExpr(val ctx: ParseTree, var ident: String = MAGIC_UNDEFINED_STRING) : Expr()
+data class NamedExpr(val ctx: ParseTree, var ident: String = MAGIC_UNDEFINED_STRING) : Expr()
 
 data class ModuloExpr(val ctx: CellmataParser.ModuloExprContext, val left: Expr, val right: Expr) : Expr()
 
@@ -124,12 +124,12 @@ data class NeighbourhoodDecl(
     var coords: List<Coordinate> = emptyList()
 ) : Decl()
 
-data class FunctionArgs(val ident: String, val type: String)
+data class FunctionArgs(val ident: String, val type: String): AST()
 
 data class FuncDecl(
     val ctx: CellmataParser.Func_declContext,
     var ident: String = MAGIC_UNDEFINED_STRING,
-    val args: List<FunctionArgs> = emptyList(),
+    var args: List<FunctionArgs> = emptyList(),
     val body: List<Stmt> = emptyList(),
     var returnType: String = MAGIC_UNDEFINED_STRING
 ) : Decl()
