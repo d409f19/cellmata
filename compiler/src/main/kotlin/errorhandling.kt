@@ -28,7 +28,7 @@ abstract class CompileError(msg: String) : java.lang.RuntimeException(msg) {
 /**
  * An compiler error based on the context from the antlr parser.
  */
-class ErrorFromContext(private val ctx: ParserRuleContext, private val description: String) : CompileError(description) {
+open class ErrorFromContext(private val ctx: ParserRuleContext, private val description: String) : CompileError(description) {
 
     override fun description(): String {
         return description

@@ -1,9 +1,12 @@
 package dk.aau.cs.d409f19.cellumata.walkers
 
+import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
+import org.antlr.v4.runtime.ParserRuleContext
 import java.lang.Exception
 
-class SymbolException(val ident: String) : Exception("\"$ident\" was used before it was declared")
+class SymbolUndeclaredException(val ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" was used before it was declared")
 
 class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
     override fun visit(node: RootNode) {
@@ -21,7 +24,7 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
 
     override fun visit(node: NamedExpr) {
         if (symbolTable.getSymbol(node.ident) == null) {
-            throw SymbolException(node.ident)
+            ErrorLogger.registerError(SymbolUndeclaredException(node.ctx, node.ident))
         }
         super.visit(node)
     }
@@ -61,7 +64,7 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
 
     override fun visit(node: FuncExpr) {
         if (symbolTable.getSymbol(node.ident) == null) {
-            throw SymbolException(node.ident)
+            ErrorLogger.registerError(SymbolUndeclaredException(node.ctx, node.ident))
         }
         super.visit(node)
     }

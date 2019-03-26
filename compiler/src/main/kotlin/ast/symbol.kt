@@ -1,5 +1,8 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
+import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
+import org.antlr.v4.runtime.ParserRuleContext
 import java.util.*
 
 data class Table(
@@ -7,7 +10,7 @@ data class Table(
     val tables: MutableList<Table> = mutableListOf()
 )
 
-class SymbolRedefinitionException(val ident: String) : Exception("\"$ident\" is already defined")
+class SymbolRedefinitionException(ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is already defined")
 
 private val RESERVED_SYMBOLS: List<String> = listOf(
     "world",
@@ -45,15 +48,11 @@ class SymbolTable {
     fun insertSymbol(ident: String, node: AST) {
         val table = scopeStack.peek()
 
-        if (RESERVED_SYMBOLS.contains(ident)) {
-            throw SymbolRedefinitionException(ident = ident)
+        if (RESERVED_SYMBOLS.contains(ident) || table.symbols.containsKey(ident)) {
+            ErrorLogger.registerError(SymbolRedefinitionException(node.ctx, ident))
+        } else {
+            table.symbols[ident] = node
         }
-
-        if (table.symbols.containsKey(ident)) {
-            throw SymbolRedefinitionException(ident = ident)
-        }
-
-        table.symbols[ident] = node
     }
 
     fun getSymbol(name: String): AST? {
