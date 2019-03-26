@@ -6,7 +6,7 @@ import dk.aau.cs.d409f19.cellumata.ast.*
 import org.antlr.v4.runtime.ParserRuleContext
 import java.lang.Exception
 
-class SymbolUndeclaredException(val ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" was used before it was declared")
+class UndeclaredNameException(val ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is undeclared.")
 
 class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
     override fun visit(node: RootNode) {
@@ -24,7 +24,7 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
 
     override fun visit(node: NamedExpr) {
         if (symbolTable.getSymbol(node.ident) == null) {
-            ErrorLogger.registerError(SymbolUndeclaredException(node.ctx, node.ident))
+            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
         }
         super.visit(node)
     }
@@ -49,11 +49,18 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
     }
 
     override fun visit(node: AssignStmt) {
-        super.visit(node)
-
-        if (node.ctx.STMT_LET() != null) { // Check if this is a variable declaration, and not just an assignment
+        if (node.ctx.STMT_LET() == null) { // Check if this is a variable declaration, and not just an assignment
+            // assignment
+            val symb = symbolTable.getSymbol(node.ident)
+            if (symb == null) {
+                ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
+            }
+        } else {
+            // declaration
             symbolTable.insertSymbol(node.ident, node)
         }
+
+        super.visit(node)
     }
 
     override fun visit(node: ConditionalBlock) {
@@ -64,7 +71,7 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
 
     override fun visit(node: FuncExpr) {
         if (symbolTable.getSymbol(node.ident) == null) {
-            ErrorLogger.registerError(SymbolUndeclaredException(node.ctx, node.ident))
+            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
         }
         super.visit(node)
     }
