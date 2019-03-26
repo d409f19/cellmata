@@ -13,6 +13,8 @@ interface ASTVisitor {
 
     fun visit(node: NeighbourhoodDecl)
 
+    fun visit(node: Coordinate)
+
     fun visit(node: FuncDecl)
 
     fun visit(node: Expr)
@@ -128,6 +130,10 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: NeighbourhoodDecl) {
+        node.coords.forEach { visit(it) }
+    }
+
+    override fun visit(node: Coordinate) {
         // no-op
     }
 
@@ -322,6 +328,7 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: ConditionalBlock) {
+        visit(node.expr)
         node.block.forEach { stmt -> visit(stmt) }
     }
 

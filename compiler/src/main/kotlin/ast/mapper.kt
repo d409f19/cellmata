@@ -136,7 +136,7 @@ private fun visitExpr(node: ParseTree): Expr {
         is CellmataParser.Modifiable_identContext -> visitExpr(node.getChild(0))
         is CellmataParser.Var_identContext -> NamedExpr(ctx = node)
         // Errors
-        is ParserRuleContext -> { mapperError(node); ErrorExpr }
+        is ParserRuleContext -> { registerMapperError(node); ErrorExpr(node) }
         else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
@@ -185,7 +185,7 @@ private fun visitStmt(node: ParseTree): Stmt {
         is CellmataParser.StmtContext -> visitStmt(node.getChild(0))
         is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = node, value = visitExpr(node.expr()))
         // Errors
-        is ParserRuleContext -> { mapperError(node); ErrorStmt }
+        is ParserRuleContext -> { registerMapperError(node); ErrorStmt(node) }
         else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
@@ -209,7 +209,7 @@ private fun visitDecl(node: ParseTree): Decl {
             body = visitCodeBlock(node.code_block())
         )
         // Errors
-        is ParserRuleContext -> { mapperError(node); ErrorDecl }
+        is ParserRuleContext -> { registerMapperError(node); ErrorDecl(node) }
         else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
@@ -223,10 +223,11 @@ fun visitCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
 fun visit(node: ParserRuleContext): AST {
     return when (node) {
         is CellmataParser.StartContext -> RootNode(
+            ctx = node,
             world = WorldNode(ctx = node.world_dcl()),
             body = node.body().children.map(::visitDecl)
         )
-        else -> { mapperError(node); ErrorAST }
+        else -> { registerMapperError(node); ErrorAST(node) }
     }
 }
 
@@ -234,6 +235,6 @@ fun visit(node: ParserRuleContext): AST {
  * Register a mapper error: Unexpected parsing context. This should only happen if we forget to update the mapper.kt
  * after changing the grammar.
  */
-fun mapperError(ctx: ParserRuleContext) {
+fun registerMapperError(ctx: ParserRuleContext) {
     ErrorLogger.registerError(ErrorFromContext(ctx, "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST."))
 }
