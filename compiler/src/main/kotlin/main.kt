@@ -37,10 +37,16 @@ fun main() {
 
     } catch (e:  TerminatedCompilationException) {
 
+        // Compilated failed due to errors in cell code
         println("Compilation failed: ${e.message}")
         ErrorLogger.printAllErrors()
 
     } catch (e: Exception) {
+
+        // Critical error happened, maybe something is be wrong in the compiler
+        // Printing stack trace and errors for debugging reasons
         e.printStackTrace()
+        println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
+        ErrorLogger.printAllErrors()
     }
 }
