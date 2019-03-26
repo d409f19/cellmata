@@ -1,20 +1,17 @@
 package dk.aau.cs.d409f19.cellumata
 
-import dk.aau.cs.d409f19.antlr.*
-import dk.aau.cs.d409f19.cellumata.ast.reduce
+import dk.aau.cs.d409f19.antlr.CellmataLexer
+import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.SymbolTable
-import org.antlr.v4.runtime.CharStreams
+import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
 import dk.aau.cs.d409f19.cellumata.walkers.ScopeCheckVisitor
-import jdk.nashorn.internal.objects.NativeArray.reduce
+import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import java.lang.Exception
+import java.nio.file.Path
 import java.nio.file.Paths
 
-fun main() {
-
-    val path = Paths.get("src/main/resources/stress.cell")
-
+fun compile(path: Path) {
     try {
         val inputStream = CharStreams.fromPath(path)
         val lexer = CellmataLexer(inputStream)
@@ -50,4 +47,9 @@ fun main() {
         println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
         ErrorLogger.printAllErrors()
     }
+}
+
+fun main() {
+    val path = Paths.get("src/main/resources/stress.cell")
+    compile(path)
 }
