@@ -72,7 +72,7 @@ object ErrorLogger {
      */
     fun printAllErrors() {
         for (e in errors) {
-            println("Error at (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.description()}")
+            System.err.println("Error at (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.description()}")
         }
     }
 
