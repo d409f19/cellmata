@@ -30,7 +30,7 @@ state_rgb : PAREN_START red=integer_literal LIST_SEP green=integer_literal LIST_
 
 // Code
 code_block : BLOCK_START stmt* BLOCK_END ;
-stmt : (if_stmt | become_stmt | assign_stmt | increment_stmt | decrement_stmt | return_stmt | for_stmt | break_stmt | continue_stmt) ;
+stmt : (if_stmt | become_stmt | assign_stmt | return_stmt | for_stmt | break_stmt | continue_stmt) ;
 
 assign_stmt : assignment END ;
 assignment : STMT_LET? (var_ident | array_lookup) ASSIGN expr ;
@@ -41,14 +41,6 @@ if_stmt_if : STMT_IF if_stmt_block ;
 if_stmt_block : PAREN_START if_stmt_condition PAREN_END code_block ;
 if_stmt_else : STMT_ELSE code_block ;
 become_stmt : STMT_BECOME state=expr END ;
-increment_stmt
-    : modifiable_ident OP_INCREMENT END # postIncStmt
-    | OP_INCREMENT modifiable_ident END # preIncStmt
-    ;
-decrement_stmt
-    : modifiable_ident OP_DECREMENT END # postDecStmt
-    | OP_DECREMENT modifiable_ident END # preDecStmt
-    ;
 return_stmt : STMT_RETURN expr END ;
 
 //For-loop
@@ -114,13 +106,9 @@ expr : '#' # stateIndexExpr
     | PAREN_START value=expr PAREN_END # parenExpr
     | value=array_value # arrayValueExpr
     | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
-    | value=expr OP_DECREMENT # postDecExpr
-    | value=expr OP_INCREMENT # postIncExpr
     | OP_NOT value=expr # inverseExpr
     | OP_MINUS value=expr # negativeExpr
     | OP_PLUS value=expr # positiveExpr
-    | OP_DECREMENT value=expr # preDecExpr
-    | OP_INCREMENT value=expr # preIncExpr
     | left=expr OP_MODULO right=expr # moduloExpr
     | left=expr OP_DIVIDE right=expr # divisionExpr
     | left=expr OP_MULTIPLY right=expr # multiplictionExpr
@@ -162,8 +150,6 @@ END : ';' ;
 OP_COMPARE : '==' ;
 OP_COMPARE_NOT : '!=' ;
 OP_NOT : '!' ;
-OP_INCREMENT : '++' ;
-OP_DECREMENT : '--' ;
 OP_PLUS : '+' ;
 OP_MINUS : '-' ;
 OP_MULTIPLY : '*' ;

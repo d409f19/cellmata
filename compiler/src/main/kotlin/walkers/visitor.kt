@@ -41,14 +41,6 @@ interface ASTVisitor {
 
     fun visit(node: DivisionExpr)
 
-    fun visit(node: PreIncExpr)
-
-    fun visit(node: PreDecExpr)
-
-    fun visit(node: PostIncExpr)
-
-    fun visit(node: PostDecExpr)
-
     fun visit(node: PositiveExpr)
 
     fun visit(node: NegativeExpr)
@@ -80,14 +72,6 @@ interface ASTVisitor {
     fun visit(node: IfStmt)
 
     fun visit(node: BecomeStmt)
-
-    fun visit(node: PreIncStmt)
-
-    fun visit(node: PostIncStmt)
-
-    fun visit(node: PreDecStmt)
-
-    fun visit(ndoe: PostDecStmt)
 
     fun visit(node: ReturnStmt)
     fun visit(node: AST)
@@ -149,10 +133,6 @@ abstract class BaseASTVisitor: ASTVisitor {
             is SubtractionExpr -> visit(node)
             is MultiplicationExpr -> visit(node)
             is DivisionExpr -> visit(node)
-            is PreIncExpr -> visit(node)
-            is PreDecExpr -> visit(node)
-            is PostIncExpr -> visit(node)
-            is PostDecExpr -> visit(node)
             is PositiveExpr -> visit(node)
             is NegativeExpr -> visit(node)
             is InverseExpr -> visit(node)
@@ -228,22 +208,6 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.right)
     }
 
-    override fun visit(node: PreIncExpr) {
-        visit(node.value)
-    }
-
-    override fun visit(node: PreDecExpr) {
-        visit(node.value)
-    }
-
-    override fun visit(node: PostIncExpr) {
-        visit(node.value)
-    }
-
-    override fun visit(node: PostDecExpr) {
-        visit(node.value)
-    }
-
     override fun visit(node: PositiveExpr) {
         visit(node.value)
     }
@@ -302,10 +266,6 @@ abstract class BaseASTVisitor: ASTVisitor {
             is AssignStmt -> visit(node)
             is IfStmt -> visit(node)
             is BecomeStmt -> visit(node)
-            is PreIncStmt -> visit(node)
-            is PostIncStmt -> visit(node)
-            is PreDecStmt -> visit(node)
-            is PostDecStmt -> visit(node)
             is ReturnStmt -> visit(node)
         }
     }
@@ -327,22 +287,6 @@ abstract class BaseASTVisitor: ASTVisitor {
 
     override fun visit(node: BecomeStmt) {
         visit(node.state)
-    }
-
-    override fun visit(node: PreIncStmt) {
-        // no-op
-    }
-
-    override fun visit(node: PostIncStmt) {
-        // no-op
-    }
-
-    override fun visit(node: PreDecStmt) {
-        // no-op
-    }
-
-    override fun visit(ndoe: PostDecStmt) {
-        // no-op
     }
 
     override fun visit(node: ReturnStmt) {

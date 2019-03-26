@@ -71,14 +71,6 @@ private fun visitExpr(node: ParseTree): Expr {
             left = visitExpr(node.left),
             right = visitExpr(node.right)
         )
-        is CellmataParser.PreIncExprContext -> PreIncExpr(
-            ctx = node,
-            value = visitExpr(node.value)
-        )
-        is CellmataParser.PreDecExprContext -> PreDecExpr(
-            ctx = node,
-            value = visitExpr(node.value)
-        )
         is CellmataParser.PositiveExprContext -> PositiveExpr(
             ctx = node,
             value = visitExpr(node.value)
@@ -88,14 +80,6 @@ private fun visitExpr(node: ParseTree): Expr {
             value = visitExpr(node.value)
         )
         is CellmataParser.InverseExprContext -> InverseExpr(
-            ctx = node,
-            value = visitExpr(node.value)
-        )
-        is CellmataParser.PostIncExprContext -> PostIncExpr(
-            ctx = node,
-            value = visitExpr(node.value)
-        )
-        is CellmataParser.PostDecExprContext -> PostDecExpr(
             ctx = node,
             value = visitExpr(node.value)
         )
@@ -172,10 +156,6 @@ private fun visitStmt(node: ParseTree): Stmt {
         is CellmataParser.Break_stmtContext -> BreakStmt(ctx = node)
         is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = node)
         is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = node, state = visitExpr(node.state))
-        is CellmataParser.PreIncStmtContext -> PreIncStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
-        is CellmataParser.PostIncStmtContext -> PostIncStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
-        is CellmataParser.PreDecStmtContext -> PreDecStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
-        is CellmataParser.PostDecStmtContext -> PostDecStmt(ctx = node, variable = visitExpr(node.modifiable_ident()))
         is CellmataParser.StmtContext -> visitStmt(node.getChild(0))
         is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = node, value = visitExpr(node.expr()))
         else -> throw AssertionError("Unexpected tree node")
