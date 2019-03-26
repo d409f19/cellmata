@@ -124,7 +124,7 @@ private fun reduceExpr(node: ParseTree): Expr {
         is CellmataParser.NumberLiteralContext -> reduceExpr(node.value)
         is CellmataParser.BoolLiteralContext -> reduceExpr(node.value)
         is CellmataParser.Bool_literalContext -> BoolLiteral(ctx = node)
-        is CellmataParser.Number_literalContext -> reduceExpr(node.getChild(0)) // ToDo is this correct?
+        is CellmataParser.Number_literalContext -> reduceExpr(node.getChild(0))
         is CellmataParser.IntegerLiteralContext -> reduceExpr(node.value)
         is CellmataParser.FloatLiteralContext -> reduceExpr(node.value)
         is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
