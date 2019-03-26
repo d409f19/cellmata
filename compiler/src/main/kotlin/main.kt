@@ -1,8 +1,11 @@
 package dk.aau.cs.d409f19.cellumata
 
 import dk.aau.cs.d409f19.antlr.*
+import dk.aau.cs.d409f19.cellumata.ast.SymbolTable
 import dk.aau.cs.d409f19.cellumata.ast.visit
 import org.antlr.v4.runtime.CharStreams
+import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
+import dk.aau.cs.d409f19.cellumata.walkers.ScopeCheckVisitor
 import org.antlr.v4.runtime.CommonTokenStream
 import java.lang.Exception
 import java.nio.file.Paths
@@ -20,9 +23,17 @@ fun main() {
         // Build AST
         val startContext = parser.start()
         val ast = visit(startContext)
+        println(ast)
         ErrorLogger.assertNoErrors()
 
-        println(ast)
+        // Literals
+        LiteralExtractorVisitor().visit(ast)
+
+        // Symbol table and scope
+        val symbolTable = SymbolTable()
+        ScopeCheckVisitor(symbolTable).visit(ast)
+        println(symbolTable)
+        ErrorLogger.assertNoErrors()
 
     } catch (e:  TerminatedCompilationException) {
 

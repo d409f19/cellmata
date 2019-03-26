@@ -112,7 +112,7 @@ private fun visitExpr(node: ParseTree): Expr {
             expr = visitExpr(node.expr())
         ) // ToDo: Should we flatten this?
         is CellmataParser.LiteralExprContext -> visitExpr(node.value)
-        is CellmataParser.VarExprContext -> VarExpr(
+        is CellmataParser.VarExprContext -> NamedExpr(
             ctx = node,
             ident = node.ident.text
         )
@@ -128,13 +128,13 @@ private fun visitExpr(node: ParseTree): Expr {
         is CellmataParser.NumberLiteralContext -> visitExpr(node.value)
         is CellmataParser.BoolLiteralContext -> visitExpr(node.value)
         is CellmataParser.Bool_literalContext -> BoolLiteral(ctx = node)
-        is CellmataParser.Number_literalContext -> visitExpr(node.getChild(0)) // ToDo is this correct?
+        is CellmataParser.Number_literalContext -> visitExpr(node.getChild(0))
         is CellmataParser.IntegerLiteralContext -> visitExpr(node.value)
         is CellmataParser.FloatLiteralContext -> visitExpr(node.value)
         is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
         is CellmataParser.Float_literalContext -> FloatLiteral(ctx = node)
         is CellmataParser.Modifiable_identContext -> visitExpr(node.getChild(0))
-        is CellmataParser.Var_identContext -> VarExpr(ctx = node)
+        is CellmataParser.Var_identContext -> NamedExpr(ctx = node)
         // Errors
         is ParserRuleContext -> { mapperError(node); ErrorExpr }
         else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
