@@ -1,11 +1,12 @@
 package dk.aau.cs.d409f19.cellumata
 
 import dk.aau.cs.d409f19.antlr.*
+import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.ast.SymbolTable
-import dk.aau.cs.d409f19.cellumata.ast.visit
 import org.antlr.v4.runtime.CharStreams
 import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
 import dk.aau.cs.d409f19.cellumata.walkers.ScopeCheckVisitor
+import jdk.nashorn.internal.objects.NativeArray.reduce
 import org.antlr.v4.runtime.CommonTokenStream
 import java.lang.Exception
 import java.nio.file.Paths
@@ -22,7 +23,7 @@ fun main() {
 
         // Build AST
         val startContext = parser.start()
-        val ast = visit(startContext)
+        val ast = reduce(startContext)
         println(ast)
         ErrorLogger.assertNoErrors()
 
