@@ -2,6 +2,9 @@ package dk.aau.cs.d409f19.cellumata.walkers
 
 import dk.aau.cs.d409f19.cellumata.ast.*
 
+/**
+ * The base interface for an implementation of the visitor pattern on the abstract syntax tree
+ */
 interface ASTVisitor {
     fun visit(node: RootNode)
 
@@ -95,6 +98,10 @@ interface ASTVisitor {
     fun visit(node: ConditionalBlock)
 }
 
+/**
+ * A basic implementation of an visitor pattern for the abstract syntax tree.
+ * By default does a in-order walk of the abstract syntax tree.
+ */
 abstract class BaseASTVisitor: ASTVisitor {
     override fun visit(node: AST) {
         when (node) {
@@ -350,6 +357,11 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 }
 
+/**
+ * Walks the tree while opening and closing scopes has their are entered and left.
+ *
+ * @see BaseASTVisitor
+ */
 open class ScopedASTVisitor(symbolTable: Table): BaseASTVisitor() {
     protected val symbolTableSession = ViewingSymbolTableSession(symbolTable = symbolTable)
 
