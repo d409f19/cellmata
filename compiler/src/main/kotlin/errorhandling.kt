@@ -6,29 +6,29 @@ import org.antlr.v4.runtime.ParserRuleContext
  * Interface for all compiler errors that does not terminate a compiler phase.
  * @see ErrorLogger
  */
-interface CompileError {
+abstract class CompileError(msg: String) : java.lang.RuntimeException(msg) {
 
     /**
      * The description of the error in plain text
      */
-    fun description(): String
+    abstract fun description(): String
 
     /**
      * The line number on which the first character that produced this error, line=1..n
      */
-    fun getLine(): Int
+    abstract fun getLine(): Int
 
     /**
      * The index of the first character of this error relative to the
      * beginning of the line at which it occurs, 0..n-1
      */
-    fun getCharPositionInLine(): Int
+    abstract fun getCharPositionInLine(): Int
 }
 
 /**
  * An compiler error based on the context from the antlr parser.
  */
-class ErrorFromContext(private val ctx: ParserRuleContext, private val description: String) : CompileError {
+class ErrorFromContext(private val ctx: ParserRuleContext, private val description: String) : CompileError(description) {
 
     override fun description(): String {
         return description
