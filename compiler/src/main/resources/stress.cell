@@ -35,7 +35,7 @@ state s1 (255, 0, 12) {
     let o = --2;
     let p1 = 2++;
     let p2 = 2--;
-    let q = +n;
+    //let q = +n;
     let r = -n;
     let s = !true;
     let t = baz[0];
