@@ -118,7 +118,6 @@ expr : '#' # stateIndexExpr
     | value=expr OP_INCREMENT # postIncExpr
     | OP_NOT value=expr # inverseExpr
     | OP_MINUS value=expr # negativeExpr
-    | OP_PLUS value=expr # positiveExpr
     | OP_DECREMENT value=expr # preDecExpr
     | OP_INCREMENT value=expr # preIncExpr
     | left=expr OP_MODULO right=expr # moduloExpr

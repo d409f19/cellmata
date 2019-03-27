@@ -68,8 +68,6 @@ data class PostIncExpr(val ctx: CellmataParser.PostIncExprContext, val value: Ex
 
 data class PostDecExpr(val ctx: CellmataParser.PostDecExprContext, val value: Expr) : Expr()
 
-data class PositiveExpr(val ctx: CellmataParser.PositiveExprContext, val value: Expr) : Expr()
-
 data class NegativeExpr(val ctx: CellmataParser.NegativeExprContext, val value: Expr) : Expr()
 
 data class InverseExpr(val ctx: CellmataParser.InverseExprContext, val value: Expr) : Expr()
