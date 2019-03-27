@@ -11,6 +11,8 @@ import org.antlr.v4.runtime.CommonTokenStream
 import java.nio.file.Path
 import java.nio.file.Paths
 
+val path = Paths.get("src/main/resources/stress.cell")
+
 fun compile(path: Path) {
     try {
         val inputStream = CharStreams.fromPath(path)
@@ -21,10 +23,10 @@ fun compile(path: Path) {
         // Build AST
         val startContext = parser.start()
         val ast = reduce(startContext)
-        println(ast)
+        // Asserts that no errors has been found during the last phase
         ErrorLogger.assertNoErrors()
 
-        // Literals
+        // Extract literals
         LiteralExtractorVisitor().visit(ast)
 
         // Symbol table and scope
@@ -33,9 +35,9 @@ fun compile(path: Path) {
         println(symbolTable)
         ErrorLogger.assertNoErrors()
 
-    } catch (e:  TerminatedCompilationException) {
+    } catch (e: TerminatedCompilationException) {
 
-        // Compilated failed due to errors in cell code
+        // Compilation failed due to errors in program code
         System.err.println("Compilation failed: ${e.message}")
         ErrorLogger.printAllErrors(path)
 
@@ -50,6 +52,5 @@ fun compile(path: Path) {
 }
 
 fun main() {
-    val path = Paths.get("src/main/resources/stress.cell")
     compile(path)
 }
