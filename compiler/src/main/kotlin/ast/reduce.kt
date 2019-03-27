@@ -79,10 +79,6 @@ private fun reduceExpr(node: ParseTree): Expr {
             ctx = node,
             value = reduceExpr(node.value)
         )
-        is CellmataParser.PositiveExprContext -> PositiveExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
         is CellmataParser.NegativeExprContext -> NegativeExpr(
             ctx = node,
             value = reduceExpr(node.value)
