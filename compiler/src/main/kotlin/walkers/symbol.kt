@@ -6,7 +6,7 @@ import dk.aau.cs.d409f19.cellumata.ast.*
 import org.antlr.v4.runtime.ParserRuleContext
 import java.lang.Exception
 
-class UndeclaredNameException(val ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is undeclared.")
+class UndeclaredNameException(ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is undeclared.")
 
 class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
     override fun visit(node: RootNode) {

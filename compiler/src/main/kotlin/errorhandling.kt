@@ -18,7 +18,7 @@ abstract class CompileError(msg: String) : java.lang.RuntimeException(msg) {
     /**
      * The line number on which the first character that produced this error, line=1..n
      */
-    abstract fun getLine(): Int
+    abstract fun getLineNumber(): Int
 
     /**
      * The index of the first character of this error relative to the
@@ -30,13 +30,13 @@ abstract class CompileError(msg: String) : java.lang.RuntimeException(msg) {
 /**
  * An compiler error based on the context from the antlr parser.
  */
-open class ErrorFromContext(private val ctx: ParserRuleContext, private val description: String) : CompileError(description) {
+open class ErrorFromContext(val ctx: ParserRuleContext, private val description: String) : CompileError(description) {
 
     override fun description(): String {
         return description
     }
 
-    override fun getLine(): Int {
+    override fun getLineNumber(): Int {
         return ctx.start.line
     }
 
@@ -75,30 +75,31 @@ object ErrorLogger {
     fun printAllErrors(path: Path) {
 
         val lines = Files.lines(path)
-        val sortedErrors = errors.sortedWith(compareBy<CompileError> { it.getLine() }.thenBy { it.getCharPositionInLine() } )
+        val sortedErrors = errors.sortedWith(compareBy<CompileError> { it.getLineNumber() }.thenBy { it.getCharPositionInLine() })
 
-        var currentLineIndex = 0
+        // Line index initialised to 1, as lines are not zero-indexed
+        var currentLineIndex = 1
         var currentErrorIndex = 0
 
         // Find the line where the errors occurred so they can be printed
         for (line in lines) {
-            var e = sortedErrors[currentErrorIndex]
+            var error = sortedErrors[currentErrorIndex]
 
-            while (e.getLine() == currentLineIndex + 1) {
+            while (error.getLineNumber() == currentLineIndex) {
 
                 // Print the error
-                System.err.println("Error at (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.description()}")
+                System.err.println("Error at (${error.getLineNumber()}, ${error.getCharPositionInLine()}): ${error.description()}")
                 System.err.println(line) // print the line
-                System.err.println(errorPointerString(e.getCharPositionInLine()))
+                System.err.println(errorPointerString(error.getCharPositionInLine()))
 
                 // Check next error. It might be on the same line
                 currentErrorIndex++
 
                 if (currentErrorIndex == sortedErrors.size) {
-                    return // no more errors. We are done
+                    return // No more errors. We are done
                 }
 
-                e = sortedErrors[currentErrorIndex]
+                error = sortedErrors[currentErrorIndex]
             }
             currentLineIndex++
         }

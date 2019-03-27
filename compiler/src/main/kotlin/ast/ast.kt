@@ -11,7 +11,7 @@ const val MAGIC_UNDEFINED_STRING = "<<THIS IS A MAGIC STRING, UNDEFINED>>"
 
 sealed class AST(open val ctx: ParserRuleContext)
 
-data class RootNode constructor(
+data class RootNode(
     override val ctx: ParserRuleContext,
     val world: WorldNode,
     val body: List<Decl>
@@ -168,7 +168,7 @@ data class PostDecStmt(override val ctx: CellmataParser.PostDecStmtContext, val 
 data class ReturnStmt(override val ctx: CellmataParser.Return_stmtContext, val value: Expr) : Stmt(ctx)
 
 /*
- * Error nodes are used when something goes wrong in mapper.kt and is returned by the failing function.
+ * Error nodes are used when something goes wrong in reduce.kt and is returned by the failing function.
  */
 class ErrorAST(override val ctx: ParserRuleContext) : AST(ctx)
 class ErrorDecl(override val ctx: ParserRuleContext) : Decl(ctx)
