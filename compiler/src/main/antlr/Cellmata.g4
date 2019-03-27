@@ -60,7 +60,6 @@ neighbourhood_code : BLOCK_START coords_decl (LIST_SEP coords_decl)* BLOCK_END ;
 coords_decl : PAREN_START integer_literal (LIST_SEP integer_literal)? PAREN_END ;
 
 // Identifiers
-modifiable_ident : var_ident | array_lookup ;
 var_ident : IDENT ;
 
 // Type declaration
