@@ -37,7 +37,7 @@ fun compile(path: Path) {
 
         // Compilated failed due to errors in cell code
         System.err.println("Compilation failed: ${e.message}")
-        ErrorLogger.printAllErrors()
+        ErrorLogger.printAllErrors(path)
 
     } catch (e: Exception) {
 
@@ -45,7 +45,7 @@ fun compile(path: Path) {
         // Printing stack trace and errors for debugging reasons
         e.printStackTrace()
         System.err.println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
-        ErrorLogger.printAllErrors()
+        ErrorLogger.printAllErrors(path)
     }
 }
 

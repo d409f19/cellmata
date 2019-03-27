@@ -1,6 +1,8 @@
 package dk.aau.cs.d409f19.cellumata
 
 import org.antlr.v4.runtime.ParserRuleContext
+import java.nio.file.Files
+import java.nio.file.Path
 
 /**
  * Interface for all compiler errors that does not terminate a compiler phase.
@@ -70,9 +72,35 @@ object ErrorLogger {
     /**
      * Prints all errors in a nicely formatted way.
      */
-    fun printAllErrors() {
-        for (e in errors) {
-            System.err.println("Error at (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.description()}")
+    fun printAllErrors(path: Path) {
+
+        val lines = Files.lines(path)
+        val sortedErrors = errors.sortedWith(compareBy<CompileError> { it.getLine() }.thenBy { it.getCharPositionInLine() } )
+
+        var currentLineIndex = 0
+        var currentErrorIndex = 0
+
+        // Find the line where the errors occurred so they can be printed
+        for (line in lines) {
+            var e = sortedErrors[currentErrorIndex]
+
+            while (e.getLine() == currentLineIndex + 1) {
+
+                // Print the error
+                System.err.println("Error at (${e.getLine()}, ${e.getCharPositionInLine()}): ${e.description()}")
+                System.err.println(line) // print the line
+                System.err.println(errorPointerString(e.getCharPositionInLine()))
+
+                // Check next error. It might be on the same line
+                currentErrorIndex++
+
+                if (currentErrorIndex == sortedErrors.size) {
+                    return // no more errors. We are done
+                }
+
+                e = sortedErrors[currentErrorIndex]
+            }
+            currentLineIndex++
         }
     }
 
