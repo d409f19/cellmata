@@ -79,7 +79,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
         node.ident = node.ctx.neighbourhood_ident().text
 
         // For each declared coordinate produce a Coordinate through the map operation
-        val coords =  node.ctx.neighbourhood_code().coords_decl().map {
+        val coords = node.ctx.neighbourhood_code().coords_decl().map {
             // For each axes in the the coordinate convert it from a string to an integer
             val axes = it.integer_literal().map { intCtx ->
                 try {

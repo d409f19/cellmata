@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * Parse Tree to Abstract Syntax Tree transformer/mapper
  *
  * This file implements a recursive traversal of the the parse tree,
- * where each step of the traversal emit a node in the AST if that node
+ * where each step of the traversal emits a node in the AST if that node
  * in the parse tree is relevant to preserve.
  * It's important to note that this mapper only handles the process of
  * creating the tree part of the AST, it doesn't extract the values from
@@ -18,7 +18,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  */
 
 /**
- * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ * Attempts to recursively transform an expression node in the parse tree to create a subtree of the AST.
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
@@ -156,7 +156,7 @@ private fun reduceExpr(node: ParseTree): Expr {
 }
 
 /**
- * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ * Attempts to recursively transform an statement node in the parse tree to create a subtree of the AST.
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
@@ -211,7 +211,7 @@ private fun reduceStmt(node: ParseTree): Stmt {
 }
 
 /**
- * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ * Attempts to recursively transform an declaration node in the parse tree to create a subtree of the AST.
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
@@ -252,7 +252,7 @@ fun reduceCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
 }
 
 /**
- * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ * Attempts to recursively transform the parse tree root node to an abstract syntax tree.
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */

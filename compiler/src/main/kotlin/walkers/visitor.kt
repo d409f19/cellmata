@@ -358,7 +358,7 @@ abstract class BaseASTVisitor: ASTVisitor {
 }
 
 /**
- * Walks the tree while opening and closing scopes has their are entered and left.
+ * Walks the tree while opening and closing scopes as they are entered and left.
  *
  * @see BaseASTVisitor
  */

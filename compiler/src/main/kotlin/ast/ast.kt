@@ -10,9 +10,9 @@ import org.antlr.v4.runtime.tree.ParseTree
 const val MAGIC_UNDEFINED_STRING = "<<THIS IS A MAGIC STRING, UNDEFINED>>"
 
 /**
- * This classes is the basis for all nodes in the abstract syntax tree.
+ * This class is the basis for all nodes in the abstract syntax tree.
  *
- * It's sealed such that it's possible to use Kotlin's when statement to without an else.
+ * It's sealed such that it's possible to use Kotlin's when statement without an else.
  */
 sealed class AST
 
@@ -307,7 +307,7 @@ data class ContinueStmt(val ctx: CellmataParser.Continue_stmtContext) : Stmt()
 
 /**
  * Represents a become statement.
- * The become statements terminates a state block, and changes the the state of the cell being evaluated.
+ * The become statements terminates a state block, and changes the state of the cell being evaluated.
  */
 data class BecomeStmt(val ctx: CellmataParser.Become_stmtContext, val state: Expr) : Stmt()
 

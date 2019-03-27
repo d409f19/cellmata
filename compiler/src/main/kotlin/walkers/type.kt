@@ -9,7 +9,7 @@ import kotlin.AssertionError
 class TypeError : Exception()
 
 /**
- * Move types up the abstract syntax tree according to the type rules, and check that there is no violation of the type rules
+ * Synthesizes types by moving them up the abstract syntax tree according to the type rules, and check that there is no violation of the type rules
  */
 class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTable) {
     override fun visit(node: OrExpr) {
