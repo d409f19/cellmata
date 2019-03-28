@@ -41,8 +41,6 @@ interface ASTVisitor {
 
     fun visit(node: DivisionExpr)
 
-    fun visit(node: PositiveExpr)
-
     fun visit(node: NegativeExpr)
 
     fun visit(node: InverseExpr)
@@ -133,7 +131,6 @@ abstract class BaseASTVisitor: ASTVisitor {
             is SubtractionExpr -> visit(node)
             is MultiplicationExpr -> visit(node)
             is DivisionExpr -> visit(node)
-            is PositiveExpr -> visit(node)
             is NegativeExpr -> visit(node)
             is InverseExpr -> visit(node)
             is ArrayLookupExpr -> visit(node)
@@ -206,10 +203,6 @@ abstract class BaseASTVisitor: ASTVisitor {
     override fun visit(node: DivisionExpr) {
         visit(node.left)
         visit(node.right)
-    }
-
-    override fun visit(node: PositiveExpr) {
-        visit(node.value)
     }
 
     override fun visit(node: NegativeExpr) {

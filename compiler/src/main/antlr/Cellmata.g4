@@ -107,7 +107,6 @@ expr : '#' # stateIndexExpr
     | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
     | OP_NOT value=expr # inverseExpr
     | OP_MINUS value=expr # negativeExpr
-    | OP_PLUS value=expr # positiveExpr
     | left=expr OP_MODULO right=expr # moduloExpr
     | left=expr OP_DIVIDE right=expr # divisionExpr
     | left=expr OP_MULTIPLY right=expr # multiplictionExpr

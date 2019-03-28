@@ -60,8 +60,6 @@ data class MultiplicationExpr(val ctx: CellmataParser.MultiplictionExprContext, 
 
 data class DivisionExpr(val ctx: CellmataParser.DivisionExprContext, val left: Expr, val right: Expr) : Expr()
 
-data class PositiveExpr(val ctx: CellmataParser.PositiveExprContext, val value: Expr) : Expr()
-
 data class NegativeExpr(val ctx: CellmataParser.NegativeExprContext, val value: Expr) : Expr()
 
 data class InverseExpr(val ctx: CellmataParser.InverseExprContext, val value: Expr) : Expr()
