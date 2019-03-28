@@ -31,13 +31,14 @@ state s1 (255, 0, 12) {
     let k = 2 * 3.0;
     let l = 2 / 3.0;
     let m = 2 % 3.0;
-    let n = -n;
-    let m = !true;
-    let o = baz[0];
-    let p = 2 * (123 + 321);
-    let q = bar;
-    let r = baz(132);
-    let s = #;
+    let n = 42;
+    let o = -n;
+    let p = !true;
+    let q = baz[0];
+    let r = 2 * (123 + 321);
+    let s = bar;
+    let t = baz(132);
+    let u = #;
 
 
     let bt = true;
