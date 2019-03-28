@@ -170,56 +170,6 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: PreIncExpr) {
-        super.visit(node)
-
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> throw TypeError()
-        })
-    }
-
-    override fun visit(node: PreDecExpr) {
-        super.visit(node)
-
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> throw TypeError()
-        })
-    }
-
-    override fun visit(node: PostIncExpr) {
-        super.visit(node)
-
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> throw TypeError()
-        })
-    }
-
-    override fun visit(node: PostDecExpr) {
-        super.visit(node)
-
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> throw TypeError()
-        })
-    }
-
-    override fun visit(node: PositiveExpr) {
-        super.visit(node)
-
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> throw TypeError()
-        })
-    }
-
     override fun visit(node: NegativeExpr) {
         super.visit(node)
 
