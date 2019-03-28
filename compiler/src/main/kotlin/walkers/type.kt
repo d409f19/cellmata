@@ -203,58 +203,6 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: PreIncExpr) {
-        super.visit(node)
-
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Can only increment float or integer."))
-                null
-            }
-        })
-    }
-
-    override fun visit(node: PreDecExpr) {
-        super.visit(node)
-
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Can only increment float or integer."))
-                null
-            }
-        })
-    }
-
-    override fun visit(node: PostIncExpr) {
-        super.visit(node)
-
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Can only increment float or integer."))
-                null
-            }
-        })
-    }
-
-    override fun visit(node: PostDecExpr) {
-        super.visit(node)
-
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Can only increment float or integer."))
-                null
-            }
-        })
-    }
-
     override fun visit(node: NegativeExpr) {
         super.visit(node)
 

@@ -93,27 +93,11 @@ private fun reduceExpr(node: ParseTree): Expr {
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.PreIncExprContext -> PreIncExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
-        is CellmataParser.PreDecExprContext -> PreDecExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
         is CellmataParser.NegativeExprContext -> NegativeExpr(
             ctx = node,
             value = reduceExpr(node.value)
         )
         is CellmataParser.InverseExprContext -> InverseExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
-        is CellmataParser.PostIncExprContext -> PostIncExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
-        is CellmataParser.PostDecExprContext -> PostDecExpr(
             ctx = node,
             value = reduceExpr(node.value)
         )
@@ -149,7 +133,6 @@ private fun reduceExpr(node: ParseTree): Expr {
         is CellmataParser.FloatLiteralContext -> reduceExpr(node.value)
         is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
         is CellmataParser.Float_literalContext -> FloatLiteral(ctx = node)
-        is CellmataParser.Modifiable_identContext -> reduceExpr(node.getChild(0))
         is CellmataParser.Var_identContext -> NamedExpr(ctx = node)
         // Errors
         is ParserRuleContext -> { registerReduceError(node); ErrorExpr(node) }
@@ -202,10 +185,6 @@ private fun reduceStmt(node: ParseTree): Stmt {
         is CellmataParser.Break_stmtContext -> BreakStmt(ctx = node)
         is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = node)
         is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = node, state = reduceExpr(node.state))
-        is CellmataParser.PreIncStmtContext -> PreIncStmt(ctx = node, variable = reduceExpr(node.modifiable_ident()))
-        is CellmataParser.PostIncStmtContext -> PostIncStmt(ctx = node, variable = reduceExpr(node.modifiable_ident()))
-        is CellmataParser.PreDecStmtContext -> PreDecStmt(ctx = node, variable = reduceExpr(node.modifiable_ident()))
-        is CellmataParser.PostDecStmtContext -> PostDecStmt(ctx = node, variable = reduceExpr(node.modifiable_ident()))
         is CellmataParser.StmtContext -> reduceStmt(node.getChild(0))
         is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = node, value = reduceExpr(node.expr()))
         // Errors

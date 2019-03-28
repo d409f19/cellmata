@@ -113,14 +113,6 @@ data class MultiplicationExpr(override val ctx: CellmataParser.MultiplictionExpr
 
 data class DivisionExpr(override val ctx: CellmataParser.DivisionExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class PreIncExpr(override val ctx: CellmataParser.PreIncExprContext, val value: Expr) : Expr(ctx)
-
-data class PreDecExpr(override val ctx: CellmataParser.PreDecExprContext, val value: Expr) : Expr(ctx)
-
-data class PostIncExpr(override val ctx: CellmataParser.PostIncExprContext, val value: Expr) : Expr(ctx)
-
-data class PostDecExpr(override val ctx: CellmataParser.PostDecExprContext, val value: Expr) : Expr(ctx)
-
 data class NegativeExpr(override val ctx: CellmataParser.NegativeExprContext, val value: Expr) : Expr(ctx)
 
 data class InverseExpr(override val ctx: CellmataParser.InverseExprContext, val value: Expr) : Expr(ctx)
@@ -313,14 +305,6 @@ data class ContinueStmt(override val ctx: CellmataParser.Continue_stmtContext) :
  * The become statements terminates a state block, and changes the state of the cell being evaluated.
  */
 data class BecomeStmt(override val ctx: CellmataParser.Become_stmtContext, val state: Expr) : Stmt(ctx)
-
-data class PreIncStmt(override val ctx: CellmataParser.PreIncStmtContext, val variable: Expr) : Stmt(ctx)
-
-data class PostIncStmt(override val ctx: CellmataParser.PostIncStmtContext, val variable:  Expr) : Stmt(ctx)
-
-data class PreDecStmt(override val ctx: CellmataParser.PreDecStmtContext, val variable: Expr) : Stmt(ctx)
-
-data class PostDecStmt(override val ctx: CellmataParser.PostDecStmtContext, val variable: Expr) : Stmt(ctx)
 
 /**
  * Represents a return statement.
