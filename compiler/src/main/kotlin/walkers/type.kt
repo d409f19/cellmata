@@ -1,12 +1,15 @@
 package dk.aau.cs.d409f19.cellumata.walkers
 
+import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
+import org.antlr.v4.runtime.ParserRuleContext
 import kotlin.AssertionError
 
 /**
- * Thrown when a violation of the type rules is found
+ * Error for violation of the type rules
  */
-class TypeError : Exception()
+class TypeError(ctx: ParserRuleContext, description: String) : ErrorFromContext(ctx, description)
 
 /**
  * Synthesizes types by moving them up the abstract syntax tree according to the type rules, and check that there is no violation of the type rules
@@ -16,10 +19,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.left.getType() != BooleanType) {
-            throw TypeError()
+            ErrorLogger.registerError(TypeError(node.left.ctx, "Expected boolean expression in left hand side of or-expression."))
         }
         if (node.right.getType() != BooleanType) {
-            throw TypeError()
+            ErrorLogger.registerError(TypeError(node.right.ctx, "Expected boolean expression in right hand side of or-expression."))
         }
 
         node.setType(BooleanType)
@@ -29,10 +32,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.left.getType() != BooleanType) {
-            throw TypeError()
+            ErrorLogger.registerError(TypeError(node.left.ctx, "Expected boolean expression in left hand side of and-expression."))
         }
         if (node.right.getType() != BooleanType) {
-            throw TypeError()
+            ErrorLogger.registerError(TypeError(node.right.ctx, "Expected boolean expression in right hand side of and-expression."))
         }
 
         node.setType(BooleanType)
@@ -52,7 +55,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == ActualNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
             node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
             node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Could not compare the types of right and left hand side of inequality-expression."))
+                null
+            }
         })
     }
 
@@ -70,7 +76,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == ActualNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
             node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
             node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Could not compare the types of right and left hand side of equality-expression."))
+                null
+            }
         })
     }
 
@@ -82,7 +91,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                null
+            }
         })
     }
 
@@ -94,7 +106,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                null
+            }
         })
     }
 
@@ -106,7 +121,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                null
+            }
         })
     }
 
@@ -118,7 +136,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                null
+            }
         })
     }
 
@@ -130,7 +151,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                null
+            }
         })
     }
 
@@ -142,7 +166,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                null
+            }
         })
     }
 
@@ -154,7 +181,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                null
+            }
         })
     }
 
@@ -166,7 +196,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                null
+            }
         })
     }
 
@@ -176,7 +209,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         node.setType(when(node.value.getType()) {
             IntegerType -> IntegerType
             FloatType -> FloatType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Only float or integer can be negative."))
+                null
+            }
         })
     }
 
@@ -184,7 +220,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.value.getType() != BooleanType) {
-            throw TypeError()
+            ErrorLogger.registerError(TypeError(node.ctx, "Can only invert boolean expressions."))
         }
 
         node.setType(BooleanType)
@@ -217,7 +253,9 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             val types = node.values.map { it.getType() }.toList()
             if (types.distinct().count() > 1) {
                 // ToDo int to float conversion
-                throw TypeError()
+                ErrorLogger.registerError(TypeError(node.ctx, "Cannot determine type of array because it is initialised with multiple types."))
+                node.setType(null)
+                return
             }
             valuesType = types.first() // Pick any one because we have already checked they are identical
         }
@@ -226,14 +264,20 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         node.setType(when {
             node.declaredType != null && node.values.isNotEmpty() -> {
                 if (node.declaredType != valuesType) {
-                    throw TypeError()
+                    ErrorLogger.registerError(TypeError(node.ctx, "Cannot determine type of array since initialised values does not match the declared type."))
+                    node.setType(null)
+                    return
                 }
                 node.declaredType
             }
             node.declaredType != null && node.values.isEmpty() -> node.declaredType
             node.declaredType == null && node.values.isNotEmpty() -> valuesType
-            node.declaredType == null && node.values.isEmpty() -> throw TypeError()
-            else -> throw AssertionError("This case should never be hit")
+            node.declaredType == null && node.values.isEmpty() -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Cannot determine type of array."))
+                node.setType(null)
+                return
+            }
+            else -> throw AssertionError("Cannot determine type of array. This case should never be hit!")
         })
     }
 
@@ -256,7 +300,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> throw TypeError()
+            else -> {
+                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                null
+            }
         })
     }
 

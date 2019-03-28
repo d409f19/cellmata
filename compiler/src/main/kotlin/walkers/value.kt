@@ -103,7 +103,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
         super.visit(node)
 
         // Interpret each argument and produce a FunctionArgs for it
-        node.args = node.ctx.func_decl_arg().map { FunctionArgs(it.IDENT().text, typeFromCtx(it.type_ident())) }.toList()
+        node.args = node.ctx.func_decl_arg().map { FunctionArgs(it, it.IDENT().text, typeFromCtx(it.type_ident())) }.toList()
 
         node.ident = node.ctx.func_ident().text
         node.returnType = typeFromCtx(node.ctx.type_ident())

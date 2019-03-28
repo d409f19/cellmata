@@ -1,6 +1,10 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
 import dk.aau.cs.d409f19.antlr.CellmataParser
+import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
+import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
+import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
@@ -130,7 +134,9 @@ private fun reduceExpr(node: ParseTree): Expr {
         is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
         is CellmataParser.Float_literalContext -> FloatLiteral(ctx = node)
         is CellmataParser.Var_identContext -> NamedExpr(ctx = node)
-        else -> throw AssertionError("Unexpected tree node")
+        // Errors
+        is ParserRuleContext -> { registerReduceError(node); ErrorExpr(node) }
+        else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
 
@@ -181,7 +187,9 @@ private fun reduceStmt(node: ParseTree): Stmt {
         is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = node, state = reduceExpr(node.state))
         is CellmataParser.StmtContext -> reduceStmt(node.getChild(0))
         is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = node, value = reduceExpr(node.expr()))
-        else -> throw AssertionError("Unexpected tree node")
+        // Errors
+        is ParserRuleContext -> { registerReduceError(node); ErrorStmt(node) }
+        else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
 
@@ -211,7 +219,9 @@ private fun reduceDecl(node: ParseTree): Decl {
             ctx = node,
             body = reduceCodeBlock(node.code_block())
         )
-        else -> throw AssertionError("Unexpected tree node")
+        // Errors
+        is ParserRuleContext -> { registerReduceError(node); ErrorDecl(node) }
+        else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
 
@@ -228,15 +238,22 @@ fun reduceCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
 
 /**
  * Attempts to recursively transform the parse tree root node to an abstract syntax tree.
- *
- * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
-fun reduce(node: ParseTree): AST {
+fun reduce(node: ParserRuleContext): AST {
     return when (node) {
         is CellmataParser.StartContext -> RootNode(
+            ctx = node,
             world = WorldNode(ctx = node.world_dcl()),
             body = node.body().children.map(::reduceDecl)
         )
-        else -> throw AssertionError("Unexpected tree node. Have the grammar been changed without updating the AST mapper?")
+        else -> { registerReduceError(node); ErrorAST(node) }
     }
+}
+
+/**
+ * Register a reduce error: Unexpected parsing context. This should only happen if we forget to update the reduce.kt
+ * after changing the grammar.
+ */
+fun registerReduceError(ctx: ParserRuleContext) {
+    ErrorLogger.registerError(ErrorFromContext(ctx, "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST."))
 }

@@ -1,5 +1,8 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
+import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
+import org.antlr.v4.runtime.ParserRuleContext
 import java.util.*
 
 /**
@@ -15,9 +18,9 @@ data class Table(
 )
 
 /**
- * An exception thrown when there is an attempt to redefine an already defined symbol in the code that is being compiled.
+ * An error logged when there is an attempt to redefine an already defined symbol in the code that is being compiled.
  */
-class SymbolRedefinitionException(val ident: String) : Exception("\"$ident\" is already defined")
+class SymbolRedefinitionError(ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is already defined")
 
 /**
  * List of language keywords that can't be used as identifiers
@@ -59,15 +62,11 @@ class SymbolTable {
     fun insertSymbol(ident: String, node: AST) {
         val table = scopeStack.peek()
 
-        if (RESERVED_SYMBOLS.contains(ident)) {
-            throw SymbolRedefinitionException(ident = ident)
+        if (RESERVED_SYMBOLS.contains(ident) || table.symbols.containsKey(ident)) {
+            ErrorLogger.registerError(SymbolRedefinitionError(node.ctx, ident))
+        } else {
+            table.symbols[ident] = node
         }
-
-        if (table.symbols.containsKey(ident)) {
-            throw SymbolRedefinitionException(ident = ident)
-        }
-
-        table.symbols[ident] = node
     }
 
     fun getSymbol(name: String): AST? {
@@ -138,17 +137,13 @@ class CreatingSymbolTableSession(symbolTable: Table) {
     /**
      * Insert a new symbol in the current scope
      *
-     * @throws SymbolRedefinitionException throw if identifier is already in use in the current scope or det identifier is a keyword
+     * @throws SymbolRedefinitionError logged if identifier is already in use in the current scope or det identifier is a keyword
      */
     fun insertSymbol(ident: String, node: AST) {
         val table = scopeStack.peek()
 
-        if (RESERVED_SYMBOLS.contains(ident)) {
-            throw SymbolRedefinitionException(ident = ident)
-        }
-
-        if (table.symbols.containsKey(ident)) {
-            throw SymbolRedefinitionException(ident = ident)
+        if (RESERVED_SYMBOLS.contains(ident) || table.symbols.containsKey(ident)) {
+            ErrorLogger.registerError(SymbolRedefinitionError(node.ctx, ident))
         }
 
         table.symbols[ident] = node
