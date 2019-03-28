@@ -72,11 +72,11 @@ modifiable_ident : var_ident | array_lookup ;
 var_ident : IDENT ;
 
 // Type declaration
-type_ident : IDENT | type_spec ;
-type_spec
+type_ident
     : array_decl # typeArray
     | TYPE_BOOLEAN # typeBoolean
-    | TYPE_NUMBER # typeNumber
+    | TYPE_INTEGER # typeInteger
+    | TYPE_FLOAT # typeFloat
     | STMT_NEIGHBOUR # typeNeighbour
     | STMT_STATE # typeState
     ;
@@ -118,7 +118,6 @@ expr : '#' # stateIndexExpr
     | value=expr OP_INCREMENT # postIncExpr
     | OP_NOT value=expr # inverseExpr
     | OP_MINUS value=expr # negativeExpr
-    | OP_PLUS value=expr # positiveExpr
     | OP_DECREMENT value=expr # preDecExpr
     | OP_INCREMENT value=expr # preIncExpr
     | left=expr OP_MODULO right=expr # moduloExpr
@@ -197,8 +196,9 @@ STMT_FOR : 'for' ;
 STMT_BREAK : 'break' ;
 STMT_CONTINUE : 'continue' ;
 
-TYPE_NUMBER : 'number' ;
-TYPE_BOOLEAN : 'boolean' | 'bool' ;
+TYPE_INTEGER : 'int' ;
+TYPE_FLOAT : 'float' ;
+TYPE_BOOLEAN : 'bool' ;
 
 LITERAL_TRUE : 'true' ;
 LITERAL_FALSE : 'false' ;

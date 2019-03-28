@@ -2,10 +2,10 @@ package dk.aau.cs.d409f19.cellumata
 
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
-import dk.aau.cs.d409f19.cellumata.ast.SymbolTable
 import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
 import dk.aau.cs.d409f19.cellumata.walkers.ScopeCheckVisitor
+import dk.aau.cs.d409f19.cellumata.walkers.TypeChecker
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import java.nio.file.Path
@@ -30,9 +30,14 @@ fun compile(path: Path) {
         LiteralExtractorVisitor().visit(ast)
 
         // Symbol table and scope
-        val symbolTable = SymbolTable()
-        ScopeCheckVisitor(symbolTable).visit(ast)
+        val scopeChecker = ScopeCheckVisitor()
+        scopeChecker.visit(ast)
+        val symbolTable = scopeChecker.getSymbolTable()
         println(symbolTable)
+        ErrorLogger.assertNoErrors()
+
+        // Type checking
+        TypeChecker(symbolTable).visit(ast)
         ErrorLogger.assertNoErrors()
 
     } catch (e: TerminatedCompilationException) {

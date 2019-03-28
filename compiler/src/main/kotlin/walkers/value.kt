@@ -4,17 +4,34 @@ import dk.aau.cs.d409f19.cellumata.ast.*
 
 open class ParsingException(msg: String = ""): Exception(msg)
 
+/**
+ * Thrown if there where an error while parsing a integer
+ */
 class IntegerParsingException(val value: String, val ctx: AST): ParsingException(msg = "\"$value\" is not a valid integer")
 
+/**
+ * Thrown if there where an error while parsing a bool
+ */
 class BoolParsingException(val value: String, val ctx: BoolLiteral): ParsingException(msg = "\"$value\"\"$value\" is not a valid boolean")
 
+/**
+ * Thrown if there where an error while parsing a float
+ */
 class FloatParsingException(val value: String, val ctx: FloatLiteral): ParsingException(msg = "\"$value\" is not a valid float")
 
+/**
+ * Thrown if there where an error while parsing a color/byte
+ */
 class ColorParsingException(val value: String, val ctx: StateDecl): ParsingException(msg = "\"$value\" is not a valid color")
 
+/**
+ * Thrown if there where an error while parsing a single coordinate of a neighbourhood
+ */
 class CoordinateParsingException: ParsingException("Inconsistent amount axes in neighbourhood")
 
-
+/**
+ * Visits the abstract syntax tree parsing
+ */
 class LiteralExtractorVisitor : BaseASTVisitor() {
     // World
 
@@ -61,7 +78,9 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
 
         node.ident = node.ctx.neighbourhood_ident().text
 
-        val coords =  node.ctx.neighbourhood_code().coords_decl().map {
+        // For each declared coordinate produce a Coordinate through the map operation
+        val coords = node.ctx.neighbourhood_code().coords_decl().map {
+            // For each axes in the the coordinate convert it from a string to an integer
             val axes = it.integer_literal().map { intCtx ->
                 try {
                     intCtx.text.toInt()
@@ -72,8 +91,8 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
             Coordinate(axes = axes, ctx = it)
         }
 
+        // In case not all coordinates has the same amount of axes throw an error
         if (coords.map { it.axes.size }.distinct().count() > 1) {
-            // In case not all coordinates has the same amount of axes throw an error
             throw CoordinateParsingException()
         }
 
@@ -83,10 +102,11 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
     override fun visit(node: FuncDecl) {
         super.visit(node)
 
-        node.args = node.ctx.func_decl_arg().map { FunctionArgs(it, it.IDENT().text, it.type_ident().text) }.toList()
+        // Interpret each argument and produce a FunctionArgs for it
+        node.args = node.ctx.func_decl_arg().map { FunctionArgs(it, it.IDENT().text, typeFromCtx(it.type_ident())) }.toList()
 
         node.ident = node.ctx.func_ident().text
-        node.returnType = node.ctx.type_ident().text
+        node.returnType = typeFromCtx(node.ctx.type_ident())
     }
 
     override fun visit(node: StateDecl) {
@@ -94,6 +114,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
 
         node.ident = node.ctx.state_ident().text
 
+        // Red
         try {
             val value = node.ctx.state_rgb().red.text.toShort()
             if (value < 0 || value > 255) {
@@ -104,6 +125,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
             throw ColorParsingException(node.ctx.state_rgb().red.text, node)
         }
 
+        // Green
         try {
             val value = node.ctx.state_rgb().green.text.toShort()
             if (value < 0 || value > 255) {
@@ -114,6 +136,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
             throw ColorParsingException(node.ctx.state_rgb().green.text, node)
         }
 
+        // Blue
         try {
             val value = node.ctx.state_rgb().blue.text.toShort()
             if (value < 0 || value > 255) {

@@ -6,14 +6,29 @@ import dk.aau.cs.d409f19.cellumata.ast.*
 import org.antlr.v4.runtime.ParserRuleContext
 import java.lang.Exception
 
+/**
+ * Logged when a undefined symbol is encountered. This exception indicates there is a use-before-declaration scenario.
+ */
 class UndeclaredNameException(ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is undeclared.")
 
-class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
+/**
+ * Walks through the abstract syntax tree, extracts symbols, and checks for use-before-declaration.
+ */
+class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
+    private val symbolTableSession: CreatingSymbolTableSession = CreatingSymbolTableSession(symbolTable = symbolTable)
+
+    /**
+     * @return The filed symbol table
+     */
+    fun getSymbolTable(): Table {
+        return symbolTableSession.getRootTable()
+    }
+
     override fun visit(node: RootNode) {
         // Extract all states, functions, and neighbourhoods names first
-        node.body.filter { it is StateDecl }.forEach { symbolTable.insertSymbol((it as StateDecl).ident, it) }
-        node.body.filter { it is FuncDecl }.forEach { symbolTable.insertSymbol((it as FuncDecl).ident, it) }
-        node.body.filter { it is NeighbourhoodDecl }.forEach { symbolTable.insertSymbol((it as NeighbourhoodDecl).ident, it) }
+        node.body.filter { it is StateDecl }.forEach { symbolTableSession.insertSymbol((it as StateDecl).ident, it) }
+        node.body.filter { it is FuncDecl }.forEach { symbolTableSession.insertSymbol((it as FuncDecl).ident, it) }
+        node.body.filter { it is NeighbourhoodDecl }.forEach { symbolTableSession.insertSymbol((it as NeighbourhoodDecl).ident, it) }
 
         // Visit constant declaration first
         node.body.filter { it is ConstDecl }.forEach { visit(it) }
@@ -23,7 +38,10 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
     }
 
     override fun visit(node: NamedExpr) {
-        if (symbolTable.getSymbol(node.ident) == null) {
+
+        // Check if the name is in the symbol table
+        val symb = symbolTableSession.getSymbol(node.ident)
+        if (symb == null) {
             ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
         }
         super.visit(node)
@@ -31,46 +49,46 @@ class ScopeCheckVisitor(val symbolTable: SymbolTable) : BaseASTVisitor() {
 
     override fun visit(node: ConstDecl) {
         super.visit(node)
-        symbolTable.insertSymbol(node.ident, node)
+        symbolTableSession.insertSymbol(node.ident, node)
     }
 
     override fun visit(node: StateDecl) {
-        symbolTable.createScope()
+        symbolTableSession.openScope()
         super.visit(node)
-        symbolTable.closeScope()
+        symbolTableSession.closeScope()
     }
 
     override fun visit(node: FuncDecl) {
-        symbolTable.createScope()
-        node.args.forEach { symbolTable.insertSymbol(it.ident, it) }
+        symbolTableSession.openScope()
+        node.args.forEach { symbolTableSession.insertSymbol(it.ident, it) }
 
         super.visit(node)
-        symbolTable.closeScope()
+        symbolTableSession.closeScope()
     }
 
     override fun visit(node: AssignStmt) {
         if (node.ctx.STMT_LET() == null) { // Check if this is a variable declaration, and not just an assignment
             // assignment
-            val symb = symbolTable.getSymbol(node.ident)
+            val symb = symbolTableSession.getSymbol(node.ident)
             if (symb == null) {
                 ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
             }
         } else {
             // declaration
-            symbolTable.insertSymbol(node.ident, node)
+            symbolTableSession.insertSymbol(node.ident, node)
         }
 
         super.visit(node)
     }
 
     override fun visit(node: ConditionalBlock) {
-        symbolTable.createScope()
+        symbolTableSession.openScope()
         super.visit(node)
-        symbolTable.closeScope()
+        symbolTableSession.closeScope()
     }
 
     override fun visit(node: FuncExpr) {
-        if (symbolTable.getSymbol(node.ident) == null) {
+        if (symbolTableSession.getSymbol(node.ident) == null) {
             ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
         }
         super.visit(node)

@@ -2,6 +2,9 @@ package dk.aau.cs.d409f19.cellumata.walkers
 
 import dk.aau.cs.d409f19.cellumata.ast.*
 
+/**
+ * The base interface for an implementation of the visitor pattern on the abstract syntax tree
+ */
 interface ASTVisitor {
     fun visit(node: RootNode)
 
@@ -51,8 +54,6 @@ interface ASTVisitor {
 
     fun visit(node: PostDecExpr)
 
-    fun visit(node: PositiveExpr)
-
     fun visit(node: NegativeExpr)
 
     fun visit(node: InverseExpr)
@@ -89,7 +90,7 @@ interface ASTVisitor {
 
     fun visit(node: PreDecStmt)
 
-    fun visit(ndoe: PostDecStmt)
+    fun visit(node: PostDecStmt)
 
     fun visit(node: ReturnStmt)
     fun visit(node: AST)
@@ -97,6 +98,10 @@ interface ASTVisitor {
     fun visit(node: ConditionalBlock)
 }
 
+/**
+ * A basic implementation of an visitor pattern for the abstract syntax tree.
+ * By default does a in-order walk of the abstract syntax tree.
+ */
 abstract class BaseASTVisitor: ASTVisitor {
     override fun visit(node: AST) {
         when (node) {
@@ -159,7 +164,6 @@ abstract class BaseASTVisitor: ASTVisitor {
             is PreDecExpr -> visit(node)
             is PostIncExpr -> visit(node)
             is PostDecExpr -> visit(node)
-            is PositiveExpr -> visit(node)
             is NegativeExpr -> visit(node)
             is InverseExpr -> visit(node)
             is ArrayLookupExpr -> visit(node)
@@ -247,10 +251,6 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: PostDecExpr) {
-        visit(node.value)
-    }
-
-    override fun visit(node: PositiveExpr) {
         visit(node.value)
     }
 
@@ -348,11 +348,38 @@ abstract class BaseASTVisitor: ASTVisitor {
         // no-op
     }
 
-    override fun visit(ndoe: PostDecStmt) {
+    override fun visit(node: PostDecStmt) {
         // no-op
     }
 
     override fun visit(node: ReturnStmt) {
         visit(node.value)
+    }
+}
+
+/**
+ * Walks the tree while opening and closing scopes as they are entered and left.
+ *
+ * @see BaseASTVisitor
+ */
+open class ScopedASTVisitor(symbolTable: Table): BaseASTVisitor() {
+    protected val symbolTableSession = ViewingSymbolTableSession(symbolTable = symbolTable)
+
+    override fun visit(node: StateDecl) {
+        symbolTableSession.openScope()
+        super.visit(node)
+        symbolTableSession.closeScope()
+    }
+
+    override fun visit(node: FuncDecl) {
+        symbolTableSession.openScope()
+        super.visit(node)
+        symbolTableSession.closeScope()
+    }
+
+    override fun visit(node: ConditionalBlock) {
+        symbolTableSession.openScope()
+        super.visit(node)
+        symbolTableSession.closeScope()
     }
 }
