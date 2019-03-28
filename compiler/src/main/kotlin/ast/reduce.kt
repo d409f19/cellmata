@@ -109,7 +109,6 @@ private fun reduceExpr(node: ParseTree): Expr {
         is CellmataParser.FloatLiteralContext -> reduceExpr(node.value)
         is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
         is CellmataParser.Float_literalContext -> FloatLiteral(ctx = node)
-        is CellmataParser.Modifiable_identContext -> reduceExpr(node.getChild(0))
         is CellmataParser.Var_identContext -> NamedExpr(ctx = node)
         else -> throw AssertionError("Unexpected tree node")
     }
