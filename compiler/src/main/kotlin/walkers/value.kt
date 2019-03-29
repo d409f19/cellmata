@@ -1,6 +1,8 @@
 package dk.aau.cs.d409f19.cellumata.walkers
 
+import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.*
+import org.antlr.runtime.tree.ParseTree
 
 open class ParsingException(msg: String = ""): Exception(msg)
 
@@ -151,5 +153,55 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
     override fun visit(node: AssignStmt) {
         super.visit(node)
         node.ident = node.ctx.var_ident().text
+    }
+
+    private fun toInt(text: String, node: AST): Int {
+        try {
+            return text.toInt()
+        } catch (e: NumberFormatException) {
+            throw IntegerParsingException(text, node)
+        }
+    }
+
+    override fun visit(node: WorldNode) {
+        fun parseDimension(dim: CellmataParser.World_size_dimContext): WorldDimension {
+            val type = dim.type
+            return WorldDimension(
+                size = toInt(dim.size.text, node),
+                type = when(type) {
+                    is CellmataParser.DimFiniteEdgeContext -> WorldType.EDGE // ToDo parse edge state
+                    is CellmataParser.DimFiniteWrappingContext -> WorldType.WRAPPING
+                    else -> throw AssertionError()
+                },
+                edge = if(type is CellmataParser.DimFiniteEdgeContext) {
+                    type.state.text
+                } else {
+                    null
+                }
+            )
+        }
+
+        val width = parseDimension(node.ctx.size.width)
+
+        node.dimensions = if (node.ctx.size.height != null) {
+            val height = parseDimension(node.ctx.size.height)
+            listOf(width, height)
+        } else {
+            listOf(width)
+        }
+
+        try {
+            node.cellSize = node.ctx.cellsize?.value.text?.toInt()
+        } catch (e: NumberFormatException) {
+            throw IntegerParsingException(node.ctx.cellsize.text, node)
+        }
+
+        try {
+            node.tickrate = node.ctx.tickrate?.text?.toInt()
+        } catch (e: NumberFormatException) {
+            throw IntegerParsingException(node.ctx.tickrate.text, node)
+        }
+
+        super.visit(node)
     }
 }

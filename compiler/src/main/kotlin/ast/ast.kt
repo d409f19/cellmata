@@ -50,16 +50,16 @@ interface TypedNode {
     fun setType(type: Type?)
 }
 
-data class WorldDimension(val size: Int = -1, val type: WorldType = WorldType.UNDEFINED)
+data class WorldDimension(val size: Int = -1, val type: WorldType = WorldType.UNDEFINED, val edge: String?)
 
 /**
  * WorldNode represent the world definition.
  */
 data class WorldNode(
-    val ctx: ParseTree,
-    val dimensions: List<WorldDimension> = emptyList(),
-    val tickrate: Int? = null,
-    val cellSize: Int? = null
+    val ctx: CellmataParser.World_dclContext,
+    var dimensions: List<WorldDimension> = emptyList(),
+    var tickrate: Int? = null,
+    var cellSize: Int? = null
 ) : AST()
 
 /*
@@ -299,7 +299,7 @@ data class IfStmt(
     val elseBlock: List<Stmt>?
 ) : Stmt()
 
-data class ForStmt(val ctx: CellmataParser.For_stmtContext, val initPart: AssignStmt, val condition: Expr, val postIterationPart: AssignStmt) : Stmt()
+data class ForStmt(val ctx: CellmataParser.For_stmtContext, val initPart: AssignStmt, val condition: Expr, val postIterationPart: AssignStmt, val body: List<Stmt>) : Stmt()
 
 data class BreakStmt(val ctx: CellmataParser.Break_stmtContext) : Stmt()
 

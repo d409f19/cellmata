@@ -9,7 +9,7 @@ const_ident : IDENT ;
 // World
 world_dcl : STMT_WORLD BLOCK_START size=world_size tickrate=world_tickrate? cellsize=world_cellsize? BLOCK_END ;
 world_size : WORLD_SIZE ASSIGN width=world_size_dim (LIST_SEP height=world_size_dim)?;
-world_size_dim : integer_literal SQ_BRACKET_START world_size_dim_finite SQ_BRACKET_END # dimFinite ;
+world_size_dim : size=integer_literal SQ_BRACKET_START type=world_size_dim_finite SQ_BRACKET_END ;
 world_size_dim_finite
     : WORLD_WRAP # dimFiniteWrapping
     | WORLD_EDGE ASSIGN state=IDENT # dimFiniteEdge
