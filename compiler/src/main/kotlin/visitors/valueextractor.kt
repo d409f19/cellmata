@@ -154,6 +154,11 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
         node.ident = node.ctx.var_ident().text
     }
 
+    /**
+     * Parse a string into a integer, or throw IntegerParisingException the string isn't a valid integer.
+     *
+     * @throws IntegerParsingException
+     */
     private fun parseInt(text: String, node: AST): Int {
         try {
             return text.toInt()
@@ -163,12 +168,15 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
     }
 
     override fun visit(node: WorldNode) {
+        /**
+         * Parses a single dimension from the world size declaration list
+         */
         fun parseDimension(dim: CellmataParser.World_size_dimContext): WorldDimension {
             val type = dim.type
             return WorldDimension(
                 size = parseInt(dim.size.text, node),
                 type = when(type) {
-                    is CellmataParser.DimFiniteEdgeContext -> WorldType.EDGE // ToDo parse edge state
+                    is CellmataParser.DimFiniteEdgeContext -> WorldType.EDGE
                     is CellmataParser.DimFiniteWrappingContext -> WorldType.WRAPPING
                     else -> throw AssertionError()
                 },
@@ -182,6 +190,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
 
         val width = parseDimension(node.ctx.size.width)
 
+        // If height is non-null their is two dimension, otherwise their is only one
         node.dimensions = if (node.ctx.size.height != null) {
             val height = parseDimension(node.ctx.size.height)
             listOf(width, height)
