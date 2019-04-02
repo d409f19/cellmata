@@ -155,7 +155,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
     }
 
     /**
-     * Parse a string into a integer, or throw IntegerParisingException the string isn't a valid integer.
+     * Parse a string into a integer, or throw IntegerParsingException the string isn't a valid integer.
      *
      * @throws IntegerParsingException
      */
@@ -190,7 +190,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
 
         val width = parseDimension(node.ctx.size.width)
 
-        // If height is non-null their is two dimension, otherwise their is only one
+        // If height is non-null it is two dimensional, otherwise it is one dimensional
         node.dimensions = if (node.ctx.size.height != null) {
             val height = parseDimension(node.ctx.size.height)
             listOf(width, height)
