@@ -124,9 +124,13 @@ class TestUtilities {
 
         // Casting ast to RootNode
         val rootNode = ast as RootNode
-        // TODO: Should be refactored to actual values when compiler gains ability
-        assertNull(rootNode.world.cellSize)
-        assertNull(rootNode.world.tickrate)
+        // Assert world values
+        assertEquals(10, rootNode.world.dimensions.get(0).size)
+        assertEquals(20, rootNode.world.dimensions.get(1).size)
+        assertEquals(WorldType.WRAPPING, rootNode.world.dimensions.get(0).type)
+        assertEquals(WorldType.WRAPPING, rootNode.world.dimensions.get(1).type)
+        assertEquals(5, rootNode.world.cellSize)
+        assertEquals(120, rootNode.world.tickrate)
 
         // Cast first body of rootNode to ConstDecl
         val const = rootNode.body.get(0) as ConstDecl
