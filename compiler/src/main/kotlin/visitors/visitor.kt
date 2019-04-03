@@ -80,6 +80,17 @@ interface ASTVisitor {
     fun visit(node: AST)
     fun visit(node: FloatLiteral)
     fun visit(node: ConditionalBlock)
+    fun visit(node: FunctionArgs)
+
+    fun visit(node: WorldNode)
+
+    fun visit(node: WorldDimension)
+
+    fun visit(node: ForStmt)
+
+    fun visit(node: BreakStmt)
+
+    fun visit(node: ContinueStmt)
 }
 
 /**
@@ -90,14 +101,28 @@ abstract class BaseASTVisitor: ASTVisitor {
     override fun visit(node: AST) {
         when (node) {
             is RootNode -> visit(node)
-            is WorldNode -> throw NotImplementedError()
+            is WorldNode -> visit(node)
             is Expr -> visit(node)
             is Decl -> visit(node)
             is Stmt -> visit(node)
+            is FunctionArgs -> visit(node)
         }
     }
 
+    override fun visit(node: WorldNode) {
+        node.dimensions.forEach { visit(it) }
+    }
+
+    override fun visit(node: WorldDimension) {
+        // no-op
+    }
+
+    override fun visit(node: FunctionArgs) {
+        // no-op
+    }
+
     override fun visit(node: RootNode) {
+        visit(node.world)
         node.body.forEach { visit(it) }
     }
 
@@ -127,6 +152,7 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: FuncDecl) {
+        node.args.forEach { visit(it) }
         node.body.forEach { visit(it) }
     }
 
@@ -154,7 +180,9 @@ abstract class BaseASTVisitor: ASTVisitor {
             is FuncExpr -> visit(node)
             is StateIndexExpr -> visit(node)
             is IntLiteral -> visit(node)
+            is FloatLiteral -> visit(node)
             is BoolLiteral -> visit(node)
+            else -> throw AssertionError()
         }
     }
 
@@ -273,6 +301,9 @@ abstract class BaseASTVisitor: ASTVisitor {
             is IfStmt -> visit(node)
             is BecomeStmt -> visit(node)
             is ReturnStmt -> visit(node)
+            is ForStmt -> visit(node)
+            is BreakStmt -> visit(node)
+            is ContinueStmt -> visit(node)
         }
     }
 
@@ -298,6 +329,21 @@ abstract class BaseASTVisitor: ASTVisitor {
 
     override fun visit(node: ReturnStmt) {
         visit(node.value)
+    }
+
+    override fun visit(node: ForStmt) {
+        visit(node.initPart)
+        visit(node.condition)
+        visit(node.postIterationPart)
+        node.body.forEach { visit(it) }
+    }
+
+    override fun visit(node: BreakStmt) {
+        // no-op
+    }
+
+    override fun visit(node: ContinueStmt) {
+        // no-op
     }
 }
 

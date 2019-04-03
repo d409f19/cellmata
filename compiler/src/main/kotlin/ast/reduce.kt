@@ -180,7 +180,8 @@ private fun reduceStmt(node: ParseTree): Stmt {
             ctx = node,
             initPart = AssignStmt(node.for_init().assignment(), expr = reduceExpr(node.for_init().assignment().expr())),
             condition = reduceExpr(node.for_condition().expr()),
-            postIterationPart = AssignStmt(node.for_post_iteration().assignment(), expr = reduceExpr(node.for_post_iteration().assignment().expr()))
+            postIterationPart = AssignStmt(node.for_post_iteration().assignment(), expr = reduceExpr(node.for_post_iteration().assignment().expr())),
+            body = reduceCodeBlock(node.code_block())
         )
         is CellmataParser.Break_stmtContext -> BreakStmt(ctx = node)
         is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = node)

@@ -1,5 +1,6 @@
 package dk.aau.cs.d409f19.cellumata.walkers
 
+import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.*
 
 open class ParsingException(msg: String = ""): Exception(msg)
@@ -151,5 +152,55 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
     override fun visit(node: AssignStmt) {
         super.visit(node)
         node.ident = node.ctx.var_ident().text
+    }
+
+    /**
+     * Parse a string into a integer, or throw IntegerParsingException the string isn't a valid integer.
+     *
+     * @throws IntegerParsingException
+     */
+    private fun parseInt(text: String, node: AST): Int {
+        try {
+            return text.toInt()
+        } catch (e: NumberFormatException) {
+            throw IntegerParsingException(text, node)
+        }
+    }
+
+    override fun visit(node: WorldNode) {
+        /**
+         * Parses a single dimension from the world size declaration list
+         */
+        fun parseDimension(dim: CellmataParser.World_size_dimContext): WorldDimension {
+            val type = dim.type
+            return WorldDimension(
+                size = parseInt(dim.size.text, node),
+                type = when(type) {
+                    is CellmataParser.DimFiniteEdgeContext -> WorldType.EDGE
+                    is CellmataParser.DimFiniteWrappingContext -> WorldType.WRAPPING
+                    else -> throw AssertionError()
+                },
+                edge = if(type is CellmataParser.DimFiniteEdgeContext) {
+                    type.state.text
+                } else {
+                    null
+                }
+            )
+        }
+
+        val width = parseDimension(node.ctx.size.width)
+
+        // If height is non-null it is two dimensional, otherwise it is one dimensional
+        node.dimensions = if (node.ctx.size.height != null) {
+            val height = parseDimension(node.ctx.size.height)
+            listOf(width, height)
+        } else {
+            listOf(width)
+        }
+
+        node.cellSize = parseInt(node.ctx.cellsize.value.text, node)
+        node.tickrate = parseInt(node.ctx.tickrate.value.text, node)
+
+        super.visit(node)
     }
 }

@@ -9,19 +9,13 @@ const_ident : IDENT ;
 // World
 world_dcl : STMT_WORLD BLOCK_START size=world_size tickrate=world_tickrate? cellsize=world_cellsize? BLOCK_END ;
 world_size : WORLD_SIZE ASSIGN width=world_size_dim (LIST_SEP height=world_size_dim)?;
-world_size_dim : integer_literal SQ_BRACKET_START world_size_dim_finite SQ_BRACKET_END # dimFinite ;
+world_size_dim : size=integer_literal SQ_BRACKET_START type=world_size_dim_finite SQ_BRACKET_END ;
 world_size_dim_finite
     : WORLD_WRAP # dimFiniteWrapping
     | WORLD_EDGE ASSIGN state=IDENT # dimFiniteEdge
     ;
-world_tickrate
-            : WORLD_TICKRATE ASSIGN world_tickrate_value # tickrate
-            ;
-world_tickrate_value : integer_literal ;
-world_cellsize
-            : WORLD_CELLSIZE ASSIGN world_cellsize_value # cellsize
-            ;
-world_cellsize_value : integer_literal ;
+world_tickrate : WORLD_TICKRATE ASSIGN value=integer_literal ;
+world_cellsize : WORLD_CELLSIZE ASSIGN value=integer_literal ;
 
 // State
 state_decl : STMT_STATE state_ident (SQ_BRACKET_START integer_literal SQ_BRACKET_END)? state_rgb code_block ;
