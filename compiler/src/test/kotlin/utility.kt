@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-class OperationTests {
+class TestUtilities {
 
     /**
      * Compiles a program given as string parameter, asserts that the given program compiles successfully
@@ -122,7 +122,7 @@ class OperationTests {
         val ast = CompileProgram(program)
         // Casting to rootnode to access fields
         val rootNode = ast as RootNode
-        // Todo: Should be refactored to actual values when compiler gains ability
+        // TODO: Should be refactored to actual values when compiler gains ability
         assertNull(rootNode.world.cellSize)
         assertNull(rootNode.world.tickrate)
 
