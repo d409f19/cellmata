@@ -117,32 +117,37 @@ class TestUtilities {
      */
     @Test
     fun BoilerplateTest() {
+        // Get boilerplate program, print, and compile it
         val program = getBoilerplate()
         print(program)
         val ast = CompileProgram(program)
-        // Casting to rootnode to access fields
+
+        // Casting ast to RootNode
         val rootNode = ast as RootNode
         // TODO: Should be refactored to actual values when compiler gains ability
         assertNull(rootNode.world.cellSize)
         assertNull(rootNode.world.tickrate)
 
-        // First body of rootnode should be constant declaration
+        // Cast first body of rootNode to ConstDecl
         val const = rootNode.body.get(0) as ConstDecl
-
-
+        // Assert that identifier of constant is default; "ident"
         assertEquals("ident", const.ident)
+
+        // Cast expression of constant-node to BoolLiteral
         val constExpr = const.expr as BoolLiteral
+        // Assert value and type of constant
         assertFalse(constExpr.value)
         assertTrue(const.type is BooleanType)
 
-        // Second body of rootnode should be foo state declaration
+        // Second body of RootNode should be StateDecl
         val state = rootNode.body.get(1) as StateDecl
+        // Assert identifier and colour-declaration
         assertEquals("stage", state.ident)
-
         assertEquals(255, state.red)
         assertEquals(200, state.green)
         assertEquals(100, state.blue)
 
+        // Cast first element of state-body to BecomeStmt, then to NamedExpr, and assert identifier of BecomeStmt
         val becomeStmt = state.body.get(0) as BecomeStmt
         val becomeStmtNamedExpr = becomeStmt.state as NamedExpr
         assertEquals("stage", becomeStmtNamedExpr.ident)
