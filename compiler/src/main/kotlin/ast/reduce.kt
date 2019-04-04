@@ -245,7 +245,12 @@ fun reduce(node: ParserRuleContext): AST {
         is CellmataParser.StartContext -> RootNode(
             ctx = node,
             world = WorldNode(ctx = node.world_dcl()),
-            body = node.body().children.map(::reduceDecl)
+            // If number of children is zero, then return empty list, else reduce each child and return resulting list
+            body = if (node.body().childCount > 0) {
+            node.body().children.map(::reduceDecl)
+            } else {
+                listOf()
+            }
         )
         else -> { registerReduceError(node); ErrorAST(node) }
     }
