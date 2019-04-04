@@ -8,12 +8,10 @@ import dk.aau.cs.d409f19.cellumata.walkers.TypeChecker
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
 
 class Utilities {
 
     companion object {
-
 
         /**
          * Compiles a program given as string parameter, asserts that the given program compiles successfully
@@ -115,49 +113,5 @@ class Utilities {
         fun getBoilerplate(): String {
             return getWorldDecl() + getConstDecl() + "\n\n" + getStateDecl()
         }
-    }
-
-    /**
-     * Compile boilerplate program from defaults
-     */
-    @Test
-    fun boilerplateTest() {
-        // Get boilerplate program, print, and compile it
-        val program = getBoilerplate()
-        print(program)
-        val ast = compileProgram(program)
-
-        // Casting ast to RootNode
-        val rootNode = ast as RootNode
-        // Assert world values
-        assertEquals(10, rootNode.world.dimensions.get(0).size)
-        assertEquals(20, rootNode.world.dimensions.get(1).size)
-        assertEquals(WorldType.WRAPPING, rootNode.world.dimensions.get(0).type)
-        assertEquals(WorldType.WRAPPING, rootNode.world.dimensions.get(1).type)
-        assertEquals(5, rootNode.world.cellSize)
-        assertEquals(120, rootNode.world.tickrate)
-
-        // Cast first body of rootNode to ConstDecl
-        val const = rootNode.body.get(0) as ConstDecl
-        // Assert that identifier of constant is default; "ident"
-        assertEquals("ident", const.ident)
-
-        // Cast expression of constant-node to BoolLiteral
-        val constExpr = const.expr as BoolLiteral
-        // Assert value and type of constant
-        assertFalse(constExpr.value)
-        assertTrue(const.type is BooleanType)
-
-        // Second body of RootNode should be StateDecl
-        val state = rootNode.body.get(1) as StateDecl
-        // Assert identifier and colour-declaration
-        assertEquals("stage", state.ident)
-        assertEquals(255, state.red)
-        assertEquals(200, state.green)
-        assertEquals(100, state.blue)
-
-        // Cast first element of state-body to BecomeStmt, then to NamedExpr, and assert identifier of BecomeStmt
-        val becomeStmtNamedExpr = (state.body.get(0) as BecomeStmt).state as NamedExpr
-        assertEquals("stage", becomeStmtNamedExpr.ident)
     }
 }
