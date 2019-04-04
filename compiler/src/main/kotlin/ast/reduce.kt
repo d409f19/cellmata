@@ -245,7 +245,8 @@ fun reduce(node: ParserRuleContext): AST {
         is CellmataParser.StartContext -> RootNode(
             ctx = node,
             world = WorldNode(ctx = node.world_dcl()),
-            body = node.body().children.map(::reduceDecl)
+            // Since ANTLR sets children to null instead of empty list, this should be handled through elvis operator
+            body = node.body().children?.map(::reduceDecl) ?: listOf()
         )
         else -> { registerReduceError(node); ErrorAST(node) }
     }
