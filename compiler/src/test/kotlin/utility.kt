@@ -152,8 +152,7 @@ class TestUtilities {
         assertEquals(100, state.blue)
 
         // Cast first element of state-body to BecomeStmt, then to NamedExpr, and assert identifier of BecomeStmt
-        val becomeStmt = state.body.get(0) as BecomeStmt
-        val becomeStmtNamedExpr = becomeStmt.state as NamedExpr
+        val becomeStmtNamedExpr = (state.body.get(0) as BecomeStmt).state as NamedExpr
         assertEquals("stage", becomeStmtNamedExpr.ident)
     }
 }
