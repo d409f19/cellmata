@@ -15,7 +15,7 @@ class TestUtilities {
     /**
      * Compiles a program given as string parameter, asserts that the given program compiles successfully
      */
-    fun CompileProgram(program: String): AST {
+    fun compileProgram(program: String): AST {
         val source = CharStreams.fromString(program)
         val lexer = dk.aau.cs.d409f19.antlr.CellmataLexer(source)
         val tokenStream = CommonTokenStream(lexer)
@@ -50,7 +50,7 @@ class TestUtilities {
     /**
      * Takes a program as a string and returns the parser for testing errors
      */
-    fun GetParser(program: String): dk.aau.cs.d409f19.antlr.CellmataParser {
+    fun getParser(program: String): dk.aau.cs.d409f19.antlr.CellmataParser {
         val source = CharStreams.fromString(program)
         val lexer = dk.aau.cs.d409f19.antlr.CellmataLexer(source)
         val tokenStream = CommonTokenStream(lexer)
@@ -116,11 +116,11 @@ class TestUtilities {
      * Compile boilerplate program from defaults
      */
     @Test
-    fun BoilerplateTest() {
+    fun boilerplateTest() {
         // Get boilerplate program, print, and compile it
         val program = getBoilerplate()
         print(program)
-        val ast = CompileProgram(program)
+        val ast = compileProgram(program)
 
         // Casting ast to RootNode
         val rootNode = ast as RootNode
