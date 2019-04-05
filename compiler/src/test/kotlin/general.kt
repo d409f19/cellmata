@@ -13,9 +13,9 @@ class General {
      */
     private fun worldDecl(): Boolean {
         // Get AST of  boilerplate program with only world declaration
-        val ast = Utilities.compileProgram(Utilities.getWorldDecl())
+        val compilerData = Utilities.compileProgram(Utilities.getWorldDecl())
         // Casting ast to RootNode
-        val rootNode = ast as RootNode
+        val rootNode = compilerData.ast as RootNode
 
         // Try asserting values, return whether succeeded or failed
         try {
@@ -46,11 +46,11 @@ class General {
         assumeTrue(worldDecl())
 
         // Get AST for boilerplate program with only world declaration and constant declaration
-        val ast = Utilities.compileProgram(Utilities.getWorldDecl() + "\n\n" + Utilities.getConstDecl())
+        val compilerData = Utilities.compileProgram(Utilities.getWorldDecl() + "\n\n" + Utilities.getConstDecl())
 
         try {
             // Cast first body of rootNode to ConstDecl
-            val const = (ast as RootNode).body[0] as ConstDecl
+            val const = (compilerData.ast as RootNode).body[0] as ConstDecl
             // Assert that identifier of constant is default; "ident"
             assertEquals("ident", const.ident)
 
@@ -79,11 +79,11 @@ class General {
         assumeTrue(constDecl())
 
         // Get AST for boilerplate program
-        val ast = Utilities.compileProgram(Utilities.getBoilerplate())
+        val compilerData = Utilities.compileProgram(Utilities.getBoilerplate())
 
         try {
             // Second body of RootNode should be StateDecl
-            val state = (ast as RootNode).body[1] as StateDecl
+            val state = (compilerData.ast as RootNode).body[1] as StateDecl
             // Assert identifier and colour-declaration
             assertEquals("stage", state.ident)
             assertEquals(255, state.red)

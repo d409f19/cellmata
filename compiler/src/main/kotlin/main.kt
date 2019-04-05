@@ -2,6 +2,7 @@ package dk.aau.cs.d409f19.cellumata
 
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
+import dk.aau.cs.d409f19.cellumata.ast.AST
 import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
 import dk.aau.cs.d409f19.cellumata.walkers.ScopeCheckVisitor
@@ -59,3 +60,9 @@ fun compile(path: Path) {
 fun main() {
     compile(path)
 }
+
+data class CompilerData(
+    val parser: CellmataParser,
+    val ast: AST,
+    val scopeChecker: ScopeCheckVisitor
+)
