@@ -68,7 +68,7 @@ class General {
     @Test
     fun constDeclTest() {
         // Assert constDecl compiles and asserts true throughout
-        assertTrue(worldDecl())
+        assertTrue(constDecl())
     }
 
     /**
