@@ -1,5 +1,6 @@
 package dk.aau.cs.d409f19
 
+import dk.aau.cs.d409f19.cellumata.CompilerData
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
@@ -16,7 +17,7 @@ class Utilities {
         /**
          * Compiles a program given as string parameter, asserts that the given program compiles successfully
          */
-        fun compileProgram(program: String): AST {
+        fun compileProgram(program: String): CompilerData {
             val source = CharStreams.fromString(program)
             val lexer = dk.aau.cs.d409f19.antlr.CellmataLexer(source)
             val tokenStream = CommonTokenStream(lexer)
@@ -45,7 +46,7 @@ class Utilities {
 
             // Assert that no errors occured
             assertFalse(ErrorLogger.hasErrors())
-            return ast
+            return CompilerData(parser, ast, scopeChecker)
         }
 
         /**
