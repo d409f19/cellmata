@@ -27,8 +27,6 @@ class Utilities {
             // Build AST
             val startContext = parser.start()
             val ast = reduce(startContext)
-            // Asserts that no errors has been found during the last phase, if any are found throw exception
-            ErrorLogger.assertNoErrors()
 
             // Extract literals
             LiteralExtractorVisitor().visit(ast)
@@ -37,16 +35,10 @@ class Utilities {
             val scopeChecker = ScopeCheckVisitor()
             scopeChecker.visit(ast)
             val symbolTable = scopeChecker.getSymbolTable()
-            // Asserts that no errors has been found during the last phase, if any are found throw exception
-            ErrorLogger.assertNoErrors()
 
             // Type checking
             TypeChecker(symbolTable).visit(ast)
-            // Asserts that no errors has been found during the last phase, if any are found throw exception
-            ErrorLogger.assertNoErrors()
 
-            // Assert that no errors occured
-            assertFalse(ErrorLogger.hasErrors())
             return CompilerData(parser, ast, scopeChecker)
         }
 
