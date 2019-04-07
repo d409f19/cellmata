@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assumptions.*
 import org.junit.jupiter.api.Test
 import org.opentest4j.AssertionFailedError
 
-class General {
+class ASTTest {
 
     /**
      * Test boilerplate world declaration AST
@@ -76,7 +76,7 @@ class General {
      */
     private fun stateDecl(): Boolean {
         // Assume that constDeclTest passes
-        assumeTrue(constDecl())
+        assumeTrue(worldDecl())
 
         // Get AST for boilerplate program
         val compilerData = Utilities.compileProgram(Utilities.getBoilerplate())
