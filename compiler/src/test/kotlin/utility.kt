@@ -51,17 +51,6 @@ class Utilities {
         }
 
         /**
-         * Takes a program as a string and returns the parser for testing errors
-         */
-        fun getParser(program: String): dk.aau.cs.d409f19.antlr.CellmataParser {
-            val source = CharStreams.fromString(program)
-            val lexer = dk.aau.cs.d409f19.antlr.CellmataLexer(source)
-            val tokenStream = CommonTokenStream(lexer)
-            return dk.aau.cs.d409f19.antlr.CellmataParser(tokenStream)
-        }
-
-
-        /**
          * Returns a world declaration based on given parameters and with sane defaults
          * TODO: should handle optional, second dimension - as of now, it's required
          */
