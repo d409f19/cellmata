@@ -8,6 +8,10 @@ import org.opentest4j.AssertionFailedError
 
 class SymbolTest {
 
+    /**
+     * Tests assignments statements which should be legal, given an identifier and value as parameter.
+     * If assertions fails, exceptions are caught, and false is returned to indicate a failed test to caller.
+     */
     private fun <T> assignStmtPass(ident: String, value: T): Boolean {
 
         val compilerData =
@@ -37,6 +41,9 @@ class SymbolTest {
         return true
     }
 
+    /**
+     * Dispatches assignment statement tests
+     */
     @Test
     fun assignStmtTest() {
         assertTrue(assignStmtPass("x", 42))
