@@ -41,13 +41,7 @@ private val RESERVED_SYMBOLS: List<String> = listOf(
     "let",
     "for",
     "continue",
-    "break",
-    "rand",
-    "abs",
-    "floor",
-    "ceil",
-    "sqrt",
-    "pow"
+    "break"
 )
 
 @Deprecated("Use CreatingSymbolTableSession")
