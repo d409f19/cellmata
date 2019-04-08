@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.opentest4j.AssertionFailedError
+import java.lang.NullPointerException
 
 class SymbolTest {
 
@@ -21,10 +22,11 @@ class SymbolTest {
         val symbolTable = compilerData.scopeChecker.getSymbolTable()
         // Get SymbolTable for first subscope, which is first StateDecl
         val stateSymbolTable = symbolTable.tables[0]
-        // Get expression of AssignStmt which is value of the key of ident
-        val literal = (stateSymbolTable.symbols[ident] as AssignStmt).expr
 
         try {
+            // Get expression of AssignStmt which is value of the key of ident
+            val literal = (stateSymbolTable.symbols[ident] as AssignStmt).expr
+
             // Assert identifier of variable is contained in first symbol scope
             assertTrue(stateSymbolTable.symbols.containsKey(ident))
 
@@ -37,6 +39,9 @@ class SymbolTest {
             }
         } catch (e: AssertionFailedError) { // If any assertion errors thrown, catch and return false
             return false
+        } catch (e: NullPointerException) { // Catch NPE's which may be thrown due to looking up ident as key
+            e.printStackTrace()
+            return false
         }
         return true
     }
@@ -46,8 +51,8 @@ class SymbolTest {
      */
     @Test
     fun assignStmtTest() {
-        assertTrue(assignStmtPass("x", 42))
-        assertTrue(assignStmtPass("integer", 16368))
+        for (i in -50..50) assertTrue(assignStmtPass("x", i))
+        assertTrue(assignStmtPass("floatingPoint", 1636098.1239487.toFloat()))
         assertTrue(assignStmtPass("falseBool", false))
         assertTrue(assignStmtPass("trueBool", true))
     }
