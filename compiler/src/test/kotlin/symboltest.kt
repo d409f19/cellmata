@@ -1,8 +1,11 @@
 package dk.aau.cs.d409f19
 
+import dk.aau.cs.d409f19.Utilities.Companion.compileProgram
+import dk.aau.cs.d409f19.Utilities.Companion.getParser
+import dk.aau.cs.d409f19.Utilities.Companion.getStateDecl
+import dk.aau.cs.d409f19.Utilities.Companion.getWorldDecl
 import dk.aau.cs.d409f19.cellumata.ast.*
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.opentest4j.AssertionFailedError
 import java.lang.NullPointerException
@@ -15,8 +18,7 @@ class SymbolTest {
      */
     private fun <T> assignStmtPass(ident: String, value: T): Boolean {
 
-        val compilerData =
-            Utilities.compileProgram(Utilities.getWorldDecl() + "\n\n" + Utilities.getStateDecl(body = "let $ident = $value;"))
+        val compilerData = compileProgram(getWorldDecl() + "\n\n" + getStateDecl(body = "let $ident = $value;"))
 
         // Get SymbolTable for entire program
         val symbolTable = compilerData.scopeChecker.getSymbolTable()
@@ -55,5 +57,22 @@ class SymbolTest {
         assertTrue(assignStmtPass("floatingPoint", 1636098.1239487.toFloat()))
         assertTrue(assignStmtPass("falseBool", false))
         assertTrue(assignStmtPass("trueBool", true))
+    }
+
+    /**
+     * Tests whether parser recognises syntax errors on reserved words from symbol table
+     */
+    @Test
+    fun parserReservedSymbolsTest() {
+        RESERVED_SYMBOLS.forEach {
+            val parser = getParser(getWorldDecl() + getStateDecl(ident = it))
+            // Stop parser from printing errors to stderr for less noisy console
+            parser.removeErrorListeners()
+            // Parse program
+            parser.start()
+
+            // Assert that syntax-errors are recognised for reserved words
+            assertTrue(parser.numberOfSyntaxErrors > 0, "Test failed on: $it")
+        }
     }
 }
