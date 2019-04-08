@@ -4,13 +4,23 @@ import dk.aau.cs.d409f19.Utilities.Companion.compileProgram
 import dk.aau.cs.d409f19.Utilities.Companion.getParser
 import dk.aau.cs.d409f19.Utilities.Companion.getStateDecl
 import dk.aau.cs.d409f19.Utilities.Companion.getWorldDecl
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opentest4j.AssertionFailedError
 import java.lang.NullPointerException
 
 class SymbolTest {
+
+    /**
+     * Reset ErrorLogger as it is globally persistent and will interfere with tests
+     */
+    @BeforeEach
+    fun resetErrorLogger() {
+        ErrorLogger.reset()
+    }
 
     /**
      * Tests assignments statements which should be legal, given an identifier and value as parameter.
@@ -75,4 +85,61 @@ class SymbolTest {
             assertTrue(parser.numberOfSyntaxErrors > 0, "Test failed on: $it")
         }
     }
+
+    /**
+     * Tests whether each error on compiled program with multiple assignments on same identifier registers an
+     * SymbolRedefinitionError and whether the identifier is equal to passed parameter.
+     * Can take a generic list of values, which should be limited to int, float, and boolean types,
+     * as language only supports those literals
+     *
+     * @param ident Identifier to use for each assignment statement
+     * @param values List of values which will be assigned to given identifier
+     */
+    fun <T> symbolRedefinition(ident: String, values: List<T>): Boolean {
+        val stringBuilder = StringBuilder()
+        // For each value, create assignment expression with equal identifier and given value
+        values.forEach {
+            stringBuilder.appendln("let $ident = ${it.toString()};")
+        }
+
+        // Compile boilerplate program with state having the constructed body
+        compileProgram(getWorldDecl() + getStateDecl(body = stringBuilder.toString()))
+
+        try {
+            // Assert that errors are registered
+            assertTrue(ErrorLogger.hasErrors())
+
+            // For each error recorded, assert that error is of SymbolRedefinitionError-type and with given identifier
+            ErrorLogger.allErrors().forEach {
+                assertTrue(it is SymbolRedefinitionError, "Class assertion error at: $it")
+                assertTrue((it as SymbolRedefinitionError).ident == ident, "Identifier error at: $it")
+            }
+        } catch (e: AssertionFailedError) {
+            return false
+        }
+        return true
+    }
+
+    /**
+     * Dispatches symbolRedefinition test on given parameter which should fail
+     */
+    @Test
+    fun symbolRedefinitionFailTest() {
+        assertTrue(
+            symbolRedefinition("a", listOf(4, 2, true, 42.2.toFloat(), false)),
+            "Test failed trying to redefine symbol"
+        )
+    }
+
+    /**
+     * Dispatches symbolRedefinition test on given parameter which should pass
+     */
+    @Test
+    fun symbolRedefinitionPassTest() {
+        assertFalse(symbolRedefinition("x", listOf(2)), "Test succeeded when expecting fail")
+        assertFalse(symbolRedefinition("y", listOf(false)), "Test succeeded when expecting fail")
+        assertFalse(symbolRedefinition("z", listOf(42.0.toFloat())), "Test succeeded when expecting fail")
+    }
+
+
 }
