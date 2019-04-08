@@ -118,6 +118,10 @@ object ErrorLogger {
         return errors
     }
 
+    fun reset() {
+        errors.clear()
+    }
+
     /**
      * Returns a string consisting of a number of spaces followed by a ^. This string is used to point to the exact
      * position of the error in error messages. E.g. "      ^"
