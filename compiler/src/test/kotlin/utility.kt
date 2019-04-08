@@ -1,15 +1,12 @@
 package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.cellumata.CompilerData
-import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
 import dk.aau.cs.d409f19.cellumata.walkers.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.walkers.TypeChecker
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
 
 class Utilities {
 
@@ -40,6 +37,13 @@ class Utilities {
             TypeChecker(symbolTable).visit(ast)
 
             return CompilerData(parser, ast, scopeChecker)
+        }
+
+        fun getParser(program: String): dk.aau.cs.d409f19.antlr.CellmataParser {
+            val source = CharStreams.fromString(program)
+            val lexer = dk.aau.cs.d409f19.antlr.CellmataLexer(source)
+            val tokenStream = CommonTokenStream(lexer)
+            return dk.aau.cs.d409f19.antlr.CellmataParser(tokenStream)
         }
 
         /**
@@ -96,12 +100,5 @@ class Utilities {
         fun getBoilerplate(): String {
             return getWorldDecl() + getConstDecl() + "\n\n" + getStateDecl()
         }
-    }
-
-    /**
-     * Returns a boilerplate program
-     */
-    fun getBoilerplate(): String {
-        return getWorldDecl() + getConstDecl() + "\n\n" + getStateDecl()
     }
 }
