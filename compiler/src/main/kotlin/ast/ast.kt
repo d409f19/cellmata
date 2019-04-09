@@ -1,7 +1,7 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
 import dk.aau.cs.d409f19.antlr.CellmataParser
-import org.antlr.v4.runtime.tree.ParseTree
+import org.antlr.v4.runtime.ParserRuleContext
 
 /**
  * This is a debugging string.
@@ -9,145 +9,313 @@ import org.antlr.v4.runtime.tree.ParseTree
  */
 const val MAGIC_UNDEFINED_STRING = "<<THIS IS A MAGIC STRING, UNDEFINED>>"
 
-sealed class AST
+/**
+ * This class is the basis for all nodes in the abstract syntax tree.
+ *
+ * It's sealed such that it's possible to use Kotlin's when statement without an else.
+ */
+sealed class AST(open val ctx: ParserRuleContext)
 
-data class RootNode(val world: WorldNode, val body: List<Decl>) : AST()
+/**
+ * RootNode represents a .cell file
+ */
+data class RootNode(
+    override val ctx: ParserRuleContext,
+    val world: WorldNode,
+    val body: List<Decl>
+) : AST(ctx)
+
 
 /*
  * World definition
  */
+/**
+ * The types of world bounds that are supported.
+ */
 enum class WorldType {
+    /**
+     * WRAPPING indicate that if a CA tries read beyond the world limit its lookup will automatically be from the other side of the world.
+     */
     WRAPPING,
+    /**
+     * EDGE indicates that all cells beyond the world limit has a fixed state.
+     */
     EDGE,
+    /**
+     * UNDEFINED is a compiler internal value used to indicate that no type has been parsed yet.
+     */
     UNDEFINED
 }
 
-data class WorldDimension(val size: Int = -1, val type: WorldType = WorldType.UNDEFINED)
+/**
+ * Nodes that hold a value or that can produce a value should implement TypedNode to expose the type of that value
+ */
+interface TypedNode {
+    fun getType(): Type?
+    fun setType(type: Type?)
+}
 
+data class WorldDimension(val size: Int = -1, val type: WorldType = WorldType.UNDEFINED, val edge: String?)
+
+/**
+ * WorldNode represent the world definition.
+ */
 data class WorldNode(
-    val ctx: ParseTree,
-    val dimensions: List<WorldDimension> = emptyList(),
-    val tickrate: Int? = null,
-    val cellSize: Int? = null
-) : AST()
+    override val ctx: CellmataParser.World_dclContext,
+    var dimensions: List<WorldDimension> = emptyList(),
+    var tickrate: Int? = null,
+    var cellSize: Int? = null
+) : AST(ctx)
 
 /*
  * Expressions
  */
-sealed class Expr : AST()
+/**
+ * An expression is either a literal, or some operation that produces a value.
+ */
+abstract class Expr(override val ctx: ParserRuleContext, type: Type? = UncheckedType) : AST(ctx), TypedNode {
+    private var atype: Type?
 
-data class OrExpr(val ctx: CellmataParser.OrExprContext, val left: Expr, val right: Expr) : Expr()
+    init {
+        atype = type
+    }
 
-data class AndExpr(val ctx: CellmataParser.AndExprContext, val left: Expr, val right: Expr) : Expr()
+    override fun getType(): Type? {
+        return this.atype
+    }
 
-data class InequalityExpr(val ctx: CellmataParser.NotEqExprContext, val left: Expr, val right: Expr) : Expr()
+    override fun setType(type: Type?) {
+        this.atype = type
+    }
+}
 
-data class EqualityExpr(val ctx: CellmataParser.EqExprContext, val left: Expr, val right: Expr) : Expr()
+data class OrExpr(override val ctx: CellmataParser.OrExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class MoreThanExpr(val ctx: CellmataParser.MoreExprContext, val left: Expr, val right: Expr) : Expr()
+data class AndExpr(override val ctx: CellmataParser.AndExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class MoreEqExpr(val ctx: CellmataParser.MoreEqExprContext, val left: Expr, val right: Expr) : Expr()
+data class InequalityExpr(override val ctx: CellmataParser.NotEqExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class LessThanExpr(val ctx: CellmataParser.LessExprContext, val left: Expr, val right: Expr) : Expr()
+data class EqualityExpr(override val ctx: CellmataParser.EqExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class LessEqExpr(val ctx: CellmataParser.LessEqExprContext, val left: Expr, val right: Expr) : Expr()
+data class MoreThanExpr(override val ctx: CellmataParser.MoreExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class AdditionExpr(val ctx: CellmataParser.AdditionExprContext, val left: Expr, val right: Expr) : Expr()
+data class MoreEqExpr(override val ctx: CellmataParser.MoreEqExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class SubtractionExpr(val ctx: CellmataParser.SubstractionExprContext, val left: Expr, val right: Expr) : Expr()
+data class LessThanExpr(override val ctx: CellmataParser.LessExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class MultiplicationExpr(val ctx: CellmataParser.MultiplictionExprContext, val left: Expr, val right: Expr) : Expr()
+data class LessEqExpr(override val ctx: CellmataParser.LessEqExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class DivisionExpr(val ctx: CellmataParser.DivisionExprContext, val left: Expr, val right: Expr) : Expr()
+data class AdditionExpr(override val ctx: CellmataParser.AdditionExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class PreIncExpr(val ctx: CellmataParser.PreIncExprContext, val value: Expr) : Expr()
+data class SubtractionExpr(override val ctx: CellmataParser.SubstractionExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class PreDecExpr(val ctx: CellmataParser.PreDecExprContext, val value: Expr) : Expr()
+data class MultiplicationExpr(override val ctx: CellmataParser.MultiplictionExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class PostIncExpr(val ctx: CellmataParser.PostIncExprContext, val value: Expr) : Expr()
+data class DivisionExpr(override val ctx: CellmataParser.DivisionExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class PostDecExpr(val ctx: CellmataParser.PostDecExprContext, val value: Expr) : Expr()
+data class NegativeExpr(override val ctx: CellmataParser.NegativeExprContext, val value: Expr) : Expr(ctx)
 
-data class PositiveExpr(val ctx: CellmataParser.PositiveExprContext, val value: Expr) : Expr()
+data class InverseExpr(override val ctx: CellmataParser.InverseExprContext, val value: Expr) : Expr(ctx)
 
-data class NegativeExpr(val ctx: CellmataParser.NegativeExprContext, val value: Expr) : Expr()
+data class ArrayLookupExpr(
+    override val ctx: CellmataParser.ArrayLookupExprContext,
+    val ident: String = MAGIC_UNDEFINED_STRING,
+    val index: Expr
+) : Expr(ctx)
 
-data class InverseExpr(val ctx: CellmataParser.InverseExprContext, val value: Expr) : Expr()
+/**
+ * @param ctx Node in the parse tree this node corresponds to.
+ * @param values Elements of the array.
+ * @param declaredType Type listed before the body/values of the array.
+ */
+data class ArrayBodyExpr(
+    override val ctx: CellmataParser.ArrayValueExprContext,
+    val values: List<Expr>,
+    val declaredType: Type? = UncheckedType
+) : Expr(ctx)
 
-data class ArrayLookupExpr(val ctx: CellmataParser.ArrayLookupExprContext, val ident: String = MAGIC_UNDEFINED_STRING, val index: Expr) : Expr()
+data class ParenExpr(override val ctx: CellmataParser.ParenExprContext, val expr: Expr) : Expr(ctx)
 
-data class ArrayBodyExpr(val ctx: CellmataParser.ArrayValueExprContext, var type: String? = MAGIC_UNDEFINED_STRING, val values: List<Expr>) : Expr()
+data class NamedExpr(override val ctx: ParserRuleContext, var ident: String = MAGIC_UNDEFINED_STRING) : Expr(ctx)
 
-data class ParenExpr(val ctx: CellmataParser.ParenExprContext, val expr: Expr) : Expr()
+data class ModuloExpr(override val ctx: CellmataParser.ModuloExprContext, val left: Expr, val right: Expr) : Expr(ctx)
 
-data class VarExpr(val ctx: ParseTree, var ident: String = MAGIC_UNDEFINED_STRING) : Expr()
+/**
+ * Presents a function call in abstract syntax tree
+ */
+data class FuncExpr(
+    override val ctx: CellmataParser.FuncExprContext,
+    val args: List<Expr>,
+    var ident: String = MAGIC_UNDEFINED_STRING
+) : Expr(ctx)
 
-data class ModuloExpr(val ctx: CellmataParser.ModuloExprContext, val left: Expr, val right: Expr) : Expr()
-
-data class FuncExpr(val ctx: CellmataParser.FuncExprContext, val args: List<Expr>, var ident: String = MAGIC_UNDEFINED_STRING) : Expr()
-
-data class StateIndexExpr(val ctx: CellmataParser.StateIndexExprContext) : Expr()
+data class StateIndexExpr(override val ctx: CellmataParser.StateIndexExprContext) : Expr(ctx, IntegerType)
 
 // Literals
-data class IntLiteral(val ctx: CellmataParser.Integer_literalContext, var value: Int = -1) : Expr()
+/**
+ * Represents a concrete integer value in the abstract syntax tree
+ */
+data class IntLiteral(override val ctx: CellmataParser.Integer_literalContext, var value: Int = -1) : Expr(ctx, IntegerType)
 
-data class BoolLiteral(val ctx: CellmataParser.Bool_literalContext, var value: Boolean = false) : Expr()
+/**
+ * Represents a concrete boolean value in the abstract syntax tree
+ */
+data class BoolLiteral(override val ctx: CellmataParser.Bool_literalContext, var value: Boolean = false) : Expr(ctx, BooleanType)
 
-data class FloatLiteral(val ctx: CellmataParser.Float_literalContext, var value: Float = 0.0F): Expr()
+/**
+ * Represent a concrete float value in the abstract syntax tree
+ */
+data class FloatLiteral(override val ctx: CellmataParser.Float_literalContext, var value: Float = 0.0F): Expr(ctx, FloatType)
+
+// Type conversion
+/**
+ * Internal node used to present an implicit conversion from integer to float.
+ */
+data class IntToFloatConversion(override val ctx: ParserRuleContext, val expr: Expr) : Expr(ctx)
+
+/**
+ * Internal node used to represent an implicit conversion from a array of states to a neighbourhood.
+ */
+data class StateArrayToActualNeighbourhoodConversion(override val ctx: ParserRuleContext, val expr: Expr) : Expr(ctx)
 
 /*
  * Declarations
  */
-sealed class Decl : AST() // state, const, func
+/**
+ * Represents global declarations like states, constants and functions
+ */
+sealed class Decl(override val ctx: ParserRuleContext) : AST(ctx) // state, const, func
 
-data class ConstDecl(val ctx: CellmataParser.Const_declContext, var ident: String = MAGIC_UNDEFINED_STRING, val expr: Expr) : Decl()
+/**
+ * Represents constants declarations
+ */
+data class ConstDecl(
+    override val ctx: CellmataParser.Const_declContext,
+    var ident: String = MAGIC_UNDEFINED_STRING,
+    val expr: Expr,
+    var type: Type? = UncheckedType
+) : Decl(ctx)
 
+/**
+ * Represent a state declaration
+ */
 data class StateDecl(
-    val ctx: CellmataParser.State_declContext,
+    override val ctx: CellmataParser.State_declContext,
     var ident: String = MAGIC_UNDEFINED_STRING,
     var red: Short = -1,
     var blue: Short = -1,
     var green: Short = -1,
     val body: List<Stmt>
-) : Decl()
+) : Decl(ctx)
 
-data class Coordinate(val ctx: ParseTree, val axes: List<Int> = emptyList())
+/**
+ * Represents a single point in a neighbourhood declaration
+ */
+data class Coordinate(override val ctx: ParserRuleContext, val axes: List<Int> = emptyList()) : AST(ctx)
 
+/**
+ * Represents a neighbourhood declaration
+ */
 data class NeighbourhoodDecl(
-    val ctx: CellmataParser.Neighbourhood_declContext,
+    override val ctx: CellmataParser.Neighbourhood_declContext,
     var ident: String = MAGIC_UNDEFINED_STRING,
     var coords: List<Coordinate> = emptyList()
-) : Decl()
+) : Decl(ctx)
 
-data class FunctionArgs(val ident: String, val type: String)
+/**
+ * Represent a single argument in a function declaration
+ *
+ * @see FuncDecl
+ */
+data class FunctionArgs(override val ctx: ParserRuleContext, val ident: String, private var type: Type?) : AST(ctx), TypedNode {
+    override fun getType(): Type? {
+        return type
+    }
 
+    override fun setType(type: Type?) {
+        this.type = type
+    }
+}
+
+/**
+ * Represents a function declaration
+ */
 data class FuncDecl(
-    val ctx: CellmataParser.Func_declContext,
+    override val ctx: CellmataParser.Func_declContext,
     var ident: String = MAGIC_UNDEFINED_STRING,
-    val args: List<FunctionArgs> = emptyList(),
+    var args: List<FunctionArgs> = emptyList(),
     val body: List<Stmt> = emptyList(),
-    var returnType: String = MAGIC_UNDEFINED_STRING
-) : Decl()
+    var returnType: Type = UncheckedType
+) : Decl(ctx)
 
 /*
  * Statements
  */
-sealed class Stmt : AST()
+/**
+ * Base class for classes represents a single statement/action in a block of code
+ */
+sealed class Stmt(override val ctx: ParserRuleContext) : AST(ctx)
 
-data class AssignStmt(val ctx: CellmataParser.Assign_stmtContext, var ident: String = MAGIC_UNDEFINED_STRING, val expr: Expr) : Stmt()
+/**
+ * Represent a variable declaration and/or assignment
+ *
+ * @param ctx The node in the parse tree that this node corresponds to
+ * @param ident Name of the variable
+ * @param expr New value of the variable
+ * @param type Type of the variable
+ */
+data class AssignStmt(
+    override val ctx: CellmataParser.AssignmentContext,
+    var ident: String = MAGIC_UNDEFINED_STRING,
+    val expr: Expr,
+    private var type: Type? = UncheckedType
+) : Stmt(ctx), TypedNode {
+    override fun getType(): Type? {
+        return type
+    }
 
-data class ConditionalBlock(val ctx: ParseTree, val expr: Expr, val block: List<Stmt>)
+    override fun setType(type: Type?) {
+        this.type = type
+    }
+}
 
-data class IfStmt(val ctx: CellmataParser.If_stmtContext, val conditionals: List<ConditionalBlock>, val elseBlock: List<Stmt>?) : Stmt()
+/**
+ * Represent a block in a if statement that is to be run if expr evaluates to true.
+ * A ConditionalBlock can represent either the if or the elif part of an if statement.
+ */
+data class ConditionalBlock(override val ctx: ParserRuleContext, val expr: Expr, val block: List<Stmt>) : AST(ctx)
 
-data class BecomeStmt(val ctx: CellmataParser.Become_stmtContext, val state: Expr) : Stmt()
+/**
+ * Represent an entire if statement, including the if, the elif and the else blocks.
+ */
+data class IfStmt(
+    override val ctx: CellmataParser.If_stmtContext,
+    val conditionals: List<ConditionalBlock>,
+    val elseBlock: List<Stmt>?
+) : Stmt(ctx)
 
-data class PreIncStmt(val ctx: CellmataParser.PreIncStmtContext, val variable: Expr) : Stmt()
+data class ForStmt(override val ctx: CellmataParser.For_stmtContext, val initPart: AssignStmt, val condition: Expr, val postIterationPart: AssignStmt, val body: List<Stmt>) : Stmt(ctx)
 
-data class PostIncStmt(val ctx: CellmataParser.PostIncStmtContext, val variable:  Expr) : Stmt()
+data class BreakStmt(override val ctx: CellmataParser.Break_stmtContext) : Stmt(ctx)
 
-data class PreDecStmt(val ctx: CellmataParser.PreDecStmtContext, val variable: Expr) : Stmt()
+data class ContinueStmt(override val ctx: CellmataParser.Continue_stmtContext) : Stmt(ctx)
 
-data class PostDecStmt(val ctx: CellmataParser.PostDecStmtContext, val variable: Expr) : Stmt()
+/**
+ * Represents a become statement.
+ * The become statements terminates a state block, and changes the state of the cell being evaluated.
+ */
+data class BecomeStmt(override val ctx: CellmataParser.Become_stmtContext, val state: Expr) : Stmt(ctx)
 
-data class ReturnStmt(val ctx: CellmataParser.Return_stmtContext, val value: Expr) : Stmt()
+/**
+ * Represents a return statement.
+ * The return statement terminates a function call and returns a value to the caller.
+ */
+data class ReturnStmt(override val ctx: CellmataParser.Return_stmtContext, val value: Expr) : Stmt(ctx)
+
+/*
+ * Error nodes are used when something goes wrong in reduce.kt and is returned by the failing function.
+ */
+class ErrorAST(override val ctx: ParserRuleContext) : AST(ctx)
+class ErrorDecl(override val ctx: ParserRuleContext) : Decl(ctx)
+class ErrorStmt(override val ctx: ParserRuleContext) : Stmt(ctx)
+class ErrorExpr(override val ctx: ParserRuleContext) : Expr(ctx)

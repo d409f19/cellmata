@@ -6,13 +6,13 @@ world {
 
 const bar = false;
 
-const arr1 = [3]boolean{ true, false, true };
-const arr2 = [2]boolean{ true, true };
-const arr3 = []boolean{ false, true };
+const arr1 = [3]bool{ true, false, true };
+const arr2 = [2]bool{ true, true };
+const arr3 = []bool{ false, true };
 
-const t1 = [2][2]boolean{};
-const t2 = [2]boolean{};
-const t3 = [2]number{};
+const t1 = [2][2]bool{};
+const t2 = [2]bool{};
+const t3 = [2]int{};
 const t4 = [2]float{};
 const t5 = [2]neighbourhood{};
 const t6 = [2]state{};
@@ -23,6 +23,8 @@ state s1 (255, 0, 12) {
     let c = true == false;
     let d = true != false;
     let e = 2 > 3.0;
+    e = abe;
+    dec = abe;
     let f = 2 >= 3.0;
     let g = 2 < 3.0;
     let h = 2 <= 3.0;
@@ -31,44 +33,36 @@ state s1 (255, 0, 12) {
     let k = 2 * 3.0;
     let l = 2 / 3.0;
     let m = 2 % 3.0;
-    let n = ++2;
-    let o = --2;
-    let p = 2++;
-    let p = 2--;
-    let q = +n;
-    let r = -n;
-    let s = !true;
-    let t = baz[0];
-    //let u = { 1, 2, 3 };
-    let v = 2 * (123 + 321);
-    let w = bar;
-    let x = baz(132);
-    let y = #;
+    let n = 42;
+    let o = -n;
+    let p = !true;
+    let q = baz[0];
+    let r = 2 * (123 + 321);
+    let s = bar;
+    let t = baz(132);
+    let u = #;
 
-    let b = true;
-    let b = false;
-    let i = 123;
-    let f = 12.3;
+
+    let bt = true;
+    let bf = false;
+    let i2 = 123;
+    let f2 = 12.3;
 
 
     if (true) {
     } elif (true) {
         let scoped = f;
+        scoped = false;
     } else {
         become s1;
     }
-
-    ++a;
-    a++;
-    --a;
-    a--;
 
     become s1;
 
     return a;
 }
 
-function f1(number a, number b) boolean {
+function f1(int a, int b) bool {
     return a + b;
 }
 
