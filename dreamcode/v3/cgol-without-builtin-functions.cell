@@ -1,0 +1,49 @@
+// Conway's game of life
+
+// All programs start with a world block where the size, tickrate, and cellsize is defined.
+// > The size is two integers, the dimensions of the world. It must be speficied if the world wrap around
+// or is finite, in which case a state for the cells beyond the edge must be spefied. This is done
+// with [wrap] or [edge=SomeState]. In CGOL it wraps.
+// > The tickrate is how many times the world should update per second
+// > The cellsize is the size of the rendered cells
+world {
+    size = 100 [wrap], 100 [wrap]
+    tickrate = 8
+    cellsize = 4
+}
+
+// Next is definitions of neighbourhoods. A neighbourhood is a list of relative coordinates.
+// When Moore is used in a state's logic, it works as an array of states of the 
+// cells in the neighbourhood
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+// Last is the difinition of states. The state has a name, a color (RGB), and some logic.
+// The logic is applied to each cell with this state.
+state Dead (255, 255, 255) {
+	// The count function returns how many states in neighbourhood is of a given state.
+    if (count(Moore, Alive) == 3) {
+        become Alive;
+    }
+    
+    // if a 'become' statement is not met, the cell will stay in the same state
+}
+
+state Alive (0, 0, 0) {
+    let aliveNeighbours = count(Moore, Alive);
+    if (aliveNeighbours < 2 || 3 < aliveNeighbours) {
+        become Dead;
+    }
+}
+
+// Replacement for the built in function called count
+function count(neighbourhood nei, state z) int {
+	let counter = 0;
+	for (int i = 0; i < 8; i = i + 1) {
+		counter = counter + 1;
+	}
+	return counter;
+}
