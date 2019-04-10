@@ -25,7 +25,7 @@ class SymbolRedefinitionError(ctx: ParserRuleContext, val ident: String) : Error
 /**
  * List of language keywords that can't be used as identifiers
  */
-private val RESERVED_SYMBOLS: List<String> = listOf(
+private val RESERVED_WORDS: List<String> = listOf(
     "world",
     "neighbourhood",
     "state",
@@ -41,13 +41,7 @@ private val RESERVED_SYMBOLS: List<String> = listOf(
     "let",
     "for",
     "continue",
-    "break",
-    "rand",
-    "abs",
-    "floor",
-    "ceil",
-    "sqrt",
-    "pow"
+    "break"
 )
 
 @Deprecated("Use CreatingSymbolTableSession")
@@ -62,7 +56,7 @@ class SymbolTable {
     fun insertSymbol(ident: String, node: AST) {
         val table = scopeStack.peek()
 
-        if (RESERVED_SYMBOLS.contains(ident) || table.symbols.containsKey(ident)) {
+        if (RESERVED_WORDS.contains(ident) || table.symbols.containsKey(ident)) {
             ErrorLogger.registerError(SymbolRedefinitionError(node.ctx, ident))
         } else {
             table.symbols[ident] = node
@@ -142,7 +136,7 @@ class CreatingSymbolTableSession(symbolTable: Table) {
     fun insertSymbol(ident: String, node: AST) {
         val table = scopeStack.peek()
 
-        if (RESERVED_SYMBOLS.contains(ident) || table.symbols.containsKey(ident)) {
+        if (RESERVED_WORDS.contains(ident) || table.symbols.containsKey(ident)) {
             ErrorLogger.registerError(SymbolRedefinitionError(node.ctx, ident))
         }
 

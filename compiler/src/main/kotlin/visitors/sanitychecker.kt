@@ -4,7 +4,6 @@ package dk.aau.cs.d409f19.cellumata.visitors
 import dk.aau.cs.d409f19.cellumata.ErrorFromContext
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
-import dk.aau.cs.d409f19.cellumata.walkers.BaseASTVisitor
 import org.antlr.v4.runtime.ParserRuleContext
 
 /**
