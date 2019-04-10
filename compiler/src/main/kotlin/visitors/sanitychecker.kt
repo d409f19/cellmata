@@ -57,14 +57,14 @@ class SanityChecker : BaseASTVisitor() {
         inALoop = false
     }
 
-    // Throws an error if a break is not in a loop
+    // Throws an error if a break is found outside a loop
     override fun visit(node: BreakStmt) {
         super.visit(node)
         if (!inALoop)
             ErrorLogger.registerError(SanityError(node.ctx, "Break statements are only allowed in loops"))
     }
 
-    // Throws an error if a continue is not in a loop
+    // Throws an error if a continue is found outside a loop
     override fun visit(node: ContinueStmt) {
         super.visit(node)
         if (!inALoop)
