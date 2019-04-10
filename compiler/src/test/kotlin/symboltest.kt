@@ -74,7 +74,7 @@ class SymbolTest {
      */
     @Test
     fun parserReservedSymbolsTest() {
-        RESERVED_SYMBOLS.forEach {
+        RESERVED_WORDS.forEach {
             val parser = getParser(getWorldDecl() + getStateDecl(ident = it))
             // Stop parser from printing errors to stderr for less noisy console
             parser.removeErrorListeners()
