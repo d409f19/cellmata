@@ -1,10 +1,9 @@
-package dk.aau.cs.d409f19.cellumata.walkers
+package dk.aau.cs.d409f19.cellumata.visitors
 
 import dk.aau.cs.d409f19.cellumata.ErrorFromContext
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 import org.antlr.v4.runtime.ParserRuleContext
-import java.lang.Exception
 
 /**
  * Logged when a undefined symbol is encountered. This exception indicates there is a use-before-declaration scenario.
