@@ -41,11 +41,11 @@ state Alive (0, 0, 0) {
 
 // Replacement for the built in function called count
 function count(neighbourhood nei, state z) int {
-	let counter = 0;
-	for (int i = 0; i < 8; i = i + 1) {
+    let counter = 0;
+    for (int i = 0; i < 8; i = i + 1) {
         if (nei[i] == z) {
             counter = counter + 1;
         }
-	}
-	return counter;
+    }
+    return counter;
 }
