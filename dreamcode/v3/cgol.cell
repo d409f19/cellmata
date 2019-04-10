@@ -22,7 +22,7 @@ neighbourhood Moore {
 }
 
 // Last is the difinition of states. The state has a name, a color (RGB), and some logic.
-// The logic is applied to each cell with this state.
+// The logic is applied to each cell with this state at each tick.
 state Dead (255, 255, 255) {
 	// The count function returns how many states in neighbourhood is of a given state.
     if (count(Moore, Alive) == 3) {

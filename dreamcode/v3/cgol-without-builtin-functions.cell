@@ -24,7 +24,7 @@ neighbourhood Moore {
 // Last is the difinition of states. The state has a name, a color (RGB), and some logic.
 // The logic is applied to each cell with this state.
 state Dead (255, 255, 255) {
-	// The count function returns how many states in neighbourhood is of a given state.
+    // The count function returns how many states in neighbourhood is of a given state.
     if (count(Moore, Alive) == 3) {
         become Alive;
     }
@@ -43,7 +43,9 @@ state Alive (0, 0, 0) {
 function count(neighbourhood nei, state z) int {
 	let counter = 0;
 	for (int i = 0; i < 8; i = i + 1) {
-		counter = counter + 1;
+        if (nei[i] == z) {
+            counter = counter + 1;
+        }
 	}
 	return counter;
 }
