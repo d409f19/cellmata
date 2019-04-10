@@ -81,7 +81,5 @@ class SanityChecker : BaseASTVisitor() {
             ErrorLogger.registerError(SanityError(node.ctx, "A state is needed"))
         else if (numberOfStates == 1)
             System.err.println("Warning: There is only one state")
-
-        println(numberOfStates)
     }
 }
