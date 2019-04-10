@@ -1,0 +1,50 @@
+world {
+    size = 1000 [edge=alive1], 1000 [wrap]
+    tickrate = 100 // Ticktock
+    cellsize = 5 // Cellsize is the size of a cell
+}
+
+const boolean = false;
+const integer = 42;
+const floating = 42.420;
+const goodProgram = true; // May be accurate
+
+/* An explanation of the following states would be redundant
+   but it's worthwhile trying out multi-line comments
+   even just for the sake of writing nonsense */
+
+state alive1 (0, 0, 0) {
+    let a = -foo(42);
+    become alive2;
+}
+
+state alive2 (0, 0, 0) {
+    let a = -foo(42);
+    become alive3;
+}
+
+state alive3 (0, 0, 0) {
+    let a = -foo(42);
+    become alive4;
+}
+
+state alive4 (0, 0, 0) {
+    let a = -foo(42);
+    become alive5;
+}
+
+state alive5 (0, 0, 0) {
+    let a = -foo(42);
+    become alive6;
+}
+
+state alive6 (0, 0, 0) {
+    let a = -foo(42);
+    become alive1;
+}
+
+// This is a silly function
+function foo(int x) int {
+    let a = -foo(42);
+    return x + 42;
+}
