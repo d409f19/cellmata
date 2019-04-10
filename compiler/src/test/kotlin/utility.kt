@@ -2,9 +2,9 @@ package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.cellumata.CompilerData
 import dk.aau.cs.d409f19.cellumata.ast.*
-import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
-import dk.aau.cs.d409f19.cellumata.walkers.ScopeCheckVisitor
-import dk.aau.cs.d409f19.cellumata.walkers.TypeChecker
+import dk.aau.cs.d409f19.cellumata.visitors.LiteralExtractorVisitor
+import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
+import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 
