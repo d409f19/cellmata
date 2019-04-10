@@ -2,8 +2,11 @@ package dk.aau.cs.d409f19.cellumata
 
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
+import dk.aau.cs.d409f19.cellumata.ast.RootNode
+import dk.aau.cs.d409f19.cellumata.ast.StateDecl
 import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.walkers.LiteralExtractorVisitor
+import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
 import dk.aau.cs.d409f19.cellumata.walkers.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.walkers.TypeChecker
 import org.antlr.v4.runtime.CharStreams
@@ -28,6 +31,10 @@ fun compile(path: Path) {
 
         // Extract literals
         LiteralExtractorVisitor().visit(ast)
+
+        // Sanity checker
+        val sanityChecker = SanityChecker()
+        sanityChecker.visit(ast)
 
         // Symbol table and scope
         val scopeChecker = ScopeCheckVisitor()
