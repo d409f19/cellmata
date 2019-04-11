@@ -58,12 +58,41 @@ state s1 (255, 0, 12) {
     }
 
     become s1;
-
-    return a;
 }
 
-function f1(int a, int b) bool {
+function f1(int a, int b) int {
     return a + b;
+}
+
+
+function f2(int a, int b) float {
+    return a + b;
+}
+
+//should produce wrong returntype error
+function f3(int a, int b) bool {
+    return a + b;
+}
+
+//should produce wrong returntype error
+function f4(float a, bool b) int {
+    if ( a == b ) {
+        return a;
+    }
+}
+
+//should produce wrong returntype error
+function f5(int a, int b) float {
+    let c = true;
+    for ( let x = a; x < b; x = x+1) {
+        if ( x == 5 ) {
+            return c;
+        }
+    }
+}
+
+function f5(int a, int b) bool {
+    return (a + b) == (b + a);
 }
 
 neighbourhood n1 {
