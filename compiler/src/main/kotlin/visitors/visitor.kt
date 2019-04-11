@@ -91,6 +91,8 @@ interface ASTVisitor {
     fun visit(node: BreakStmt)
 
     fun visit(node: ContinueStmt)
+
+    fun visit(node: CodeBlock)
 }
 
 /**
@@ -140,7 +142,7 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: StateDecl) {
-        node.body.forEach { visit(it) }
+        visit(node.body)
     }
 
     override fun visit(node: NeighbourhoodDecl) {
@@ -153,7 +155,7 @@ abstract class BaseASTVisitor: ASTVisitor {
 
     override fun visit(node: FuncDecl) {
         node.args.forEach { visit(it) }
-        node.body.forEach { visit(it) }
+        visit(node.body)
     }
 
     override fun visit(node: Expr) {
@@ -315,13 +317,13 @@ abstract class BaseASTVisitor: ASTVisitor {
     override fun visit(node: IfStmt) {
         node.conditionals.forEach { visit(it) }
         if (node.elseBlock != null) {
-            node.elseBlock.forEach { visit(it) }
+            visit(node.elseBlock)
         }
     }
 
     override fun visit(node: ConditionalBlock) {
         visit(node.expr)
-        node.block.forEach { stmt -> visit(stmt) }
+        visit(node.block)
     }
 
     override fun visit(node: BecomeStmt) {
@@ -336,7 +338,7 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.initPart)
         visit(node.condition)
         visit(node.postIterationPart)
-        node.body.forEach { visit(it) }
+        visit(node.body)
     }
 
     override fun visit(node: BreakStmt) {
@@ -345,6 +347,10 @@ abstract class BaseASTVisitor: ASTVisitor {
 
     override fun visit(node: ContinueStmt) {
         // no-op
+    }
+
+    override fun visit(node: CodeBlock) {
+        node.body.forEach { visit(it) }
     }
 }
 
