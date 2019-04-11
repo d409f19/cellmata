@@ -6,24 +6,19 @@ import org.antlr.v4.runtime.tree.ParseTree
 /**
  * Base class for all type classes. This class should be viewed as effectively being an enum.
  */
-sealed class Type(val name: String) {
+sealed class Type
 
-    override fun toString(): String {
-        return name
-    }
-}
-
-object IntegerType : Type("int")
-object FloatType : Type("float")
-object BooleanType : Type("bool")
-object StateType : Type("state")
-object ActualNeighbourhoodType : Type("neighbourhood") // An evaluated neighbourhood
-data class ArrayType(val subtype: Type) : Type("array<$subtype>")
+object IntegerType : Type()
+object FloatType : Type()
+object BooleanType : Type()
+object StateType : Type()
+object ActualNeighbourhoodType : Type() // An evaluated neighbourhood
+data class ArrayType(val subtype: Type) : Type()
 
 /**
  * Default value for types before they're checked by the type checker
  */
-object UncheckedType : Type("UncheckedType")
+object UncheckedType : Type()
 
 /**
  * Convert a parse tree node to the type it represents
