@@ -45,6 +45,5 @@ state alive6 (0, 0, 0) {
 
 // This is a silly function
 function foo(int x) int {
-    let a = -foo(42);
     return x + 42;
 }
