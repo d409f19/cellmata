@@ -5,99 +5,99 @@ import dk.aau.cs.d409f19.cellumata.ast.*
 /**
  * The base interface for an implementation of the visitor pattern on the abstract syntax tree
  */
-interface ASTVisitor {
-    fun visit(node: RootNode)
+interface ASTVisitor<R> {
+    fun visit(node: RootNode): R
 
-    fun visit(node: Decl)
+    fun visit(node: Decl): R
 
-    fun visit(node: ConstDecl)
+    fun visit(node: ConstDecl): R
 
-    fun visit(node: StateDecl)
+    fun visit(node: StateDecl): R
 
-    fun visit(node: NeighbourhoodDecl)
+    fun visit(node: NeighbourhoodDecl): R
 
-    fun visit(node: Coordinate)
+    fun visit(node: Coordinate): R
 
-    fun visit(node: FuncDecl)
+    fun visit(node: FuncDecl): R
 
-    fun visit(node: Expr)
+    fun visit(node: Expr): R
 
-    fun visit(node: OrExpr)
+    fun visit(node: OrExpr): R
 
-    fun visit(node: AndExpr)
+    fun visit(node: AndExpr): R
 
-    fun visit(node: InequalityExpr)
+    fun visit(node: InequalityExpr): R
 
-    fun visit(node: EqualityExpr)
+    fun visit(node: EqualityExpr): R
 
-    fun visit(node: MoreThanExpr)
+    fun visit(node: MoreThanExpr): R
 
-    fun visit(node: MoreEqExpr)
+    fun visit(node: MoreEqExpr): R
 
-    fun visit(node: LessThanExpr)
+    fun visit(node: LessThanExpr): R
 
-    fun visit(node: LessEqExpr)
+    fun visit(node: LessEqExpr): R
 
-    fun visit(node: AdditionExpr)
+    fun visit(node: AdditionExpr): R
 
-    fun visit(node: SubtractionExpr)
+    fun visit(node: SubtractionExpr): R
 
-    fun visit(node: MultiplicationExpr)
+    fun visit(node: MultiplicationExpr): R
 
-    fun visit(node: DivisionExpr)
+    fun visit(node: DivisionExpr): R
 
-    fun visit(node: NegativeExpr)
+    fun visit(node: NegativeExpr): R
 
-    fun visit(node: InverseExpr)
+    fun visit(node: InverseExpr): R
 
-    fun visit(node: ArrayLookupExpr)
+    fun visit(node: ArrayLookupExpr): R
 
-    fun visit(node: ArrayBodyExpr)
+    fun visit(node: ArrayBodyExpr): R
 
-    fun visit(node: ParenExpr)
+    fun visit(node: ParenExpr): R
 
-    fun visit(node: NamedExpr)
+    fun visit(node: NamedExpr): R
 
-    fun visit(node: ModuloExpr)
+    fun visit(node: ModuloExpr): R
 
-    fun visit(node: FuncExpr)
+    fun visit(node: FuncExpr): R
 
-    fun visit(node: StateIndexExpr)
+    fun visit(node: StateIndexExpr): R
 
-    fun visit(node: IntLiteral)
+    fun visit(node: IntLiteral): R
 
-    fun visit(node: BoolLiteral)
+    fun visit(node: BoolLiteral): R
 
-    fun visit(node: Stmt)
+    fun visit(node: Stmt): R
 
-    fun visit(node: AssignStmt)
+    fun visit(node: AssignStmt): R
 
-    fun visit(node: IfStmt)
+    fun visit(node: IfStmt): R
 
-    fun visit(node: BecomeStmt)
+    fun visit(node: BecomeStmt): R
   
-    fun visit(node: ReturnStmt)
-    fun visit(node: AST)
-    fun visit(node: FloatLiteral)
-    fun visit(node: ConditionalBlock)
-    fun visit(node: FunctionArgs)
+    fun visit(node: ReturnStmt): R
+    fun visit(node: AST): R
+    fun visit(node: FloatLiteral): R
+    fun visit(node: ConditionalBlock): R
+    fun visit(node: FunctionArgs): R
 
-    fun visit(node: WorldNode)
+    fun visit(node: WorldNode): R
 
-    fun visit(node: WorldDimension)
+    fun visit(node: WorldDimension): R
 
-    fun visit(node: ForStmt)
+    fun visit(node: ForStmt): R
 
-    fun visit(node: BreakStmt)
+    fun visit(node: BreakStmt): R
 
-    fun visit(node: ContinueStmt)
+    fun visit(node: ContinueStmt): R
 }
 
 /**
  * A basic implementation of an visitor pattern for the abstract syntax tree.
  * By default does a in-order walk of the abstract syntax tree.
  */
-abstract class BaseASTVisitor: ASTVisitor {
+abstract class BaseASTVisitor: ASTVisitor<Unit> {
     override fun visit(node: AST) {
         when (node) {
             is RootNode -> visit(node)
