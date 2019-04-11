@@ -12,7 +12,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 import java.nio.file.Path
 import java.nio.file.Paths
 
-val path = Paths.get("src/main/resources/stress.cell")
+val path = Paths.get("src/main/resources/compiling-programs/skeleton.cell")
 
 fun compile(path: Path) {
     try {
@@ -61,6 +61,9 @@ fun main() {
     compile(path)
 }
 
+/**
+ * Encapsulates all data from the compiler, which may be used for testing
+ */
 data class CompilerData(
     val parser: CellmataParser,
     val ast: AST,
