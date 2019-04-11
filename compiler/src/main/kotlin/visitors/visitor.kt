@@ -255,6 +255,7 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: ArrayLookupExpr) {
+        visit(node.ident)
         visit(node.index)
     }
 

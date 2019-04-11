@@ -229,7 +229,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: ArrayLookupExpr) {
         super.visit(node)
 
-        node.setType(symbolTableSession.getSymbolType(node.ident))
+        node.setType(node.ident.getType())
     }
 
     override fun visit(node: ArrayBodyExpr) {
