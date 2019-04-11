@@ -20,7 +20,7 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
             .append("WorldNode\\nsize = ")
             .append(node.dimensions.map {
                 when(it.type) {
-                    WorldType.EDGE -> it.size.toString() + "[edge=" + "]"
+                    WorldType.EDGE -> it.size.toString() + "[edge=" + it.edge + "]"
                     WorldType.UNDEFINED -> it.size.toString() + "[undefined]"
                     WorldType.WRAPPING -> it.size.toString() + "[wrapping]"
                 }
