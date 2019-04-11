@@ -1,5 +1,6 @@
 package dk.aau.cs.d409f19
 
+import dk.aau.cs.d409f19.Utilities.Companion.compileProgram
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -13,7 +14,7 @@ class BatchTest {
     @Test
     fun batchPass() {
         batchDir.getPrograms().forEach {
-            Utilities.compileProgram(it)
+            compileProgram(it)
         }
     }
 
