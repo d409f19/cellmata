@@ -91,7 +91,7 @@ function f5(int a, int b) float {
     }
 }
 
-function f5(int a, int b) bool {
+function f6(int a, int b) bool {
     return (a + b) == (b + a);
 }
 
