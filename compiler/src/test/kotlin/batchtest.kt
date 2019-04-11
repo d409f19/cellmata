@@ -16,11 +16,13 @@ class BatchTest {
     @Test
     fun batchPass() {
         batchDir.getPrograms().forEach {
+            // Reset ErrorLogger between each run
             ErrorLogger.reset()
             compileProgram(it.program)
+            // If any errors found, print them and throw exception with name in msg
             if (ErrorLogger.hasErrors()) {
                 ErrorLogger.printAllErrors()
-                throw TerminatedCompilationException("Errors occured in program: " + it.filename)
+                throw TerminatedCompilationException("Errors occurred in program: " + it.filename)
             }
         }
     }
@@ -39,8 +41,9 @@ class BatchTest {
         val list = mutableListOf<CellmataProgram>()
         // Walk top-down
         File(this).walk().forEach {
-            // If it is a file and has extension 'cell', then add source to list as string
+            // If it is a file and has extension 'cell'
             if (it.isFile && it.extension == "cell") {
+                // Add program with filename and source as a CellmataProgram
                 list.add(CellmataProgram(it.name, it.readText()))
             }
         }
