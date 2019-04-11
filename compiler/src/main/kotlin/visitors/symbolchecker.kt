@@ -1,12 +1,14 @@
-package dk.aau.cs.d409f19.cellumata.walkers
+package dk.aau.cs.d409f19.cellumata.visitors
 
+import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
-import java.lang.Exception
+import org.antlr.v4.runtime.ParserRuleContext
 
 /**
- * Thrown when a undefined symbol is encountered. This exception indicates there is a use-before-declaration scenario.
+ * Logged when a undefined symbol is encountered. This exception indicates there is a use-before-declaration scenario.
  */
-class SymbolException(val ident: String) : Exception("\"$ident\" was used before it was declared")
+class UndeclaredNameException(ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is undeclared.")
 
 /**
  * Walks through the abstract syntax tree, extracts symbols, and checks for use-before-declaration.
@@ -35,8 +37,12 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
     }
 
     override fun visit(node: NamedExpr) {
-        // Check if is defined or throw SymbolException
-        node.setType(symbolTableSession.getSymbolType(node.ident) ?: throw SymbolException(node.ident))
+
+        // Check if the name is in the symbol table
+        val symb = symbolTableSession.getSymbol(node.ident)
+        if (symb == null) {
+            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
+        }
         super.visit(node)
     }
 
@@ -60,11 +66,18 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
     }
 
     override fun visit(node: AssignStmt) {
-        super.visit(node)
-
-        if (node.ctx.STMT_LET() != null) { // Check if this is a variable declaration, and not just an assignment
+        if (node.ctx.STMT_LET() == null) { // Check if this is a variable declaration, and not just an assignment
+            // assignment
+            val symb = symbolTableSession.getSymbol(node.ident)
+            if (symb == null) {
+                ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
+            }
+        } else {
+            // declaration
             symbolTableSession.insertSymbol(node.ident, node)
         }
+
+        super.visit(node)
     }
 
     override fun visit(node: ConditionalBlock) {
@@ -75,7 +88,7 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
 
     override fun visit(node: FuncExpr) {
         if (symbolTableSession.getSymbol(node.ident) == null) {
-            throw SymbolException(node.ident)
+            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
         }
         super.visit(node)
     }

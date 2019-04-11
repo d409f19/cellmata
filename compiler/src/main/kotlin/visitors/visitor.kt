@@ -1,4 +1,4 @@
-package dk.aau.cs.d409f19.cellumata.walkers
+package dk.aau.cs.d409f19.cellumata.visitors
 
 import dk.aau.cs.d409f19.cellumata.ast.*
 
@@ -15,6 +15,8 @@ interface ASTVisitor {
     fun visit(node: StateDecl)
 
     fun visit(node: NeighbourhoodDecl)
+
+    fun visit(node: Coordinate)
 
     fun visit(node: FuncDecl)
 
@@ -43,16 +45,6 @@ interface ASTVisitor {
     fun visit(node: MultiplicationExpr)
 
     fun visit(node: DivisionExpr)
-
-    fun visit(node: PreIncExpr)
-
-    fun visit(node: PreDecExpr)
-
-    fun visit(node: PostIncExpr)
-
-    fun visit(node: PostDecExpr)
-
-    fun visit(node: PositiveExpr)
 
     fun visit(node: NegativeExpr)
 
@@ -83,22 +75,12 @@ interface ASTVisitor {
     fun visit(node: IfStmt)
 
     fun visit(node: BecomeStmt)
-
-    fun visit(node: PreIncStmt)
-
-    fun visit(node: PostIncStmt)
-
-    fun visit(node: PreDecStmt)
-
-    fun visit(node: PostDecStmt)
-
+  
     fun visit(node: ReturnStmt)
     fun visit(node: AST)
     fun visit(node: FloatLiteral)
     fun visit(node: ConditionalBlock)
     fun visit(node: FunctionArgs)
-
-    fun visit(node: Coordinate)
 
     fun visit(node: WorldNode)
 
@@ -165,6 +147,10 @@ abstract class BaseASTVisitor: ASTVisitor {
         node.coords.forEach { visit(it) }
     }
 
+    override fun visit(node: Coordinate) {
+        // no-op
+    }
+
     override fun visit(node: FuncDecl) {
         node.args.forEach { visit(it) }
         node.body.forEach { visit(it) }
@@ -184,11 +170,6 @@ abstract class BaseASTVisitor: ASTVisitor {
             is SubtractionExpr -> visit(node)
             is MultiplicationExpr -> visit(node)
             is DivisionExpr -> visit(node)
-            is PreIncExpr -> visit(node)
-            is PreDecExpr -> visit(node)
-            is PostIncExpr -> visit(node)
-            is PostDecExpr -> visit(node)
-            is PositiveExpr -> visit(node)
             is NegativeExpr -> visit(node)
             is InverseExpr -> visit(node)
             is ArrayLookupExpr -> visit(node)
@@ -265,26 +246,6 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.right)
     }
 
-    override fun visit(node: PreIncExpr) {
-        visit(node.value)
-    }
-
-    override fun visit(node: PreDecExpr) {
-        visit(node.value)
-    }
-
-    override fun visit(node: PostIncExpr) {
-        visit(node.value)
-    }
-
-    override fun visit(node: PostDecExpr) {
-        visit(node.value)
-    }
-
-    override fun visit(node: PositiveExpr) {
-        visit(node.value)
-    }
-
     override fun visit(node: NegativeExpr) {
         visit(node.value)
     }
@@ -294,6 +255,7 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: ArrayLookupExpr) {
+        visit(node.ident)
         visit(node.index)
     }
 
@@ -339,10 +301,6 @@ abstract class BaseASTVisitor: ASTVisitor {
             is AssignStmt -> visit(node)
             is IfStmt -> visit(node)
             is BecomeStmt -> visit(node)
-            is PreIncStmt -> visit(node)
-            is PostIncStmt -> visit(node)
-            is PreDecStmt -> visit(node)
-            is PostDecStmt -> visit(node)
             is ReturnStmt -> visit(node)
             is ForStmt -> visit(node)
             is BreakStmt -> visit(node)
@@ -362,6 +320,7 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: ConditionalBlock) {
+        visit(node.expr)
         node.block.forEach { stmt -> visit(stmt) }
     }
 
@@ -369,28 +328,8 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.state)
     }
 
-    override fun visit(node: PreIncStmt) {
-        visit(node.variable)
-    }
-
-    override fun visit(node: PostIncStmt) {
-        visit(node.variable)
-    }
-
-    override fun visit(node: PreDecStmt) {
-        visit(node.variable)
-    }
-
-    override fun visit(node: PostDecStmt) {
-        visit(node.variable)
-    }
-
     override fun visit(node: ReturnStmt) {
         visit(node.value)
-    }
-
-    override fun visit(node: Coordinate) {
-        // no-op
     }
 
     override fun visit(node: ForStmt) {
@@ -410,7 +349,7 @@ abstract class BaseASTVisitor: ASTVisitor {
 }
 
 /**
- * Walks the tree while opening and closing scopes has their are entered and left.
+ * Walks the tree while opening and closing scopes as they are entered and left.
  *
  * @see BaseASTVisitor
  */

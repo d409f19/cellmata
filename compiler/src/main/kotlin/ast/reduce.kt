@@ -1,6 +1,10 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
 import dk.aau.cs.d409f19.antlr.CellmataParser
+import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
+import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
+import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
@@ -8,7 +12,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * Parse Tree to Abstract Syntax Tree transformer/mapper
  *
  * This file implements a recursive traversal of the the parse tree,
- * where each step of the traversal emit a node in the AST if that node
+ * where each step of the traversal emits a node in the AST if that node
  * in the parse tree is relevant to preserve.
  * It's important to note that this mapper only handles the process of
  * creating the tree part of the AST, it doesn't extract the values from
@@ -18,7 +22,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  */
 
 /**
- * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ * Attempts to recursively transform an expression node in the parse tree to create a subtree of the AST.
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
@@ -89,18 +93,6 @@ private fun reduceExpr(node: ParseTree): Expr {
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.PreIncExprContext -> PreIncExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
-        is CellmataParser.PreDecExprContext -> PreDecExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
-        is CellmataParser.PositiveExprContext -> PositiveExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
         is CellmataParser.NegativeExprContext -> NegativeExpr(
             ctx = node,
             value = reduceExpr(node.value)
@@ -109,16 +101,9 @@ private fun reduceExpr(node: ParseTree): Expr {
             ctx = node,
             value = reduceExpr(node.value)
         )
-        is CellmataParser.PostIncExprContext -> PostIncExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
-        is CellmataParser.PostDecExprContext -> PostDecExpr(
-            ctx = node,
-            value = reduceExpr(node.value)
-        )
         is CellmataParser.ArrayLookupExprContext -> ArrayLookupExpr(
             ctx = node,
+            ident = reduceExpr(node.value),
             index = reduceExpr(node.index)
         )
         is CellmataParser.ParenExprContext -> ParenExpr(
@@ -149,14 +134,15 @@ private fun reduceExpr(node: ParseTree): Expr {
         is CellmataParser.FloatLiteralContext -> reduceExpr(node.value)
         is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
         is CellmataParser.Float_literalContext -> FloatLiteral(ctx = node)
-        is CellmataParser.Modifiable_identContext -> reduceExpr(node.getChild(0))
         is CellmataParser.Var_identContext -> NamedExpr(ctx = node)
-        else -> throw AssertionError("Unexpected tree node")
+        // Errors
+        is ParserRuleContext -> { registerReduceError(node); ErrorExpr(node) }
+        else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
 
 /**
- * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ * Attempts to recursively transform an statement node in the parse tree to create a subtree of the AST.
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
@@ -201,18 +187,16 @@ private fun reduceStmt(node: ParseTree): Stmt {
         is CellmataParser.Break_stmtContext -> BreakStmt(ctx = node)
         is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = node)
         is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = node, state = reduceExpr(node.state))
-        is CellmataParser.PreIncStmtContext -> PreIncStmt(ctx = node, variable = reduceExpr(node.modifiable_ident()))
-        is CellmataParser.PostIncStmtContext -> PostIncStmt(ctx = node, variable = reduceExpr(node.modifiable_ident()))
-        is CellmataParser.PreDecStmtContext -> PreDecStmt(ctx = node, variable = reduceExpr(node.modifiable_ident()))
-        is CellmataParser.PostDecStmtContext -> PostDecStmt(ctx = node, variable = reduceExpr(node.modifiable_ident()))
         is CellmataParser.StmtContext -> reduceStmt(node.getChild(0))
         is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = node, value = reduceExpr(node.expr()))
-        else -> throw AssertionError("Unexpected tree node")
+        // Errors
+        is ParserRuleContext -> { registerReduceError(node); ErrorStmt(node) }
+        else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
 
 /**
- * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
+ * Attempts to recursively transform an declaration node in the parse tree to create a subtree of the AST.
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
@@ -237,7 +221,9 @@ private fun reduceDecl(node: ParseTree): Decl {
             ctx = node,
             body = reduceCodeBlock(node.code_block())
         )
-        else -> throw AssertionError("Unexpected tree node")
+        // Errors
+        is ParserRuleContext -> { registerReduceError(node); ErrorDecl(node) }
+        else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
 
@@ -253,16 +239,24 @@ fun reduceCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
 }
 
 /**
- * Attempts to recursively transform an ANTLR parse tree to an abstract syntax tree.
- *
- * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
+ * Attempts to recursively transform the parse tree root node to an abstract syntax tree.
  */
-fun reduce(node: ParseTree): AST {
+fun reduce(node: ParserRuleContext): AST {
     return when (node) {
         is CellmataParser.StartContext -> RootNode(
+            ctx = node,
             world = WorldNode(ctx = node.world_dcl()),
-            body = node.body().children.map(::reduceDecl)
+            // Since ANTLR sets children to null instead of empty list, this should be handled through elvis operator
+            body = node.body().children?.map(::reduceDecl) ?: listOf()
         )
-        else -> throw AssertionError("Unexpected tree node. Have the grammar been changed without updating the AST mapper?")
+        else -> { registerReduceError(node); ErrorAST(node) }
     }
+}
+
+/**
+ * Register a reduce error: Unexpected parsing context. This should only happen if we forget to update the reduce.kt
+ * after changing the grammar.
+ */
+fun registerReduceError(ctx: ParserRuleContext) {
+    ErrorLogger.registerError(ErrorFromContext(ctx, "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST."))
 }

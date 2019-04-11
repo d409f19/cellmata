@@ -1,11 +1,11 @@
-package dk.aau.cs.d409f19.cellumata.walkers
+package dk.aau.cs.d409f19.cellumata.visitors
 
 import dk.aau.cs.d409f19.cellumata.ast.*
 import java.io.OutputStream
 import java.io.PrintStream
 
 class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStream(sink)) : BaseASTVisitor() {
-    var depth = 0
+    private var depth = 0
 
     private fun printNode(from: Any, to: Any) {
         output.println("\t" + from.hashCode() + " -> " + to.hashCode())
@@ -171,36 +171,6 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: PreIncExpr) {
-        printLabel(node, "PreIncExpr")
-        printNode(node, node.value)
-        super.visit(node)
-    }
-
-    override fun visit(node: PreDecExpr) {
-        printLabel(node, "PreDecExpr")
-        printNode(node, node.value)
-        super.visit(node)
-    }
-
-    override fun visit(node: PostIncExpr) {
-        printLabel(node, "PostIncExpr")
-        printNode(node, node.value)
-        super.visit(node)
-    }
-
-    override fun visit(node: PostDecExpr) {
-        printLabel(node, "PostDecExpr")
-        printNode(node, node.value)
-        super.visit(node)
-    }
-
-    override fun visit(node: PositiveExpr) {
-        printLabel(node, "PositiveExpr")
-        printNode(node, node.value)
-        super.visit(node)
-    }
-
     override fun visit(node: NegativeExpr) {
         printLabel(node, "NegativeExpr")
         printNode(node, node.value)
@@ -274,30 +244,6 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
     override fun visit(node: BecomeStmt) {
         printLabel(node, "BecomeStmt")
         printNode(node, node.state)
-        super.visit(node)
-    }
-
-    override fun visit(node: PreIncStmt) {
-        printLabel(node, "PreIncStmt")
-        printNode(node, node.variable)
-        super.visit(node)
-    }
-
-    override fun visit(node: PostIncStmt) {
-        printLabel(node, "PostIncStmt")
-        printNode(node, node.variable)
-        super.visit(node)
-    }
-
-    override fun visit(node: PreDecStmt) {
-        printLabel(node, "PreDecStmt")
-        printNode(node, node.variable)
-        super.visit(node)
-    }
-
-    override fun visit(node: PostDecStmt) {
-        printLabel(node, "PostDecStmt")
-        printNode(node, node.variable)
         super.visit(node)
     }
 

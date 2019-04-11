@@ -23,6 +23,8 @@ state s1 (255, 0, 12) {
     let c = true == false;
     let d = true != false;
     let e = 2 > 3.0;
+    e = abe;
+    dec = abe;
     let f = 2 >= 3.0;
     let g = 2 < 3.0;
     let h = 2 <= 3.0;
@@ -31,19 +33,15 @@ state s1 (255, 0, 12) {
     let k = 2 * 3.0;
     let l = 2 / 3.0;
     let m = 2 % 3.0;
-    let n = ++2;
-    let o = --2;
-    let p1 = 2++;
-    let p2 = 2--;
-    let q = +n;
-    let r = -n;
-    let s = !true;
-    let t = baz[0];
-    //let u = { 1, 2, 3 };
-    let v = 2 * (123 + 321);
-    let w = bar;
-    //let x = baz(132);
-    let y = #;
+    let n = 42;
+    let o = -n;
+    let p = !true;
+    let q = baz[0];
+    let r = 2 * (123 + 321);
+    let s = bar;
+    let t = baz(132);
+    let u = #;
+
 
     let bt = true;
     let bf = false;
@@ -58,11 +56,6 @@ state s1 (255, 0, 12) {
     } else {
         become s1;
     }
-
-    ++a;
-    a++;
-    --a;
-    a--;
 
     become s1;
 

@@ -1,4 +1,4 @@
-package dk.aau.cs.d409f19.cellumata.walkers
+package dk.aau.cs.d409f19.cellumata.visitors
 
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.*
@@ -81,7 +81,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
         node.ident = node.ctx.neighbourhood_ident().text
 
         // For each declared coordinate produce a Coordinate through the map operation
-        val coords =  node.ctx.neighbourhood_code().coords_decl().map {
+        val coords = node.ctx.neighbourhood_code().coords_decl().map {
             // For each axes in the the coordinate convert it from a string to an integer
             val axes = it.integer_literal().map { intCtx ->
                 try {
@@ -105,7 +105,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
         super.visit(node)
 
         // Interpret each argument and produce a FunctionArgs for it
-        node.args = node.ctx.func_decl_arg().map { FunctionArgs(it.IDENT().text, typeFromCtx(it.type_ident())) }.toList()
+        node.args = node.ctx.func_decl_arg().map { FunctionArgs(it, it.IDENT().text, typeFromCtx(it.type_ident())) }.toList()
 
         node.ident = node.ctx.func_ident().text
         node.returnType = typeFromCtx(node.ctx.type_ident())
@@ -153,9 +153,15 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
     override fun visit(node: AssignStmt) {
         super.visit(node)
         node.ident = node.ctx.var_ident().text
+        node.isDeclaration = (node.ctx.STMT_LET() != null)
     }
 
-    private fun toInt(text: String, node: AST): Int {
+    /**
+     * Parse a string into a integer, or throw IntegerParsingException the string isn't a valid integer.
+     *
+     * @throws IntegerParsingException
+     */
+    private fun parseInt(text: String, node: AST): Int {
         try {
             return text.toInt()
         } catch (e: NumberFormatException) {
@@ -164,12 +170,15 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
     }
 
     override fun visit(node: WorldNode) {
+        /**
+         * Parses a single dimension from the world size declaration list
+         */
         fun parseDimension(dim: CellmataParser.World_size_dimContext): WorldDimension {
             val type = dim.type
             return WorldDimension(
-                size = toInt(dim.size.text, node),
+                size = parseInt(dim.size.text, node),
                 type = when(type) {
-                    is CellmataParser.DimFiniteEdgeContext -> WorldType.EDGE // ToDo parse edge state
+                    is CellmataParser.DimFiniteEdgeContext -> WorldType.EDGE
                     is CellmataParser.DimFiniteWrappingContext -> WorldType.WRAPPING
                     else -> throw AssertionError()
                 },
@@ -183,6 +192,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
 
         val width = parseDimension(node.ctx.size.width)
 
+        // If height is non-null it is two dimensional, otherwise it is one dimensional
         node.dimensions = if (node.ctx.size.height != null) {
             val height = parseDimension(node.ctx.size.height)
             listOf(width, height)
@@ -190,17 +200,8 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
             listOf(width)
         }
 
-        try {
-            node.cellSize = node.ctx.cellsize?.value.text?.toInt()
-        } catch (e: NumberFormatException) {
-            throw IntegerParsingException(node.ctx.cellsize.text, node)
-        }
-
-        try {
-            node.tickrate = node.ctx.tickrate?.text?.toInt()
-        } catch (e: NumberFormatException) {
-            throw IntegerParsingException(node.ctx.tickrate.text, node)
-        }
+        node.cellSize = parseInt(node.ctx.cellsize.value.text, node)
+        node.tickrate = parseInt(node.ctx.tickrate.value.text, node)
 
         super.visit(node)
     }
