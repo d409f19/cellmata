@@ -15,8 +15,6 @@ class TypeError(ctx: ParserRuleContext, description: String) : ErrorFromContext(
  * Synthesizes types by moving them up the abstract syntax tree according to the type rules, and check that there is no violation of the type rules
  */
 class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTable) {
-    private var expectedReturn: Type? = null
-
     override fun visit(node: OrExpr) {
         super.visit(node)
 
@@ -307,26 +305,6 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
                 null
             }
         })
-    }
-
-    override fun visit(node: ReturnStmt) {
-        super.visit(node)
-
-        if (expectedReturn != node.value.getType()) {
-            node.value.setType(when {
-                node.value.getType() == IntegerType -> FloatType
-                else -> {
-                    ErrorLogger.registerError(TypeError(node.ctx, "Wrong return type (${node.value.getType()}). Expected $expectedReturn"))
-                    null
-                    }
-                }
-            )
-        }
-    }
-
-    override fun visit(node: FuncDecl) {
-        expectedReturn = node.returnType
-        super.visit(node)
     }
 
     override fun visit(node: FuncExpr) {
