@@ -268,6 +268,7 @@ data class AssignStmt(
     override val ctx: CellmataParser.AssignmentContext,
     var ident: String = MAGIC_UNDEFINED_STRING,
     val expr: Expr,
+    var isDeclaration: Boolean? = null,
     private var type: Type? = UncheckedType
 ) : Stmt(ctx), TypedNode {
     override fun getType(): Type? {
