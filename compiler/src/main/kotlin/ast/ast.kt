@@ -119,7 +119,7 @@ data class InverseExpr(override val ctx: CellmataParser.InverseExprContext, val 
 
 data class ArrayLookupExpr(
     override val ctx: CellmataParser.ArrayLookupExprContext,
-    val ident: String = MAGIC_UNDEFINED_STRING,
+    val ident: Expr,
     val index: Expr
 ) : Expr(ctx)
 
