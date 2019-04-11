@@ -19,7 +19,9 @@ class BatchTest {
     }
 
     /**
-     * Returns a list of strings from each '.cell' file under a given directory
+     * Returns a list of strings from each '.cell' file under a given directory.
+     * Since this function is a class-extension of string, but private, which takes a string as a receiver,
+     * this only alters functionality of strings under this class
      */
     private fun String.getPrograms(): List<String> {
         val list = mutableListOf<String>()
