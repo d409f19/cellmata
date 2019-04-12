@@ -30,10 +30,8 @@ class SymbolTest {
 
         val compilerData = compileProgram(getWorldDecl() + "\n\n" + getStateDecl(body = "let $ident = $value;"))
 
-        // Get SymbolTable for entire program
-        val symbolTable = compilerData.scopeChecker.getSymbolTable()
         // Get SymbolTable for first subscope, which is first StateDecl
-        val stateSymbolTable = symbolTable.tables[0]
+        val stateSymbolTable = compilerData.symbolTable.tables[0]
 
         try {
             // Get expression of AssignStmt which is value of the key of ident

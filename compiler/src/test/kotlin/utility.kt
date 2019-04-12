@@ -36,7 +36,7 @@ class Utilities {
             // Type checking
             TypeChecker(symbolTable).visit(ast)
 
-            return CompilerData(parser, ast, scopeChecker)
+            return CompilerData(parser, ast, symbolTable)
         }
 
         fun getParser(program: String): dk.aau.cs.d409f19.antlr.CellmataParser {
