@@ -13,7 +13,7 @@ class Utilities {
     companion object {
 
         /**
-         * Compiles a program given as string parameter, asserts that the given program compiles successfully
+         * Compiles a program given as string parameter
          */
         fun compileProgram(program: String): CompilerData {
             val source = CharStreams.fromString(program)
