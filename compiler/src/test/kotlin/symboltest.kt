@@ -24,17 +24,18 @@ class SymbolTest {
      */
     private fun <T> assignStmtPass(ident: String, value: T): Boolean {
 
-        val compilerData = compileProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let $ident = $value;"))
+        val compilerData =
+            compileProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let $ident = $value;"))
 
         // Get SymbolTable for first subscope, which is first StateDecl
         val stateSymbolTable = compilerData.symbolTable.tables[0]
 
         try {
-            // Get expression of AssignStmt which is value of the key of ident
-            val literal = (stateSymbolTable.symbols[ident] as AssignStmt).expr
-
             // Assert identifier of variable is contained in first symbol scope
             assertTrue(stateSymbolTable.symbols.containsKey(ident))
+
+            // Get expression of AssignStmt which is value of the key of ident. Will
+            val literal = (stateSymbolTable.symbols[ident] as AssignStmt).expr
 
             // Switch on literal type, when either three assignable literals, assert equal value, else throw exception
             when (literal) {
@@ -44,9 +45,6 @@ class SymbolTest {
                 else -> throw AssertionFailedError("Type was not of assignable type! Was " + literal.getType())
             }
         } catch (e: AssertionFailedError) { // If any assertion errors thrown, catch and return false
-            return false
-        } catch (e: NullPointerException) { // Catch NPE's which may be thrown due to looking up ident as key
-            e.printStackTrace()
             return false
         }
         return true
