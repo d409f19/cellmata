@@ -8,11 +8,12 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f3(int a, int b) bool{
+function f3(int a, int b) bool {
     let c = true;
-    for ( let x = a; x < b; x = x+1) {
+    for (let x = a; x < b; x = x+1) {
         if ( x == 5 ) {
             return c && false;
         }
     }
+    return c && !c;
 }
