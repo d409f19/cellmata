@@ -205,7 +205,7 @@ data class StateDecl(
     var red: Short = -1,
     var blue: Short = -1,
     var green: Short = -1,
-    val body: List<Stmt>
+    val body: CodeBlock
 ) : Decl(ctx)
 
 /**
@@ -244,7 +244,7 @@ data class FuncDecl(
     override val ctx: CellmataParser.Func_declContext,
     var ident: String = MAGIC_UNDEFINED_STRING,
     var args: List<FunctionArgs> = emptyList(),
-    val body: List<Stmt> = emptyList(),
+    val body: CodeBlock,
     var returnType: Type = UncheckedType
 ) : Decl(ctx)
 
@@ -284,7 +284,7 @@ data class AssignStmt(
  * Represent a block in a if statement that is to be run if expr evaluates to true.
  * A ConditionalBlock can represent either the if or the elif part of an if statement.
  */
-data class ConditionalBlock(override val ctx: ParserRuleContext, val expr: Expr, val block: List<Stmt>) : AST(ctx)
+data class ConditionalBlock(override val ctx: ParserRuleContext, val expr: Expr, val block: CodeBlock) : AST(ctx)
 
 /**
  * Represent an entire if statement, including the if, the elif and the else blocks.
@@ -292,10 +292,10 @@ data class ConditionalBlock(override val ctx: ParserRuleContext, val expr: Expr,
 data class IfStmt(
     override val ctx: CellmataParser.If_stmtContext,
     val conditionals: List<ConditionalBlock>,
-    val elseBlock: List<Stmt>?
+    val elseBlock: CodeBlock?
 ) : Stmt(ctx)
 
-data class ForStmt(override val ctx: CellmataParser.For_stmtContext, val initPart: AssignStmt, val condition: Expr, val postIterationPart: AssignStmt, val body: List<Stmt>) : Stmt(ctx)
+data class ForStmt(override val ctx: CellmataParser.For_stmtContext, val initPart: AssignStmt, val condition: Expr, val postIterationPart: AssignStmt, val body: CodeBlock) : Stmt(ctx)
 
 data class BreakStmt(override val ctx: CellmataParser.Break_stmtContext) : Stmt(ctx)
 
@@ -312,6 +312,11 @@ data class BecomeStmt(override val ctx: CellmataParser.Become_stmtContext, val s
  * The return statement terminates a function call and returns a value to the caller.
  */
 data class ReturnStmt(override val ctx: CellmataParser.Return_stmtContext, val value: Expr) : Stmt(ctx)
+
+/**
+ * Represents a sequence of statements.
+ */
+data class CodeBlock(override val ctx: ParserRuleContext, val body: List<Stmt>): AST(ctx)
 
 /*
  * Error nodes are used when something goes wrong in reduce.kt and is returned by the failing function.
