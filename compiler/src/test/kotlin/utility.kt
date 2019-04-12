@@ -50,7 +50,7 @@ class Utilities {
 
         /**
          * Returns a world declaration based on given parameters and with sane defaults
-         * Defaults to two dimensional, but can be overriden with the twoDimensional parameter
+         * Defaults to two dimensional, but can be overridden with the twoDimensional parameter
          */
         fun getWorldDecl(
             dimOneSize: Int = 10,
