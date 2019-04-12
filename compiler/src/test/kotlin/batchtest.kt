@@ -15,7 +15,7 @@ class BatchTest {
      */
     @Test
     fun batchPass() {
-        batchDir.getPrograms().forEach {
+        getPrograms(batchDir).forEach {
             // Reset ErrorLogger between each run
             ErrorLogger.reset()
             compileProgram(it.program)
@@ -37,10 +37,10 @@ class BatchTest {
      * Since this function is a class-extension of string, but private, which takes a string as a receiver,
      * this only alters functionality of strings under this class
      */
-    private fun String.getPrograms(): List<CellmataProgram> {
+    private fun getPrograms(path: String): List<CellmataProgram> {
         val list = mutableListOf<CellmataProgram>()
         // Walk top-down
-        File(this).walk().forEach {
+        File(path).walk().forEach {
             // If it is a file and has extension 'cell'
             if (it.isFile && it.extension == "cell") {
                 // Add program with filename and source as a CellmataProgram
