@@ -1,5 +1,7 @@
 package dk.aau.cs.d409f19
 
+import dk.aau.cs.d409f19.antlr.CellmataLexer
+import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.CompilerData
 import dk.aau.cs.d409f19.cellumata.ast.*
 import dk.aau.cs.d409f19.cellumata.visitors.LiteralExtractorVisitor
@@ -17,9 +19,9 @@ class Utilities {
          */
         fun compileProgram(program: String): CompilerData {
             val source = CharStreams.fromString(program)
-            val lexer = dk.aau.cs.d409f19.antlr.CellmataLexer(source)
+            val lexer = CellmataLexer(source)
             val tokenStream = CommonTokenStream(lexer)
-            val parser = dk.aau.cs.d409f19.antlr.CellmataParser(tokenStream)
+            val parser = CellmataParser(tokenStream)
 
             // Build AST
             val startContext = parser.start()
@@ -39,11 +41,14 @@ class Utilities {
             return CompilerData(parser, ast, symbolTable)
         }
 
-        fun getParser(program: String): dk.aau.cs.d409f19.antlr.CellmataParser {
+        /**
+         * Sets up a parser and returns it
+         */
+        fun getParser(program: String): CellmataParser {
             val source = CharStreams.fromString(program)
-            val lexer = dk.aau.cs.d409f19.antlr.CellmataLexer(source)
+            val lexer = CellmataLexer(source)
             val tokenStream = CommonTokenStream(lexer)
-            return dk.aau.cs.d409f19.antlr.CellmataParser(tokenStream)
+            return CellmataParser(tokenStream)
         }
 
         /**
