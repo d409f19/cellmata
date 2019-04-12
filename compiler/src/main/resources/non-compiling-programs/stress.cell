@@ -23,8 +23,11 @@ state s1 (255, 0, 12) {
     let c = true == false;
     let d = true != false;
     let e = 2 > 3.0;
+
+    //produce error, as these three variables are undeclared
     e = abe;
     dec = abe;
+
     let f = 2 >= 3.0;
     let g = 2 < 3.0;
     let h = 2 <= 3.0;
@@ -36,7 +39,10 @@ state s1 (255, 0, 12) {
     let n = 42;
     let o = -n;
     let p = !true;
+
+    //baz undeclared, produces error
     let q = baz[0];
+
     let r = 2 * (123 + 321);
     let s = bar;
     let t = baz(132);
@@ -69,19 +75,24 @@ function f2(int a, int b) float {
     return a + b;
 }
 
-//should produce wrong returntype error
+//should not be able to compile due to;
+// - the returntype in function and declaration are not congruent
 function f3(int a, int b) bool {
     return a + b;
 }
 
-//should produce wrong returntype error
+//should not be able to compile due to;
+// - not all branches has a return
+// - float and bool cannot be compared
 function f4(float a, bool b) int {
     if ( a == b ) {
         return a;
     }
 }
 
-//should produce wrong returntype error
+//should not be able to compile due to;
+// - not all branches has a return
+// - the returntype in function and declaration are not congruent
 function f5(int a, int b) float {
     let c = true;
     for ( let x = a; x < b; x = x+1) {
