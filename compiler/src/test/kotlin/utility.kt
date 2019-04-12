@@ -7,6 +7,8 @@ import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 class Utilities {
 
@@ -48,7 +50,7 @@ class Utilities {
 
         /**
          * Returns a world declaration based on given parameters and with sane defaults
-         * TODO: should handle optional, second dimension - as of now, it's required
+         * Defaults to two dimensional, but can be overriden with the twoDimensional parameter
          */
         fun getWorldDecl(
             dimOneSize: Int = 10,
@@ -56,10 +58,13 @@ class Utilities {
             dimTwoSize: Int = 20,
             dimTwoType: String = "wrap",
             tickrate: Int = 120,
-            cellsize: Int = 5
+            cellsize: Int = 5,
+            twoDimensional: Boolean = true
         ): String {
+            // If two dimensional, declare second dimension, else empty string
+            val twoDimDecl = if (twoDimensional) ", $dimTwoSize[$dimTwoType]" else ""
             return """world {
-            |  size = $dimOneSize[$dimOneType], $dimTwoSize[$dimTwoType]
+            |  size = $dimOneSize[$dimOneType]$twoDimDecl
             |  tickrate = $tickrate
             |  cellsize = $cellsize
             |}
