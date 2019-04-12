@@ -109,8 +109,15 @@ class SymbolTest {
 
             // For each error recorded, assert that error is of SymbolRedefinitionError-type and with given identifier
             ErrorLogger.allErrors().forEach {
-                assertTrue(it is SymbolRedefinitionError, "Class assertion error at: $it")
-                assertTrue((it as SymbolRedefinitionError).ident == ident, "Identifier error at: $it")
+                assertTrue(
+                    it is SymbolRedefinitionError,
+                    "Class assertion error at: $it"
+                ) // If class is not a SRE, ASE is thrown with message on error if 'is'-keyword assertion fails
+                assertTrue(
+                    (it as SymbolRedefinitionError).ident == ident,
+                    "Identifier error at: $it"
+                ) /* If identifier of SRE, which is the ident of the given symbol which is redefined,
+                     is not equal to the actual ident passed, then assertion fails */
             }
         } catch (e: AssertionFailedError) {
             return false
