@@ -1,9 +1,9 @@
 package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.Utilities.Companion.compileProgram
-import dk.aau.cs.d409f19.Utilities.Companion.getBoilerplate
-import dk.aau.cs.d409f19.Utilities.Companion.getConstDecl
-import dk.aau.cs.d409f19.Utilities.Companion.getWorldDecl
+import dk.aau.cs.d409f19.Utilities.Companion.getBoilerplateProgramString
+import dk.aau.cs.d409f19.Utilities.Companion.getConstDeclString
+import dk.aau.cs.d409f19.Utilities.Companion.getWorldDeclString
 import dk.aau.cs.d409f19.cellumata.ast.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assumptions.*
@@ -17,7 +17,7 @@ class ASTTest {
      */
     private fun worldDecl(): Boolean {
         // Get AST of  boilerplate program with only world declaration
-        val compilerData = compileProgram(getWorldDecl())
+        val compilerData = compileProgram(getWorldDeclString())
         // Casting ast to RootNode
         val rootNode = compilerData.ast as RootNode
 
@@ -50,7 +50,7 @@ class ASTTest {
         assumeTrue(worldDecl())
 
         // Get AST for boilerplate program with only world declaration and constant declaration
-        val compilerData = compileProgram(getWorldDecl() + "\n\n" + getConstDecl())
+        val compilerData = compileProgram(getWorldDeclString() + "\n\n" + getConstDeclString())
 
         try {
             // Cast first body of rootNode to ConstDecl
@@ -83,7 +83,7 @@ class ASTTest {
         assumeTrue(worldDecl())
 
         // Get AST for boilerplate program
-        val compilerData = compileProgram(getBoilerplate())
+        val compilerData = compileProgram(getBoilerplateProgramString())
 
         try {
             // Second body of RootNode should be StateDecl

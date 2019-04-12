@@ -7,8 +7,6 @@ import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 
 class Utilities {
 
@@ -49,10 +47,10 @@ class Utilities {
         }
 
         /**
-         * Returns a world declaration based on given parameters and with sane defaults
+         * Returns a world declaration as a string based on given parameters and with sane defaults
          * Defaults to two dimensional, but can be overridden with the twoDimensional parameter
          */
-        fun getWorldDecl(
+        fun getWorldDeclString(
             dimOneSize: Int = 10,
             dimOneType: String = "wrap",
             dimTwoSize: Int = 20,
@@ -73,17 +71,17 @@ class Utilities {
         }
 
         /**
-         * Returns a constant declaration based on given parameters and with sane defaults
+         * Returns a constant declaration as a string based on given parameters and with sane defaults
          */
-        fun getConstDecl(ident: String = "ident", value: String = "false"): String {
+        fun getConstDeclString(ident: String = "ident", value: String = "false"): String {
             return "const $ident = $value;"
         }
 
         /**
-         * Returns a state array declaration based on given parameters and with sane defaults
+         * Returns a state array declaration as a string based on given parameters and with sane defaults
          * TODO: stateArray is default empty as compiler on master-branch did not support this yet when branching out
          */
-        fun getStateDecl(
+        fun getStateDeclString(
             ident: String = "stage",
             stateArray: String = "",
             red: Int = 255,
@@ -100,10 +98,10 @@ class Utilities {
         }
 
         /**
-         * Returns a boilerplate program
+         * Returns a boilerplate Cellmata program as a string
          */
-        fun getBoilerplate(): String {
-            return getWorldDecl() + getConstDecl() + "\n\n" + getStateDecl()
+        fun getBoilerplateProgramString(): String {
+            return getWorldDeclString() + getConstDeclString() + "\n\n" + getStateDeclString()
         }
     }
 }

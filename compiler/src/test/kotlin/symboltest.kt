@@ -2,8 +2,8 @@ package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.Utilities.Companion.compileProgram
 import dk.aau.cs.d409f19.Utilities.Companion.getParser
-import dk.aau.cs.d409f19.Utilities.Companion.getStateDecl
-import dk.aau.cs.d409f19.Utilities.Companion.getWorldDecl
+import dk.aau.cs.d409f19.Utilities.Companion.getStateDeclString
+import dk.aau.cs.d409f19.Utilities.Companion.getWorldDeclString
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 import org.junit.jupiter.api.Assertions.*
@@ -28,7 +28,7 @@ class SymbolTest {
      */
     private fun <T> assignStmtPass(ident: String, value: T): Boolean {
 
-        val compilerData = compileProgram(getWorldDecl() + "\n\n" + getStateDecl(body = "let $ident = $value;"))
+        val compilerData = compileProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let $ident = $value;"))
 
         // Get SymbolTable for first subscope, which is first StateDecl
         val stateSymbolTable = compilerData.symbolTable.tables[0]
@@ -73,7 +73,7 @@ class SymbolTest {
     @Test
     fun parserReservedSymbolsTest() {
         RESERVED_WORDS.forEach {
-            val parser = getParser(getWorldDecl() + getStateDecl(ident = it))
+            val parser = getParser(getWorldDeclString() + getStateDeclString(ident = it))
             // Stop parser from printing errors to stderr for less noisy console
             parser.removeErrorListeners()
             // Parse program
@@ -101,7 +101,7 @@ class SymbolTest {
         }
 
         // Compile boilerplate program with state having the constructed body
-        compileProgram(getWorldDecl() + getStateDecl(body = stringBuilder.toString()))
+        compileProgram(getWorldDeclString() + getStateDeclString(body = stringBuilder.toString()))
 
         try {
             // Assert that errors are registered
