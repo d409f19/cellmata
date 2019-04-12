@@ -1,9 +1,5 @@
 package dk.aau.cs.d409f19
 
-import dk.aau.cs.d409f19.Utilities.Companion.compileProgram
-import dk.aau.cs.d409f19.Utilities.Companion.getParser
-import dk.aau.cs.d409f19.Utilities.Companion.getStateDeclString
-import dk.aau.cs.d409f19.Utilities.Companion.getWorldDeclString
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 import org.junit.jupiter.api.Assertions.*

@@ -1,9 +1,5 @@
 package dk.aau.cs.d409f19
 
-import dk.aau.cs.d409f19.Utilities.Companion.compileProgram
-import dk.aau.cs.d409f19.Utilities.Companion.getBoilerplateProgramString
-import dk.aau.cs.d409f19.Utilities.Companion.getConstDeclString
-import dk.aau.cs.d409f19.Utilities.Companion.getWorldDeclString
 import dk.aau.cs.d409f19.cellumata.ast.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assumptions.*

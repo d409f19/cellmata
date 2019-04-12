@@ -1,6 +1,5 @@
 package dk.aau.cs.d409f19
 
-import dk.aau.cs.d409f19.Utilities.Companion.compileProgram
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import org.junit.jupiter.api.Test
