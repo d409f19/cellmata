@@ -1,7 +1,7 @@
 package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.cellumata.compile
-import dk.aau.cs.d409f19.cellumata.path
+import dk.aau.cs.d409f19.cellumata.main
 import org.junit.jupiter.api.Test
 
 class CompilerTests {
@@ -11,6 +11,6 @@ class CompilerTests {
      */
     @Test
     fun `Run compiler`() {
-        compile(path)
+        main(arrayOf("src/main/resources/stress.cell"))
     }
 }
