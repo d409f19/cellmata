@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opentest4j.AssertionFailedError
-import java.lang.NullPointerException
 
 class SymbolTest {
 
