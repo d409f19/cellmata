@@ -52,16 +52,16 @@ fun getParser(program: String): CellmataParser {
  * Defaults to two dimensional, but can be overridden with the twoDimensional parameter
  */
 fun getWorldDeclString(
-    dimOneSize: Int = 10,
+    dimOneSize: String = "10",
     dimOneType: String = "wrap",
-    dimTwoSize: Int = 20,
+    dimTwoSize: String = "20",
     dimTwoType: String = "wrap",
-    tickrate: Int = 120,
-    cellsize: Int = 5,
-    twoDimensional: Boolean = true
+    tickrate: String = "120",
+    cellsize: String = "4",
+    twoDimensional: Boolean? = false
 ): String {
     // If two dimensional, declare second dimension, else empty string
-    val twoDimDecl = if (twoDimensional) ", $dimTwoSize[$dimTwoType]" else ""
+    val twoDimDecl = if (twoDimensional!!) ", $dimTwoSize[$dimTwoType]" else ""
     return """world {
             |  size = $dimOneSize[$dimOneType]$twoDimDecl
             |  tickrate = $tickrate
