@@ -2,50 +2,81 @@ package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
 
-private const val batchDir = "src/main/resources/compiling-programs/"
+private const val passingBatchDir = "src/main/resources/compiling-programs/"
+private const val failingBatchDir = "src/main/resources/non-compiling-programs/"
 
 class BatchTest {
 
-    /**
-     * Tests whether all programs under a given path compiles
-     */
-    @Test
-    fun batchPass() {
-        getPrograms(batchDir).forEach {
-            // Reset ErrorLogger between each run
-            ErrorLogger.reset()
-            compileProgram(it.program)
-            // If any errors found, print them and throw exception with name in msg
+    @TestInstance(PER_CLASS)
+    @DisplayName("Batch-testing passing programs")
+    class BatchPassingTests {
+
+        /**
+         * Returns a list of strings from each '.cell' file under the compiling-programs dir
+         */
+        private fun getCompilingPrograms(): List<String> {
+            val list = mutableListOf<String>()
+            // Walk top-down
+            File(passingBatchDir).walk().forEach {
+                // If it is a file and has extension 'cell'
+                if (it.isFile && it.extension == "cell") {
+                    list.add(it.readText())
+                }
+            }
+            return list
+        }
+
+        /**
+         * Batch-compiles all programs under the compiling dir and fails on failed compilation
+         */
+        @ParameterizedTest
+        @MethodSource("getCompilingPrograms")
+        fun batchPass(program: String) {
+            compileProgram(program)
+            // If any errors found, print them and throw exception
             if (ErrorLogger.hasErrors()) {
                 ErrorLogger.printAllErrors()
-                throw TerminatedCompilationException("Errors occurred in program: " + it.filename)
+                throw TerminatedCompilationException("Errors occurred in program") //TODO: better output on failed compiles
             }
         }
     }
 
-    /**
-     * Class for holding a filename and a single program in a single string
-     */
-    data class CellmataProgram(val filename: String, val program: String)
+    @TestInstance(PER_CLASS)
+    @DisplayName("Batch-testing failing programs")
+    class BatchFailingTests {
 
-    /**
-     * Returns a list of strings from each '.cell' file under a given directory.
-     * Since this function is a class-extension of string, but private, which takes a string as a receiver,
-     * this only alters functionality of strings under this class
-     */
-    private fun getPrograms(path: String): List<CellmataProgram> {
-        val list = mutableListOf<CellmataProgram>()
-        // Walk top-down
-        File(path).walk().forEach {
-            // If it is a file and has extension 'cell'
-            if (it.isFile && it.extension == "cell") {
-                // Add program with filename and source as a CellmataProgram
-                list.add(CellmataProgram(it.name, it.readText()))
+        /**
+         * Returns a list of strings from each '.cell' file under the non-compiling-programs dir
+         */
+        private fun getNonCompilingPrograms(): List<String> {
+            val list = mutableListOf<String>()
+            // Walk top-down
+            File(failingBatchDir).walk().forEach {
+                // If it is a file and has extension 'cell'
+                if (it.isFile && it.extension == "cell") {
+                    list.add(it.readText())
+                }
             }
+            return list
         }
-        return list
+
+        /**
+         * Batch-compiles all programs under the non-compiling dir and fails on error-free compilation
+         */
+        @ParameterizedTest
+        @MethodSource("getNonCompilingPrograms")
+        fun batchPass(program: String) {
+            compileProgram(program)
+            // Assert that errors are found
+            assertTrue(ErrorLogger.hasErrors()) //TODO: differentiate between different failing compilations
+        }
     }
 }
