@@ -21,10 +21,12 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.left.getType() != BooleanType) {
-            ErrorLogger.registerError(TypeError(node.left.ctx, "Expected boolean expression in left hand side of or-expression."))
+            val ctx = if (node.left is NodeFromContext<*>) node.left.getContext() else node.ctx // Get context of left node, or use OrExpr's context as backup
+            ErrorLogger.registerError(TypeError(ctx, "Expected boolean expression in left hand side of or-expression."))
         }
         if (node.right.getType() != BooleanType) {
-            ErrorLogger.registerError(TypeError(node.right.ctx, "Expected boolean expression in right hand side of or-expression."))
+            val ctx = if (node.right is NodeFromContext<*>) node.right.getContext() else node.ctx // Get context of right node, or use OrExpr's context as backup
+            ErrorLogger.registerError(TypeError(ctx, "Expected boolean expression in right hand side of or-expression."))
         }
 
         node.setType(BooleanType)
@@ -34,10 +36,12 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.left.getType() != BooleanType) {
-            ErrorLogger.registerError(TypeError(node.left.ctx, "Expected boolean expression in left hand side of and-expression."))
+            val ctx = if (node.left is NodeFromContext<*>) node.left.getContext() else node.ctx // Get context of left node, or use AndExpr's context as backup
+            ErrorLogger.registerError(TypeError(ctx, "Expected boolean expression in left hand side of and-expression."))
         }
         if (node.right.getType() != BooleanType) {
-            ErrorLogger.registerError(TypeError(node.right.ctx, "Expected boolean expression in right hand side of and-expression."))
+            val ctx = if (node.right is NodeFromContext<*>) node.right.getContext() else node.ctx // Get context of right node, or use OrExpr's context as backup
+            ErrorLogger.registerError(TypeError(ctx, "Expected boolean expression in right hand side of and-expression."))
         }
 
         node.setType(BooleanType)
@@ -85,7 +89,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: MoreThanExpr) {
+    override fun visit(node: GreaterThanExpr) {
         super.visit(node)
 
         node.setType(when {
@@ -100,7 +104,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: MoreEqExpr) {
+    override fun visit(node: GreaterOrEqExpr) {
         super.visit(node)
 
         node.setType(when {
@@ -130,7 +134,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: LessEqExpr) {
+    override fun visit(node: LessOrEqExpr) {
         super.visit(node)
 
         node.setType(when {
@@ -205,7 +209,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: NegativeExpr) {
+    override fun visit(node: NegationExpr) {
         super.visit(node)
 
         node.setType(when(node.value.getType()) {
@@ -218,7 +222,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: InverseExpr) {
+    override fun visit(node: NotExpr) {
         super.visit(node)
 
         if (node.value.getType() != BooleanType) {
@@ -231,7 +235,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: ArrayLookupExpr) {
         super.visit(node)
 
-        node.setType(node.ident.getType())
+        node.setType(node.arr.getType())
     }
 
     override fun visit(node: ArrayBodyExpr) {
@@ -283,15 +287,9 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: ParenExpr) {
-        super.visit(node)
-
-        node.setType(node.expr.getType())
-    }
-
-    override fun visit(node: NamedExpr) {
+    override fun visit(node: Identifier) {
         // Get type of name
-        node.setType(symbolTableSession.getSymbolType(node.ident))
+        node.setType(symbolTableSession.getSymbolType(node.spelling))
     }
 
     override fun visit(node: ModuloExpr) {
@@ -325,6 +323,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     }
 
     override fun visit(node: FuncDecl) {
+        node.returnType = typeFromCtx(node.ctx.type_ident())
         expectedReturn = node.returnType
         super.visit(node)
     }

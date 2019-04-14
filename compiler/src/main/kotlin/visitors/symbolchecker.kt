@@ -36,12 +36,12 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         node.body.filter { it !is ConstDecl }.forEach { visit(it) }
     }
 
-    override fun visit(node: NamedExpr) {
+    override fun visit(node: Identifier) {
 
         // Check if the name is in the symbol table
-        val symb = symbolTableSession.getSymbol(node.ident)
+        val symb = symbolTableSession.getSymbol(node.spelling)
         if (symb == null) {
-            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
+            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.spelling))
         }
         super.visit(node)
     }

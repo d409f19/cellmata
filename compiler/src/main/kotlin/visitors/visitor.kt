@@ -30,13 +30,13 @@ interface ASTVisitor {
 
     fun visit(node: EqualityExpr)
 
-    fun visit(node: MoreThanExpr)
+    fun visit(node: GreaterThanExpr)
 
-    fun visit(node: MoreEqExpr)
+    fun visit(node: GreaterOrEqExpr)
 
     fun visit(node: LessThanExpr)
 
-    fun visit(node: LessEqExpr)
+    fun visit(node: LessOrEqExpr)
 
     fun visit(node: AdditionExpr)
 
@@ -46,17 +46,15 @@ interface ASTVisitor {
 
     fun visit(node: DivisionExpr)
 
-    fun visit(node: NegativeExpr)
+    fun visit(node: NegationExpr)
 
-    fun visit(node: InverseExpr)
+    fun visit(node: NotExpr)
 
     fun visit(node: ArrayLookupExpr)
 
     fun visit(node: ArrayBodyExpr)
 
-    fun visit(node: ParenExpr)
-
-    fun visit(node: NamedExpr)
+    fun visit(node: Identifier)
 
     fun visit(node: ModuloExpr)
 
@@ -77,16 +75,20 @@ interface ASTVisitor {
     fun visit(node: BecomeStmt)
   
     fun visit(node: ReturnStmt)
+
     fun visit(node: AST)
+
     fun visit(node: FloatLiteral)
+
     fun visit(node: ConditionalBlock)
+
     fun visit(node: FunctionArgs)
 
     fun visit(node: WorldNode)
 
     fun visit(node: WorldDimension)
 
-    fun visit(node: ForStmt)
+    fun visit(node: ForLoopStmt)
 
     fun visit(node: BreakStmt)
 
@@ -116,7 +118,7 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: WorldDimension) {
-        // no-op
+        if (node.edge != null) visit(node.edge)
     }
 
     override fun visit(node: FunctionArgs) {
@@ -164,20 +166,19 @@ abstract class BaseASTVisitor: ASTVisitor {
             is AndExpr -> visit(node)
             is InequalityExpr -> visit(node)
             is EqualityExpr -> visit(node)
-            is MoreThanExpr -> visit(node)
-            is MoreEqExpr -> visit(node)
+            is GreaterThanExpr -> visit(node)
+            is GreaterOrEqExpr -> visit(node)
             is LessThanExpr -> visit(node)
-            is LessEqExpr -> visit(node)
+            is LessOrEqExpr -> visit(node)
             is AdditionExpr -> visit(node)
             is SubtractionExpr -> visit(node)
             is MultiplicationExpr -> visit(node)
             is DivisionExpr -> visit(node)
-            is NegativeExpr -> visit(node)
-            is InverseExpr -> visit(node)
+            is NegationExpr -> visit(node)
+            is NotExpr -> visit(node)
             is ArrayLookupExpr -> visit(node)
             is ArrayBodyExpr -> visit(node)
-            is ParenExpr -> visit(node)
-            is NamedExpr -> visit(node)
+            is Identifier -> visit(node)
             is ModuloExpr -> visit(node)
             is FuncExpr -> visit(node)
             is StateIndexExpr -> visit(node)
@@ -208,12 +209,12 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.right)
     }
 
-    override fun visit(node: MoreThanExpr) {
+    override fun visit(node: GreaterThanExpr) {
         visit(node.left)
         visit(node.right)
     }
 
-    override fun visit(node: MoreEqExpr) {
+    override fun visit(node: GreaterOrEqExpr) {
         visit(node.left)
         visit(node.right)
     }
@@ -223,7 +224,7 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.right)
     }
 
-    override fun visit(node: LessEqExpr) {
+    override fun visit(node: LessOrEqExpr) {
         visit(node.left)
         visit(node.right)
     }
@@ -248,16 +249,16 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.right)
     }
 
-    override fun visit(node: NegativeExpr) {
+    override fun visit(node: NegationExpr) {
         visit(node.value)
     }
 
-    override fun visit(node: InverseExpr) {
+    override fun visit(node: NotExpr) {
         visit(node.value)
     }
 
     override fun visit(node: ArrayLookupExpr) {
-        visit(node.ident)
+        visit(node.arr)
         visit(node.index)
     }
 
@@ -265,11 +266,7 @@ abstract class BaseASTVisitor: ASTVisitor {
         node.values.forEach { visit(it) }
     }
 
-    override fun visit(node: ParenExpr) {
-        visit(node.expr)
-    }
-
-    override fun visit(node: NamedExpr) {
+    override fun visit(node: Identifier) {
         // no-op
     }
 
@@ -304,7 +301,7 @@ abstract class BaseASTVisitor: ASTVisitor {
             is IfStmt -> visit(node)
             is BecomeStmt -> visit(node)
             is ReturnStmt -> visit(node)
-            is ForStmt -> visit(node)
+            is ForLoopStmt -> visit(node)
             is BreakStmt -> visit(node)
             is ContinueStmt -> visit(node)
         }
@@ -334,7 +331,7 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.value)
     }
 
-    override fun visit(node: ForStmt) {
+    override fun visit(node: ForLoopStmt) {
         visit(node.initPart)
         visit(node.condition)
         visit(node.postIterationPart)

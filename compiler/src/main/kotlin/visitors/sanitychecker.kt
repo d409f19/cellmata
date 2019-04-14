@@ -51,7 +51,7 @@ class SanityChecker : BaseASTVisitor() {
 
     var inALoop = false
 
-    override fun visit(node: ForStmt) {
+    override fun visit(node: ForLoopStmt) {
         inALoop = true
         super.visit(node)
         inALoop = false

@@ -57,7 +57,7 @@ class SymbolTable {
         val table = scopeStack.peek()
 
         if (RESERVED_WORDS.contains(ident) || table.symbols.containsKey(ident)) {
-            ErrorLogger.registerError(SymbolRedefinitionError(node.ctx, ident))
+            ErrorLogger.registerError(SymbolRedefinitionError((node as NodeFromContext<*>).getContext(), ident))
         } else {
             table.symbols[ident] = node
         }
@@ -137,7 +137,7 @@ class CreatingSymbolTableSession(symbolTable: Table) {
         val table = scopeStack.peek()
 
         if (RESERVED_WORDS.contains(ident) || table.symbols.containsKey(ident)) {
-            ErrorLogger.registerError(SymbolRedefinitionError(node.ctx, ident))
+            ErrorLogger.registerError(SymbolRedefinitionError((node as NodeFromContext<*>).getContext(), ident))
         }
 
         table.symbols[ident] = node
