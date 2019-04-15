@@ -42,7 +42,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
 
     override fun visit(node: FuncExpr) {
         super.visit(node)
-        node.ident = node.ctx.text
+        node.ident = node.ctx.value.ident.text
     }
 
     override fun visit(node: IntLiteral) {
@@ -152,6 +152,7 @@ class LiteralExtractorVisitor : BaseASTVisitor() {
     override fun visit(node: AssignStmt) {
         super.visit(node)
         node.ident = node.ctx.var_ident().text
+        node.isDeclaration = (node.ctx.STMT_LET() != null)
     }
 
     /**

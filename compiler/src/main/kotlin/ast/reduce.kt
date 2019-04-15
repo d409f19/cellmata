@@ -103,6 +103,7 @@ private fun reduceExpr(node: ParseTree): Expr {
         )
         is CellmataParser.ArrayLookupExprContext -> ArrayLookupExpr(
             ctx = node,
+            ident = reduceExpr(node.value),
             index = reduceExpr(node.index)
         )
         is CellmataParser.ParenExprContext -> ParenExpr(
@@ -231,10 +232,10 @@ private fun reduceDecl(node: ParseTree): Decl {
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
-fun reduceCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
-    return block.children
+fun reduceCodeBlock(block: CellmataParser.Code_blockContext): CodeBlock {
+    return CodeBlock(block, block.children
         .filter { it !is TerminalNode } // Remove terminals
-        .map { reduceStmt(it) }
+        .map { reduceStmt(it) })
 }
 
 /**
