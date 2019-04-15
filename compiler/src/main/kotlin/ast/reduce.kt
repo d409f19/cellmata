@@ -21,6 +21,9 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * handles the value of each node in the AST.
  */
 
+val DEFAULT_CELLSIZE = 8
+val DEFAULT_TICKRATE = 10
+
 /**
  * Attempts to recursively transform an expression node in the parse tree to create a subtree of the AST.
  *
@@ -275,8 +278,8 @@ fun reduce(node: ParserRuleContext): AST {
                 } else {
                     listOf(parseDimension(node.world_dcl().size.width))
                 },
-                cellSize = node.world_dcl().cellsize.value.text.toIntOrNull(),
-                tickrate = node.world_dcl().tickrate.value.text.toIntOrNull()
+                cellSize = if (node.world_dcl().cellsize != null) node.world_dcl().cellsize.value.text.toIntOrNull() else DEFAULT_CELLSIZE,
+                tickrate = if (node.world_dcl().tickrate != null) node.world_dcl().tickrate.value?.text?.toIntOrNull() else DEFAULT_TICKRATE
             ),
             body = node.body().children?.map(::reduceDecl) ?: listOf()
         )
