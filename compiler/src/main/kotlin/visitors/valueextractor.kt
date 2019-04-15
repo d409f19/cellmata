@@ -2,7 +2,6 @@ package dk.aau.cs.d409f19.cellumata.visitors
 
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.*
-import org.antlr.runtime.tree.ParseTree
 
 open class ParsingException(msg: String = ""): Exception(msg)
 
