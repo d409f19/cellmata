@@ -217,7 +217,7 @@ private fun reduceDecl(node: ParseTree): Decl {
             coords = node.neighbourhood_code().coords_decl().map {
                 Coordinate(
                     ctx = SourceContext(it),
-                    axes = it.integer_literal().map { intCtx -> intCtx.text.toInt() } // TODO: Insanity checker, make sure coordinates have the same amount of axes
+                    axes = it.integer_literal().map { intCtx -> intCtx.text.toInt() } // Coordinates' dimensions are checked in sanity checker
                 )
             }
         )

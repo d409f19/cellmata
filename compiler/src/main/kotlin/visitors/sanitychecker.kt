@@ -4,7 +4,6 @@ package dk.aau.cs.d409f19.cellumata.visitors
 import dk.aau.cs.d409f19.cellumata.ErrorFromContext
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
-import org.antlr.v4.runtime.ParserRuleContext
 
 /**
  * The error thrown when a become, continue, break or return statement is in a place where it should not be
@@ -12,16 +11,34 @@ import org.antlr.v4.runtime.ParserRuleContext
 class SanityError(ctx: SourceContext, description: String) : ErrorFromContext(ctx, description)
 
 /**
+ * The error for incorrect number of dimensions for coordinates
+ */
+class DimensionsError(ctx: SourceContext, description: String) : ErrorFromContext(ctx, description)
+
+/**
  * A class to check that a become, return, break and continue statement does not appear in a place it should not be
  */
 class SanityChecker : BaseASTVisitor() {
 
     var inAFunction = false
+    var dimensions: Int = 0
+
+    override fun visit(node: WorldNode) {
+        super.visit(node)
+        dimensions = node.dimensions.size
+    }
 
     override fun visit(node: FuncDecl) {
         inAFunction = true
         super.visit(node)
         inAFunction = false
+    }
+
+    override fun visit(node: Coordinate) {
+        if (dimensions != node.axes.size) {
+            ErrorLogger.registerError(DimensionsError(node.ctx, "Coordinate does not match the number of dimensions declared in the world-declaration."))
+        }
+        super.visit(node)
     }
 
     // Throws an error if there is a become in a function
