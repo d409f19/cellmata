@@ -1,20 +1,23 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
-import dk.aau.cs.d409f19.antlr.CellmataParser
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.Token
 
 /**
- * This is a debugging string.
- * If you see this string in running code it means that the variable hasn't been initialized.
+ * The SourceContext data class contains the position of the context in the source code from which an AST node was created.
+ * @param lineNumber The line number in the source program. In the range 1..n
+ * @param charPositionInLine The position of the first character of the AST node in source program. In the range 0..n-1
  */
-const val MAGIC_UNDEFINED_STRING = "<<THIS IS A MAGIC STRING, UNDEFINED>>"
-
-/**
- * TODO
- */
-interface NodeFromContext<out T : ParserRuleContext> {
-    fun getContext() : T
+data class SourceContext(val lineNumber: Int, val charPositionInLine: Int) {
+    constructor(ctx: ParserRuleContext) : this(ctx.start.line, ctx.start.charPositionInLine)
+    constructor(token: Token) : this(token.line, token.charPositionInLine)
 }
+
+/**
+ * A special instance of SourceContext. It is used for nodes that are not from the source program, e.g. it could be
+ * from the standard environment like a built-in function.
+ */
+val EMPTY_CONTEXT = SourceContext(0, 0)
 
 /**
  * Nodes that hold a value or that can produce a value should implement TypedNode to expose the type of that value
@@ -28,15 +31,16 @@ interface TypedNode {
  * This class is the basis for all nodes in the abstract syntax tree.
  * It's sealed such that it's possible to use Kotlin's when statement without an else.
  */
-sealed class AST
+sealed class AST(val ctx: SourceContext)
 
 /**
  * RootNode represents a .cell file
  */
 class RootNode(
+    ctx: SourceContext,
     val world: WorldNode,
     val body: List<Decl>
-) : AST()
+) : AST(ctx)
 
 
 /*
@@ -66,13 +70,11 @@ data class WorldDimension(val size: Int, val type: WorldType, val edge: Identifi
  * WorldNode represent the world definition.
  */
 class WorldNode(
-    val ctx: CellmataParser.World_dclContext,
+    ctx: SourceContext,
     var dimensions: List<WorldDimension>,
     var tickrate: Int?,
     var cellSize: Int?
-) : AST(), NodeFromContext<CellmataParser.World_dclContext> {
-    override fun getContext() = ctx
-}
+) : AST(ctx)
 
 /*
  * Expressions
@@ -80,218 +82,175 @@ class WorldNode(
 /**
  * An expression is either a literal, an identifier, or some operation that produces a value.
  */
-abstract class Expr(private var type: Type? = UncheckedType) : AST(), TypedNode {
+abstract class Expr(
+    ctx: SourceContext,
+    private var type: Type? = UncheckedType
+) : AST(ctx), TypedNode {
     override fun getType(): Type? = type
     override fun setType(type: Type?) { this.type = type }
 }
 
 class OrExpr(
-    val ctx: CellmataParser.OrExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.OrExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class AndExpr(
-    val ctx: CellmataParser.AndExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.AndExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class InequalityExpr(
-    val ctx: CellmataParser.NotEqExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.NotEqExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class EqualityExpr(
-    val ctx: CellmataParser.EqExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.EqExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class GreaterThanExpr(
-    val ctx: CellmataParser.MoreExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.MoreExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class GreaterOrEqExpr(
-    val ctx: CellmataParser.MoreEqExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.MoreEqExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class LessThanExpr(
-    val ctx: CellmataParser.LessExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.LessExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class LessOrEqExpr(
-    val ctx: CellmataParser.LessEqExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.LessEqExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class AdditionExpr(
-    val ctx: CellmataParser.AdditionExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.AdditionExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class SubtractionExpr(
-    val ctx: CellmataParser.SubstractionExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.SubstractionExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class MultiplicationExpr(
-    val ctx: CellmataParser.MultiplictionExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.MultiplictionExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class DivisionExpr(
-    val ctx: CellmataParser.DivisionExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.DivisionExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class NegationExpr(
-    val ctx: CellmataParser.NegationExprContext,
+    ctx: SourceContext,
     val value: Expr
-) : Expr(), NodeFromContext<CellmataParser.NegationExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class NotExpr(
-    val ctx: CellmataParser.NotExprContext,
+    ctx: SourceContext,
     val value: Expr
-) : Expr(), NodeFromContext<CellmataParser.NotExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class ArrayLookupExpr(
-    val ctx: CellmataParser.ArrayLookupExprContext,
+    ctx: SourceContext,
     val arr: Expr,
     val index: Expr
-) : Expr(), NodeFromContext<CellmataParser.ArrayLookupExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 /**
- * @param ctx Node in the parse tree this node corresponds to.
+ * @param ctx the context from witch this node was created from
  * @param values Elements of the array.
  * @param declaredType Type listed before the body/values of the array.
  */
 class ArrayBodyExpr(
-    val ctx: CellmataParser.ArrayValueExprContext,
+    ctx: SourceContext,
     val values: List<Expr>,
     val declaredType: Type
-) : Expr(), NodeFromContext<CellmataParser.ArrayValueExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class Identifier(
-    val ctx: ParserRuleContext,
+    ctx: SourceContext,
     var spelling: String
-) : Expr(), NodeFromContext<ParserRuleContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 class ModuloExpr(
-    val ctx: CellmataParser.ModuloExprContext,
+    ctx: SourceContext,
     val left: Expr,
     val right: Expr
-) : Expr(), NodeFromContext<CellmataParser.ModuloExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 /**
  * Presents a function call in abstract syntax tree
  */
-class FuncExpr(
-    val ctx: CellmataParser.FuncExprContext,
+class FuncCallExpr(
+    ctx: SourceContext,
     val args: List<Expr>,
     var ident: String
-) : Expr(), NodeFromContext<CellmataParser.FuncExprContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx)
 
 /**
  * The special variable '#'
  */
 class StateIndexExpr(
-    val ctx: CellmataParser.StateIndexExprContext
-) : Expr(IntegerType), NodeFromContext<CellmataParser.StateIndexExprContext> {
-    override fun getContext() = ctx
-}
+    ctx: SourceContext
+) : Expr(ctx, IntegerType)
 
 // Literals
 /**
  * Represents a concrete integer value in the abstract syntax tree
  */
 class IntLiteral(
-    val ctx: CellmataParser.Integer_literalContext,
+    ctx: SourceContext,
     var value: Int
-) : Expr(IntegerType), NodeFromContext<CellmataParser.Integer_literalContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx, IntegerType)
 
 /**
  * Represents a concrete boolean value in the abstract syntax tree
  */
 class BoolLiteral(
-    val ctx: CellmataParser.Bool_literalContext,
+    ctx: SourceContext,
     var value: Boolean
-) : Expr(BooleanType), NodeFromContext<CellmataParser.Bool_literalContext> {
-    override fun getContext() = ctx
-}
+) : Expr(ctx, BooleanType)
 
 /**
  * Represent a concrete float value in the abstract syntax tree
  */
 class FloatLiteral(
-    val ctx: CellmataParser.Float_literalContext,
+    ctx: SourceContext,
     var value: Float
-): Expr(FloatType), NodeFromContext<CellmataParser.Float_literalContext> {
-    override fun getContext() = ctx
-}
+): Expr(ctx, FloatType)
 
 // Type conversion
 /**
  * Internal node used to present an implicit conversion from integer to float.
  */
-class IntToFloatConversion(val expr: Expr) : Expr(FloatType)
+class IntToFloatConversion(val expr: Expr) : Expr(expr.ctx, FloatType)
 
 /**
  * Internal node used to represent an implicit conversion from a array of states to a neighbourhood.
  */
-class StateArrayToActualNeighbourhoodConversion(val expr: Expr) : Expr(ActualNeighbourhoodType)
+class StateArrayToActualNeighbourhoodConversion(val expr: Expr) : Expr(expr.ctx, ActualNeighbourhoodType)
 
 /*
  * Declarations
@@ -299,66 +258,57 @@ class StateArrayToActualNeighbourhoodConversion(val expr: Expr) : Expr(ActualNei
 /**
  * Represents global declarations like states, constants and functions
  */
-sealed class Decl : AST() // state, neighbourhood, const, func
+sealed class Decl(ctx: SourceContext) : AST(ctx) // state, neighbourhood, const, func
 
 /**
  * Represents constants declarations
  */
 class ConstDecl(
-    val ctx: CellmataParser.Const_declContext,
+    ctx: SourceContext,
     var ident: String,
     val expr: Expr,
     var type: Type? = UncheckedType
-) : Decl(), NodeFromContext<CellmataParser.Const_declContext> {
-    override fun getContext() = ctx
-}
+) : Decl(ctx)
 
 /**
  * Represent a state declaration
  */
 class StateDecl(
-    val ctx: CellmataParser.State_declContext,
+    ctx: SourceContext,
     var ident: String,
     var red: Short,
     var blue: Short,
     var green: Short,
     val body: CodeBlock
-) : Decl(), NodeFromContext<CellmataParser.State_declContext> {
-    override fun getContext() = ctx
-}
+) : Decl(ctx)
 
 /**
  * Represents a single point in a neighbourhood declaration
  */
 class Coordinate(
-    val ctx: CellmataParser.Coords_declContext,
+    ctx: SourceContext,
     val axes: List<Int>
-) : AST(), NodeFromContext<CellmataParser.Coords_declContext> {
-    override fun getContext() = ctx
-}
+) : AST(ctx)
 
 /**
  * Represents a neighbourhood declaration
  */
 class NeighbourhoodDecl(
-    val ctx: CellmataParser.Neighbourhood_declContext,
+    ctx: SourceContext,
     var ident: String,
     var coords: List<Coordinate>
-) : Decl(), NodeFromContext<CellmataParser.Neighbourhood_declContext> {
-    override fun getContext() = ctx
-}
+) : Decl(ctx)
 
 /**
  * Represent a single argument in a function declaration
  *
  * @see FuncDecl
  */
-class FunctionArgs(
-    val ctx: CellmataParser.Func_decl_argContext,
+class FunctionArgument(
+    ctx: SourceContext,
     val ident: String,
     private var type: Type?
-) : AST(), TypedNode, NodeFromContext<CellmataParser.Func_decl_argContext> {
-    override fun getContext() = ctx
+) : AST(ctx), TypedNode {
     override fun getType() = type
     override fun setType(type: Type?) {
         this.type = type
@@ -369,14 +319,12 @@ class FunctionArgs(
  * Represents a function declaration
  */
 class FuncDecl(
-    val ctx: CellmataParser.Func_declContext,
+    ctx: SourceContext,
     var ident: String,
-    var args: List<FunctionArgs>,
+    var args: List<FunctionArgument>,
     val body: CodeBlock,
     var returnType: Type = UncheckedType
-) : Decl(), NodeFromContext<CellmataParser.Func_declContext> {
-    override fun getContext() = ctx
-}
+) : Decl(ctx)
 
 /*
  * Statements
@@ -384,7 +332,7 @@ class FuncDecl(
 /**
  * Base class for classes represents a single statement/action in a block of code
  */
-sealed class Stmt : AST()
+sealed class Stmt(ctx: SourceContext) : AST(ctx)
 
 /**
  * Represent a variable declaration and/or assignment
@@ -395,13 +343,12 @@ sealed class Stmt : AST()
  * @param type Type of the variable
  */
 class AssignStmt(
-    val ctx: CellmataParser.AssignmentContext,
+    ctx: SourceContext,
     var ident: String,
     val expr: Expr,
-    var isDeclaration: Boolean? = null,
+    var isDeclaration: Boolean,
     private var type: Type? = UncheckedType
-) : Stmt(), TypedNode, NodeFromContext<CellmataParser.AssignmentContext> {
-    override fun getContext() = ctx
+) : Stmt(ctx), TypedNode {
     override fun getType() = type
     override fun setType(type: Type?) {
         this.type = type
@@ -413,82 +360,66 @@ class AssignStmt(
  * A ConditionalBlock can represent either the if or the elif part of an if statement.
  */
 class ConditionalBlock(
-    val ctx: ParserRuleContext, // Context can be both if-context and elif-context
+    ctx: SourceContext,
     val expr: Expr,
     val block: CodeBlock
-) : AST(), NodeFromContext<ParserRuleContext> {
-    override fun getContext() = ctx
-}
+) : AST(ctx)
 
 /**
  * Represent an entire if statement, including the if, the elif and the else blocks.
  */
 class IfStmt(
-    val ctx: CellmataParser.If_stmtContext,
+    ctx: SourceContext,
     val conditionals: List<ConditionalBlock>,
     val elseBlock: CodeBlock?
-) : Stmt(), NodeFromContext<CellmataParser.If_stmtContext> {
-    override fun getContext() = ctx
-}
+) : Stmt(ctx)
 
 class ForLoopStmt(
-    val ctx: CellmataParser.For_stmtContext,
+    ctx: SourceContext,
     val initPart: AssignStmt,
     val condition: Expr,
     val postIterationPart: AssignStmt,
     val body: CodeBlock
-) : Stmt(), NodeFromContext<CellmataParser.For_stmtContext> {
-    override fun getContext() = ctx
-}
+) : Stmt(ctx)
 
 class BreakStmt(
-    val ctx: CellmataParser.Break_stmtContext
-) : Stmt(), NodeFromContext<CellmataParser.Break_stmtContext> {
-    override fun getContext() = ctx
-}
+    ctx: SourceContext
+) : Stmt(ctx)
 
 class ContinueStmt(
-    val ctx: CellmataParser.Continue_stmtContext
-) : Stmt(), NodeFromContext<CellmataParser.Continue_stmtContext> {
-    override fun getContext() = ctx
-}
+    ctx: SourceContext
+) : Stmt(ctx)
 
 /**
  * Represents a become statement.
  * The become statements terminates a state block, and changes the state of the cell being evaluated.
  */
 class BecomeStmt(
-    val ctx: CellmataParser.Become_stmtContext,
+    ctx: SourceContext,
     val state: Expr
-) : Stmt(), NodeFromContext<CellmataParser.Become_stmtContext> {
-    override fun getContext() = ctx
-}
+) : Stmt(ctx)
 
 /**
  * Represents a return statement.
  * The return statement terminates a function call and returns a value to the caller.
  */
 class ReturnStmt(
-    val ctx: CellmataParser.Return_stmtContext,
+    ctx: SourceContext,
     val value: Expr
-) : Stmt(), NodeFromContext<CellmataParser.Return_stmtContext> {
-    override fun getContext() = ctx
-}
+) : Stmt(ctx)
 
 /**
  * Represents a sequence of statements.
  */
 class CodeBlock(
-    val ctx: CellmataParser.Code_blockContext,
+    ctx: SourceContext,
     val body: List<Stmt>
-): AST(), NodeFromContext<CellmataParser.Code_blockContext> {
-    override fun getContext() = ctx
-}
+): AST(ctx)
 
 /*
  * Error nodes are used when something goes wrong in reduce.kt and is returned by the failing function.
  */
-class ErrorAST : AST()
-class ErrorDecl : Decl()
-class ErrorStmt : Stmt()
-class ErrorExpr : Expr()
+class ErrorAST : AST(EMPTY_CONTEXT)
+class ErrorDecl : Decl(EMPTY_CONTEXT)
+class ErrorStmt : Stmt(EMPTY_CONTEXT)
+class ErrorExpr : Expr(EMPTY_CONTEXT)

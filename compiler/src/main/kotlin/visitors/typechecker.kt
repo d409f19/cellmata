@@ -9,7 +9,7 @@ import kotlin.AssertionError
 /**
  * Error for violation of the type rules
  */
-class TypeError(ctx: ParserRuleContext, description: String) : ErrorFromContext(ctx, description)
+class TypeError(ctx: SourceContext, description: String) : ErrorFromContext(ctx, description)
 
 /**
  * Synthesizes types by moving them up the abstract syntax tree according to the type rules, and check that there is no violation of the type rules
@@ -21,12 +21,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.left.getType() != BooleanType) {
-            val ctx = if (node.left is NodeFromContext<*>) node.left.getContext() else node.ctx // Get context of left node, or use OrExpr's context as backup
-            ErrorLogger.registerError(TypeError(ctx, "Expected boolean expression in left hand side of or-expression."))
+            ErrorLogger.registerError(TypeError(node.left.ctx, "Expected boolean expression in left hand side of or-expression."))
         }
         if (node.right.getType() != BooleanType) {
-            val ctx = if (node.right is NodeFromContext<*>) node.right.getContext() else node.ctx // Get context of right node, or use OrExpr's context as backup
-            ErrorLogger.registerError(TypeError(ctx, "Expected boolean expression in right hand side of or-expression."))
+            ErrorLogger.registerError(TypeError(node.right.ctx, "Expected boolean expression in right hand side of or-expression."))
         }
 
         node.setType(BooleanType)
@@ -36,12 +34,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.left.getType() != BooleanType) {
-            val ctx = if (node.left is NodeFromContext<*>) node.left.getContext() else node.ctx // Get context of left node, or use AndExpr's context as backup
-            ErrorLogger.registerError(TypeError(ctx, "Expected boolean expression in left hand side of and-expression."))
+            ErrorLogger.registerError(TypeError(node.left.ctx, "Expected boolean expression in left hand side of and-expression."))
         }
         if (node.right.getType() != BooleanType) {
-            val ctx = if (node.right is NodeFromContext<*>) node.right.getContext() else node.ctx // Get context of right node, or use OrExpr's context as backup
-            ErrorLogger.registerError(TypeError(ctx, "Expected boolean expression in right hand side of and-expression."))
+            ErrorLogger.registerError(TypeError(node.right.ctx, "Expected boolean expression in right hand side of and-expression."))
         }
 
         node.setType(BooleanType)
@@ -323,12 +319,11 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     }
 
     override fun visit(node: FuncDecl) {
-        node.returnType = typeFromCtx(node.ctx.type_ident())
         expectedReturn = node.returnType
         super.visit(node)
     }
 
-    override fun visit(node: FuncExpr) {
+    override fun visit(node: FuncCallExpr) {
         super.visit(node)
 
         // Get return type of function

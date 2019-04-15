@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 /**
  * The error thrown when a become, continue, break or return statement is in a place where it should not be
  */
-class SanityError(ctx: ParserRuleContext, description: String) : ErrorFromContext(ctx, description)
+class SanityError(ctx: SourceContext, description: String) : ErrorFromContext(ctx, description)
 
 /**
  * A class to check that a become, return, break and continue statement does not appear in a place it should not be

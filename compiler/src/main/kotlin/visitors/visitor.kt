@@ -58,7 +58,7 @@ interface ASTVisitor {
 
     fun visit(node: ModuloExpr)
 
-    fun visit(node: FuncExpr)
+    fun visit(node: FuncCallExpr)
 
     fun visit(node: StateIndexExpr)
 
@@ -82,7 +82,7 @@ interface ASTVisitor {
 
     fun visit(node: ConditionalBlock)
 
-    fun visit(node: FunctionArgs)
+    fun visit(node: FunctionArgument)
 
     fun visit(node: WorldNode)
 
@@ -109,7 +109,11 @@ abstract class BaseASTVisitor: ASTVisitor {
             is Expr -> visit(node)
             is Decl -> visit(node)
             is Stmt -> visit(node)
-            is FunctionArgs -> visit(node)
+            is FunctionArgument -> visit(node)
+            is Coordinate -> visit(node)
+            is ConditionalBlock -> visit(node)
+            is CodeBlock -> visit(node)
+            is ErrorAST -> visit(node)
         }
     }
 
@@ -121,7 +125,7 @@ abstract class BaseASTVisitor: ASTVisitor {
         if (node.edge != null) visit(node.edge)
     }
 
-    override fun visit(node: FunctionArgs) {
+    override fun visit(node: FunctionArgument) {
         // no-op
     }
 
@@ -131,11 +135,12 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: Decl) {
-        when(node) {
+        when (node) {
             is ConstDecl -> visit(node)
             is StateDecl -> visit(node)
             is NeighbourhoodDecl -> visit(node)
             is FuncDecl -> visit(node)
+            is ErrorDecl -> visit(node)
         }
     }
 
@@ -180,7 +185,7 @@ abstract class BaseASTVisitor: ASTVisitor {
             is ArrayBodyExpr -> visit(node)
             is Identifier -> visit(node)
             is ModuloExpr -> visit(node)
-            is FuncExpr -> visit(node)
+            is FuncCallExpr -> visit(node)
             is StateIndexExpr -> visit(node)
             is IntLiteral -> visit(node)
             is FloatLiteral -> visit(node)
@@ -275,7 +280,7 @@ abstract class BaseASTVisitor: ASTVisitor {
         visit(node.right)
     }
 
-    override fun visit(node: FuncExpr) {
+    override fun visit(node: FuncCallExpr) {
         node.args.forEach { visit(it) }
     }
 
@@ -296,7 +301,7 @@ abstract class BaseASTVisitor: ASTVisitor {
     }
 
     override fun visit(node: Stmt) {
-        when(node) {
+        when (node) {
             is AssignStmt -> visit(node)
             is IfStmt -> visit(node)
             is BecomeStmt -> visit(node)
@@ -304,6 +309,7 @@ abstract class BaseASTVisitor: ASTVisitor {
             is ForLoopStmt -> visit(node)
             is BreakStmt -> visit(node)
             is ContinueStmt -> visit(node)
+            is ErrorStmt -> visit(node)
         }
     }
 
