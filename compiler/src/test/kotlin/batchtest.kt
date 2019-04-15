@@ -36,6 +36,7 @@ class BatchTest {
 
         /**
          * Batch-compiles all programs under the compiling dir and fails on failed compilation
+         * TODO: better output on failed compiles
          */
         @ParameterizedTest
         @MethodSource("getCompilingPrograms")
@@ -44,7 +45,7 @@ class BatchTest {
             // If any errors found, print them and throw exception
             if (ErrorLogger.hasErrors()) {
                 ErrorLogger.printAllErrors()
-                throw TerminatedCompilationException("Errors occurred in program") //TODO: better output on failed compiles
+                throw TerminatedCompilationException("Errors occurred in program")
             }
         }
     }
@@ -70,13 +71,14 @@ class BatchTest {
 
         /**
          * Batch-compiles all programs under the non-compiling dir and fails on error-free compilation
+         * TODO: differentiate between different failing compilations
          */
         @ParameterizedTest
         @MethodSource("getNonCompilingPrograms")
         fun batchPass(program: String) {
-            compileProgram(program)
+            val compileData = compileProgram(program)
             // Assert that errors are found
-            assertTrue(ErrorLogger.hasErrors()) //TODO: differentiate between different failing compilations
+            assertTrue(ErrorLogger.hasErrors() || compileData.parser.numberOfSyntaxErrors > 0)
         }
     }
 }
