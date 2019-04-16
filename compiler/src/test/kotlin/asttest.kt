@@ -296,11 +296,8 @@ class ASTTest {
 
             // First body of RootNode should be StateDecl
             val state = (compilerData.ast as RootNode).body[0] as StateDecl
-            // Assert identifier and colour-declaration
+            // Assert identifier is equal to passed parameter
             assertEquals(identifier, state.ident)
-            assertEquals(255, state.red)
-            assertEquals(200, state.green)
-            assertEquals(100, state.blue)
 
             // Cast first element of state-body to BecomeStmt, then to NamedExpr, and assert identifier of BecomeStmt
             val becomeStmtNamedExpr = (state.body[0] as BecomeStmt).state as NamedExpr
