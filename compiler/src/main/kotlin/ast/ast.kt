@@ -82,7 +82,7 @@ class WorldNode(
 /**
  * An expression is either a literal, an identifier, or some operation that produces a value.
  */
-abstract class Expr(
+sealed class Expr(
     ctx: SourceContext,
     private var type: Type? = UncheckedType
 ) : AST(ctx), TypedNode {
@@ -90,77 +90,103 @@ abstract class Expr(
     override fun setType(type: Type?) { this.type = type }
 }
 
+/**
+ * A BinaryExpr has exactly two child expressions. It is used to generalize behaviour of binary expressions in various visitors.
+ */
+sealed class BinaryExpr(ctx: SourceContext, var left: Expr, var right: Expr) : Expr(ctx)
+
+/**
+ * A BinaryArithmeticExpr has exactly two child expressions which are both numeric expressions, and the
+ * BinaryArithmeticExpr itself also returns a number.
+ * It is used to generalize behaviour of binary arithmetic expressions in various visitors.
+ */
+sealed class BinaryArithmeticExpr(ctx: SourceContext, left: Expr, right: Expr) : BinaryExpr(ctx, left, right)
+
+/**
+ * A NumericComparisonExpr has exactly two child expressions which are both numeric expressions, but the
+ * NumericComparisonExpr itself also returns a boolean.
+ * It is used to generalize behaviour of comparison expressions in various visitors.
+ */
+sealed class NumericComparisonExpr(ctx: SourceContext, left: Expr, right: Expr) : BinaryExpr(ctx, left, right)
+
+/**
+ * A BinaryBooleanExpr has exactly two child expressions which are both boolean expressions, and the
+ * BinaryArithmeticExpr itself also returns a number.
+ * It is used to generalize behaviour of binary boolean expressions in various visitors.
+ */
+sealed class BinaryBooleanExpr(ctx: SourceContext, left: Expr, right: Expr) : BinaryExpr(ctx, left, right)
+
 class OrExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryBooleanExpr(ctx, left, right)
 
 class AndExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryBooleanExpr(ctx, left, right)
 
 class InequalityExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class EqualityExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class GreaterThanExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class GreaterOrEqExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class LessThanExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class LessOrEqExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class AdditionExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 class SubtractionExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 class MultiplicationExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 class DivisionExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 class NegationExpr(
     ctx: SourceContext,
@@ -196,9 +222,9 @@ class Identifier(
 
 class ModuloExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 /**
  * Presents a function call in abstract syntax tree
