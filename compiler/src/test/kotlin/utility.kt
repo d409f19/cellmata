@@ -4,7 +4,6 @@ import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.CompilerData
 import dk.aau.cs.d409f19.cellumata.ast.*
-import dk.aau.cs.d409f19.cellumata.visitors.LiteralExtractorVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
 import org.antlr.v4.runtime.CharStreams
@@ -22,9 +21,6 @@ fun compileProgram(program: String): CompilerData {
     // Build AST
     val startContext = parser.start()
     val ast = reduce(startContext)
-
-    // Extract literals
-    LiteralExtractorVisitor().visit(ast)
 
     // Symbol table and scope
     val scopeChecker = ScopeCheckVisitor()

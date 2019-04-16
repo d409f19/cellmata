@@ -178,9 +178,9 @@ private fun reduceStmt(node: ParseTree): Stmt {
         )
         is CellmataParser.For_stmtContext -> ForLoopStmt(
             ctx = SourceContext(node),
-            initPart = reduceStmt(node.for_init()) as AssignStmt,
+            initPart = reduceStmt(node.for_init().assignment()) as AssignStmt,
             condition = reduceExpr(node.for_condition().expr()),
-            postIterationPart = reduceStmt(node.for_post_iteration()) as AssignStmt,
+            postIterationPart = reduceStmt(node.for_post_iteration().assignment()) as AssignStmt,
             body = reduceCodeBlock(node.code_block())
         )
         is CellmataParser.Break_stmtContext -> BreakStmt(ctx = SourceContext(node))
