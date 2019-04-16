@@ -3,7 +3,6 @@ package dk.aau.cs.d409f19.cellumata.visitors
 import dk.aau.cs.d409f19.cellumata.ErrorFromContext
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
-import org.antlr.v4.runtime.ParserRuleContext
 import kotlin.AssertionError
 
 /**
@@ -53,9 +52,9 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
             node.left.getType() == StateType && node.right.getType() == StateType -> BooleanType
-            node.left.getType() == ActualNeighbourhoodType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
-            node.left.getType() == ActualNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
-            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
+            node.left.getType() == LocalNeighbourhoodType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
+            node.left.getType() == LocalNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
+            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
             node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
             else -> {
                 ErrorLogger.registerError(TypeError(node.ctx, "Could not compare the types of right and left hand side of inequality-expression."))
@@ -74,9 +73,9 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
             node.left.getType() == StateType && node.right.getType() == StateType -> BooleanType
-            node.left.getType() == ActualNeighbourhoodType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
-            node.left.getType() == ActualNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
-            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
+            node.left.getType() == LocalNeighbourhoodType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
+            node.left.getType() == LocalNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
+            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
             node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
             else -> {
                 ErrorLogger.registerError(TypeError(node.ctx, "Could not compare the types of right and left hand side of equality-expression."))

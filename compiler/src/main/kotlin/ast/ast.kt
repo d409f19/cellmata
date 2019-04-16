@@ -250,7 +250,7 @@ class IntToFloatConversion(val expr: Expr) : Expr(expr.ctx, FloatType)
 /**
  * Internal node used to represent an implicit conversion from a array of states to a neighbourhood.
  */
-class StateArrayToActualNeighbourhoodConversion(val expr: Expr) : Expr(expr.ctx, ActualNeighbourhoodType)
+class StateArrayToLocalNeighbourhoodConversion(val expr: Expr) : Expr(expr.ctx, LocalNeighbourhoodType)
 
 /*
  * Declarations
