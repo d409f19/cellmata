@@ -3,6 +3,7 @@ package dk.aau.cs.d409f19
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
@@ -18,6 +19,14 @@ class BatchTest {
     @TestInstance(PER_CLASS)
     @DisplayName("Batch-testing passing programs")
     class BatchPassingTests {
+
+        /**
+         * Reset ErrorLogger before each test
+         */
+        @BeforeEach
+        fun resetErrorLogger() {
+            ErrorLogger.reset()
+        }
 
         /**
          * Returns a list of strings from each '.cell' file under the compiling-programs dir
@@ -53,6 +62,14 @@ class BatchTest {
     @TestInstance(PER_CLASS)
     @DisplayName("Batch-testing failing programs")
     class BatchFailingTests {
+
+        /**
+         * Reset ErrorLogger before each test
+         */
+        @BeforeEach
+        fun resetErrorLogger() {
+            ErrorLogger.reset()
+        }
 
         /**
          * Returns a list of strings from each '.cell' file under the non-compiling-programs dir

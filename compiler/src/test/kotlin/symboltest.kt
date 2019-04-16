@@ -3,6 +3,7 @@ package dk.aau.cs.d409f19
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
@@ -15,6 +16,14 @@ import java.util.stream.Stream
 @TestInstance(PER_CLASS)
 @DisplayName("Symbol table tests")
 class SymbolTest {
+
+    /**
+     * Reset ErrorLogger before each test
+     */
+    @BeforeEach
+    fun resetErrorLogger() {
+        ErrorLogger.reset()
+    }
 
     /**
      * Returns list of values for testing right-hand-side of assignment statement.
