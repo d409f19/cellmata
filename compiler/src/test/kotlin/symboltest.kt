@@ -82,9 +82,11 @@ class SymbolTest {
     fun symbolRedefinitionFailData(): Stream<Arguments> {
         return Stream.of(
             Arguments.of("x", listOf("4", "2")),
-            Arguments.of("x", listOf(true.toString(), false.toString())),
-            Arguments.of("x", listOf(4.22.toString(), 42.2.toString())),
-            Arguments.of("x", listOf("4", "2+2"))
+            Arguments.of("x", listOf("true", "false")),
+            Arguments.of("x", listOf("true", "true")),
+            Arguments.of("x", listOf("4.2", "42.2")),
+            Arguments.of("x", listOf("4", "2+2")),
+            Arguments.of("x", listOf("true", "5"))
         )
     }
 
