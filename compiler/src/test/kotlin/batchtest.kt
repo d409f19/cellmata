@@ -92,7 +92,7 @@ class BatchTest {
          */
         @ParameterizedTest
         @MethodSource("getNonCompilingPrograms")
-        fun batchPass(program: String) {
+        fun batchFail(program: String) {
             val compileData = compileProgram(program)
             // Assert that errors are found
             assertTrue(ErrorLogger.hasErrors() || compileData.parser.numberOfSyntaxErrors > 0)
