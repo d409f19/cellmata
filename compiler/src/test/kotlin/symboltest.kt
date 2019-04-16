@@ -31,7 +31,7 @@ class SymbolTest {
      */
     @ParameterizedTest
     @MethodSource("assignStmtPassData")
-    fun assignStmtPassTest(value: String) {
+    fun assignStmtLiteralPassTest(value: String) {
 
         val compilerData =
             compileProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let x = $value;"))
