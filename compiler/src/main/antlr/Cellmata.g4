@@ -75,11 +75,8 @@ array_lookup: var_ident SQ_BRACKET_START expr SQ_BRACKET_END ;
 
 // Literals
 literal
-    : value=number_literal # numberLiteral
-    | value=bool_literal # boolLiteral
-    ;
-number_literal
-    : value=integer_literal # integerLiteral
+    : value=bool_literal # boolLiteral
+    | value=integer_literal # integerLiteral
     | value=float_literal # floatLiteral
     ;
 
@@ -99,8 +96,8 @@ expr : '#' # stateIndexExpr
     | PAREN_START value=expr PAREN_END # parenExpr
     | value=array_value # arrayValueExpr
     | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
-    | OP_NOT value=expr # inverseExpr
-    | OP_MINUS value=expr # negativeExpr
+    | OP_NOT value=expr # notExpr
+    | OP_MINUS value=expr # negationExpr
     | left=expr OP_MODULO right=expr # moduloExpr
     | left=expr OP_DIVIDE right=expr # divisionExpr
     | left=expr OP_MULTIPLY right=expr # multiplictionExpr

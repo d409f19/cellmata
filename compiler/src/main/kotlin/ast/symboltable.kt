@@ -20,7 +20,7 @@ data class Table(
 /**
  * An error logged when there is an attempt to redefine an already defined symbol in the code that is being compiled.
  */
-class SymbolRedefinitionError(ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is already defined")
+class SymbolRedefinitionError(ctx: SourceContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is already defined")
 
 /**
  * List of language keywords that can't be used as identifiers

@@ -9,7 +9,7 @@ import kotlin.AssertionError
 /**
  * Error for violation of the type rules
  */
-class TypeError(ctx: ParserRuleContext, description: String) : ErrorFromContext(ctx, description)
+class TypeError(ctx: SourceContext, description: String) : ErrorFromContext(ctx, description)
 
 /**
  * Synthesizes types by moving them up the abstract syntax tree according to the type rules, and check that there is no violation of the type rules
@@ -85,7 +85,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: MoreThanExpr) {
+    override fun visit(node: GreaterThanExpr) {
         super.visit(node)
 
         node.setType(when {
@@ -100,7 +100,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: MoreEqExpr) {
+    override fun visit(node: GreaterOrEqExpr) {
         super.visit(node)
 
         node.setType(when {
@@ -130,7 +130,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: LessEqExpr) {
+    override fun visit(node: LessOrEqExpr) {
         super.visit(node)
 
         node.setType(when {
@@ -205,7 +205,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: NegativeExpr) {
+    override fun visit(node: NegationExpr) {
         super.visit(node)
 
         node.setType(when(node.value.getType()) {
@@ -218,7 +218,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: InverseExpr) {
+    override fun visit(node: NotExpr) {
         super.visit(node)
 
         if (node.value.getType() != BooleanType) {
@@ -231,7 +231,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: ArrayLookupExpr) {
         super.visit(node)
 
-        node.setType(node.ident.getType())
+        node.setType(node.arr.getType())
     }
 
     override fun visit(node: ArrayBodyExpr) {
@@ -283,15 +283,9 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         })
     }
 
-    override fun visit(node: ParenExpr) {
-        super.visit(node)
-
-        node.setType(node.expr.getType())
-    }
-
-    override fun visit(node: NamedExpr) {
+    override fun visit(node: Identifier) {
         // Get type of name
-        node.setType(symbolTableSession.getSymbolType(node.ident))
+        node.setType(symbolTableSession.getSymbolType(node.spelling))
     }
 
     override fun visit(node: ModuloExpr) {
@@ -329,7 +323,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
     }
 
-    override fun visit(node: FuncExpr) {
+    override fun visit(node: FuncCallExpr) {
         super.visit(node)
 
         // Get return type of function
