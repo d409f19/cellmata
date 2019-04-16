@@ -2,6 +2,8 @@ package dk.aau.cs.d409f19.cellumata
 
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
+import dk.aau.cs.d409f19.cellumata.ast.AST
+import dk.aau.cs.d409f19.cellumata.ast.Table
 import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
@@ -11,7 +13,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 import java.nio.file.Path
 import java.nio.file.Paths
 
-val path = Paths.get("src/main/resources/stress.cell")
+val path = Paths.get("src/main/resources/compiling-programs/skeleton.cell")
 
 fun compile(path: Path) {
     try {
@@ -60,3 +62,12 @@ fun compile(path: Path) {
 fun main() {
     compile(path)
 }
+
+/**
+ * Encapsulates all data from the compiler, which may be used for testing
+ */
+data class CompilerData(
+    val parser: CellmataParser,
+    val ast: AST,
+    val symbolTable: Table
+)

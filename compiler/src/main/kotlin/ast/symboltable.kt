@@ -25,7 +25,8 @@ class SymbolRedefinitionError(ctx: SourceContext, val ident: String) : ErrorFrom
 /**
  * List of language keywords that can't be used as identifiers
  */
-private val RESERVED_WORDS: List<String> = listOf(
+
+val RESERVED_WORDS: List<String> = listOf(
     "world",
     "neighbourhood",
     "state",

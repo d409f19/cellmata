@@ -106,8 +106,21 @@ object ErrorLogger {
         }
     }
 
+    fun printAllErrors() {
+        val sortedErrors = errors.sortedWith(compareBy<CompileError> { it.getLineNumber() }.thenBy { it.getCharPositionInLine() })
+
+        sortedErrors.forEach() {
+            System.err.println("Error at (${it.getLineNumber()}, ${it.getCharPositionInLine()}): ${it.description()}")
+        }
+
+    }
+
     fun allErrors(): List<CompileError> {
         return errors
+    }
+
+    fun reset() {
+        errors.clear()
     }
 
     /**
