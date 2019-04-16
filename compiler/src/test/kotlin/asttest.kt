@@ -264,9 +264,9 @@ class ASTTest {
             assertEquals(200, state.green)
             assertEquals(100, state.blue)
 
-            // Cast first element of state-body to BecomeStmt, then to NamedExpr, and assert identifier of BecomeStmt
-            val becomeStmtNamedExpr = (state.body[0] as BecomeStmt).state as NamedExpr
-            assertEquals("stage", becomeStmtNamedExpr.ident)
+            // Cast first element of state-codeblock-body to BecomeStmt,
+            // then to Identifier, and assert identifier of BecomeStmt
+            assertEquals("stage", ((state.body.body[0] as BecomeStmt).state as Identifier).spelling)
         }
 
         /**
@@ -299,9 +299,9 @@ class ASTTest {
             // Assert identifier is equal to passed parameter
             assertEquals(identifier, state.ident)
 
-            // Cast first element of state-body to BecomeStmt, then to NamedExpr, and assert identifier of BecomeStmt
-            val becomeStmtNamedExpr = (state.body[0] as BecomeStmt).state as NamedExpr
-            assertEquals(identifier, becomeStmtNamedExpr.ident)
+            // Cast first element of state-codeblock-body to BecomeStmt,
+            // then to NamedExpr, and assert identifier of BecomeStmt
+            assertEquals(identifier, ((state.body.body[0] as BecomeStmt).state as Identifier).spelling)
         }
     }
 }
