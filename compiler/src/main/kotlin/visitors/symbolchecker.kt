@@ -92,4 +92,20 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         }
         super.visit(node)
     }
+
+    override fun visit(node: ForLoopStmt) {
+        // For-loop adds two layers of scopes.
+        // In the outer-layer are the init, condition, and post-iteration.
+        // The inner-layer is the loops body.
+        // This way any loop-control-variables (those in the init-part) are not remade every iteration, but they are
+        // removed when the loop finishes.
+        symbolTableSession.openScope()
+        visit(node.initPart)
+        visit(node.condition)
+        symbolTableSession.openScope()
+        visit(node.body)
+        symbolTableSession.closeScope()
+        visit(node.postIterationPart)
+        symbolTableSession.closeScope()
+    }
 }
