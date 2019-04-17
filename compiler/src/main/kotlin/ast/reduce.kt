@@ -187,7 +187,7 @@ private fun reduceStmt(node: ParseTree): Stmt {
         is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = SourceContext(node))
         is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = SourceContext(node), state = reduceExpr(node.state))
         is CellmataParser.StmtContext -> reduceStmt(node.getChild(0))
-        is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = SourceContext(node), value = reduceExpr(node.expr()))
+        is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = SourceContext(node), expr = reduceExpr(node.expr()))
         // Errors
         is ParserRuleContext -> { registerReduceError(node); ErrorStmt() }
         else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")

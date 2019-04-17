@@ -234,7 +234,7 @@ class ViewingSymbolTableSession(val symbolTable: Table) {
      * @see getSymbol
      */
     fun getSymbolType(name: String): Type? {
-        val symbol = getSymbol(name) ?: return null
+        val symbol = getSymbol(name)
 
         return when(symbol) {
             is TypedNode -> symbol.getType()

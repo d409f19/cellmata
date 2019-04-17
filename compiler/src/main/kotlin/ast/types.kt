@@ -26,6 +26,12 @@ data class ArrayType(val subtype: Type) : Type("array<$subtype>")
 object UncheckedType : Type("UncheckedType")
 
 /**
+ * This type indicate, that the type could not be determined. That is, an error has happened, and to avoid more errors
+ * this should be treated as being any type - so type checking is never wrong when checking this type.
+ */
+object UndeterminedType : Type("UndeterminedType")
+
+/**
  * Convert a parse tree node to the type it represents
  */
 fun typeFromCtx(ctx: ParseTree): Type {
