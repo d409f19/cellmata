@@ -1,9 +1,9 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
 import dk.aau.cs.d409f19.antlr.CellmataParser
-import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import dk.aau.cs.d409f19.cellumata.ErrorFromContext
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
+import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
@@ -21,6 +21,9 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * handles the value of each node in the AST.
  */
 
+val DEFAULT_CELLSIZE = 8
+val DEFAULT_TICKRATE = 10
+
 /**
  * Attempts to recursively transform an expression node in the parse tree to create a subtree of the AST.
  *
@@ -29,114 +32,112 @@ import org.antlr.v4.runtime.tree.TerminalNode
 private fun reduceExpr(node: ParseTree): Expr {
     return when (node) {
         is CellmataParser.OrExprContext -> OrExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
         is CellmataParser.AndExprContext -> AndExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
         is CellmataParser.NotEqExprContext -> InequalityExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
         is CellmataParser.EqExprContext -> EqualityExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.MoreEqExprContext -> MoreEqExpr(
-            ctx = node,
+        is CellmataParser.MoreEqExprContext -> GreaterOrEqExpr(
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.MoreExprContext -> MoreThanExpr(
-            ctx = node,
+        is CellmataParser.MoreExprContext -> GreaterThanExpr(
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.LessEqExprContext -> LessEqExpr(
-            ctx = node,
+        is CellmataParser.LessEqExprContext -> LessOrEqExpr(
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
         is CellmataParser.LessExprContext -> LessThanExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
         is CellmataParser.AdditionExprContext -> AdditionExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
         is CellmataParser.SubstractionExprContext -> SubtractionExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
         is CellmataParser.MultiplictionExprContext -> MultiplicationExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
         is CellmataParser.DivisionExprContext -> DivisionExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
         is CellmataParser.ModuloExprContext -> ModuloExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.NegativeExprContext -> NegativeExpr(
-            ctx = node,
+        is CellmataParser.NegationExprContext -> NegationExpr(
+            ctx = SourceContext(node),
             value = reduceExpr(node.value)
         )
-        is CellmataParser.InverseExprContext -> InverseExpr(
-            ctx = node,
+        is CellmataParser.NotExprContext -> NotExpr(
+            ctx = SourceContext(node),
             value = reduceExpr(node.value)
         )
         is CellmataParser.ArrayLookupExprContext -> ArrayLookupExpr(
-            ctx = node,
-            ident = reduceExpr(node.value),
+            ctx = SourceContext(node),
+            arr = reduceExpr(node.value),
             index = reduceExpr(node.index)
         )
-        is CellmataParser.ParenExprContext -> ParenExpr(
-            ctx = node,
-            expr = reduceExpr(node.expr())
-        ) // ToDo: Should we flatten this?
-        is CellmataParser.LiteralExprContext -> reduceExpr(node.value)
-        is CellmataParser.VarExprContext -> NamedExpr(
-            ctx = node,
-            ident = node.ident.text
+        is CellmataParser.ParenExprContext -> reduceExpr(node.expr())
+        is CellmataParser.VarExprContext -> Identifier(
+            ctx = SourceContext(node),
+            spelling = node.ident.text
         )
-        is CellmataParser.FuncExprContext -> FuncExpr(
-            ctx = node,
-            args = node.value.expr().map(::reduceExpr)
+        is CellmataParser.FuncExprContext -> FuncCallExpr(
+            ctx = SourceContext(node),
+            args = node.value.expr().map(::reduceExpr),
+            ident = node.value.ident.text
         )
-        is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = node)
+        is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = SourceContext(node))
         is CellmataParser.ArrayValueExprContext -> ArrayBodyExpr(
-            ctx = node,
+            ctx = SourceContext(node),
             values = node.array_value().array_body().expr().map(::reduceExpr),
             declaredType = typeFromCtx(node.value.type_ident())
         )
-        // Some literals has to be expanded before we reach the actual literal
-        is CellmataParser.NumberLiteralContext -> reduceExpr(node.value)
-        is CellmataParser.BoolLiteralContext -> reduceExpr(node.value)
-        is CellmataParser.Bool_literalContext -> BoolLiteral(ctx = node)
-        is CellmataParser.Number_literalContext -> reduceExpr(node.getChild(0))
-        is CellmataParser.IntegerLiteralContext -> reduceExpr(node.value)
-        is CellmataParser.FloatLiteralContext -> reduceExpr(node.value)
-        is CellmataParser.Integer_literalContext -> IntLiteral(ctx = node)
-        is CellmataParser.Float_literalContext -> FloatLiteral(ctx = node)
-        is CellmataParser.Var_identContext -> NamedExpr(ctx = node)
+        is CellmataParser.LiteralExprContext -> reduceExpr(node.value)
+        is CellmataParser.BoolLiteralContext -> BoolLiteral(
+            ctx = SourceContext(node),
+            value = when (node.value) {
+                is CellmataParser.TrueLiteralContext -> true
+                is CellmataParser.FalseLiteralContext -> false
+                else -> throw TerminatedCompilationException("Could not parse boolean from '${node.value}'")
+            })
+        is CellmataParser.IntegerLiteralContext -> IntLiteral(SourceContext(node), node.value.text.toInt())
+        is CellmataParser.FloatLiteralContext -> FloatLiteral(SourceContext(node), node.value.text.toFloat())
+        is CellmataParser.Var_identContext -> Identifier(SourceContext(node), node.text)
         // Errors
-        is ParserRuleContext -> { registerReduceError(node); ErrorExpr(node) }
+        is ParserRuleContext -> { registerReduceError(node); ErrorExpr() }
         else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
@@ -150,47 +151,45 @@ private fun reduceStmt(node: ParseTree): Stmt {
     return when (node) {
         is CellmataParser.Assign_stmtContext -> reduceStmt(node.assignment())
         is CellmataParser.AssignmentContext -> AssignStmt(
-            ctx = node,
-            expr = reduceExpr(node.expr())
+            ctx = SourceContext(node),
+            expr = reduceExpr(node.expr()),
+            ident = node.var_ident().text, // TODO LHS Array, e.g.: "a[0] = 5;"
+            isDeclaration = node.STMT_LET() != null
         )
         is CellmataParser.If_stmtContext -> IfStmt(
-            ctx = node,
+            ctx = SourceContext(node),
             conditionals = listOf( // Create list of list of ConditionalBlocks, then flatten to list of ConditionalBlocks
                 listOf(
                     ConditionalBlock( // If clause
-                        ctx = node,
+                        ctx = SourceContext(node),
                         expr = reduceExpr(node.if_stmt_if().if_stmt_block().if_stmt_condition().expr()),
                         block = reduceCodeBlock(node.if_stmt_if().if_stmt_block().code_block())
                     )
                 ),
                 node.if_stmt_elif().map { // Elif clauses
                     ConditionalBlock(
-                        ctx = it,
+                        ctx = SourceContext(it),
                         expr = reduceExpr(it.if_stmt_block().if_stmt_condition().expr()),
                         block = reduceCodeBlock(it.if_stmt_block().code_block())
                     )
                 }
             ).flatten(),
-            elseBlock = when (node.if_stmt_else()) {
-                null -> null
-                is CellmataParser.If_stmt_elseContext -> reduceCodeBlock(node.if_stmt_else().code_block())
-                else -> throw AssertionError("Unexpected tree node")
-            }
+            elseBlock = if (node.if_stmt_else() == null) null else reduceCodeBlock(node.if_stmt_else().code_block())
         )
-        is CellmataParser.For_stmtContext -> ForStmt(
-            ctx = node,
-            initPart = AssignStmt(node.for_init().assignment(), expr = reduceExpr(node.for_init().assignment().expr())),
+        is CellmataParser.For_stmtContext -> ForLoopStmt(
+            ctx = SourceContext(node),
+            initPart = reduceStmt(node.for_init().assignment()) as AssignStmt,
             condition = reduceExpr(node.for_condition().expr()),
-            postIterationPart = AssignStmt(node.for_post_iteration().assignment(), expr = reduceExpr(node.for_post_iteration().assignment().expr())),
+            postIterationPart = reduceStmt(node.for_post_iteration().assignment()) as AssignStmt,
             body = reduceCodeBlock(node.code_block())
         )
-        is CellmataParser.Break_stmtContext -> BreakStmt(ctx = node)
-        is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = node)
-        is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = node, state = reduceExpr(node.state))
+        is CellmataParser.Break_stmtContext -> BreakStmt(ctx = SourceContext(node))
+        is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = SourceContext(node))
+        is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = SourceContext(node), state = reduceExpr(node.state))
         is CellmataParser.StmtContext -> reduceStmt(node.getChild(0))
-        is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = node, value = reduceExpr(node.expr()))
+        is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = SourceContext(node), value = reduceExpr(node.expr()))
         // Errors
-        is ParserRuleContext -> { registerReduceError(node); ErrorStmt(node) }
+        is ParserRuleContext -> { registerReduceError(node); ErrorStmt() }
         else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
 }
@@ -203,28 +202,52 @@ private fun reduceStmt(node: ParseTree): Stmt {
 private fun reduceDecl(node: ParseTree): Decl {
     return when (node) {
         is CellmataParser.Const_declContext -> ConstDecl(
-            ctx = node,
+            ctx = SourceContext(node),
+            ident = node.const_ident().text,
             expr = reduceExpr(node.expr())
         )
         is CellmataParser.State_declContext -> StateDecl(
-            ctx = node,
-            body = reduceCodeBlock(node.children // Get the body/code block
-                .stream()
-                .filter { it is CellmataParser.Code_blockContext }
-                .findFirst().orElseThrow() as CellmataParser.Code_blockContext)
+            ctx = SourceContext(node),
+            ident = node.state_ident().text,
+            red = parseColor(node.state_rgb().red),
+            green = parseColor(node.state_rgb().green),
+            blue = parseColor(node.state_rgb().blue),
+            body = reduceCodeBlock(node.code_block())
         )
         is CellmataParser.Neighbourhood_declContext -> NeighbourhoodDecl(
-            ctx = node,
-            coords = node.neighbourhood_code().coords_decl().map { Coordinate(ctx = it) }
+            ctx = SourceContext(node),
+            ident = node.neighbourhood_ident().text,
+            coords = node.neighbourhood_code().coords_decl().map {
+                Coordinate(
+                    ctx = SourceContext(it),
+                    axes = it.integer_literal().map { intCtx -> intCtx.text.toInt() } // Coordinates' dimensions are checked in sanity checker
+                )
+            }
         )
         is CellmataParser.Func_declContext -> FuncDecl(
-            ctx = node,
+            ctx = SourceContext(node),
+            ident = node.func_ident().text,
+            returnType = typeFromCtx(node.type_ident()),
+            args = node.func_decl_arg().map { FunctionArgument(SourceContext(it), it.IDENT().text, typeFromCtx(it.type_ident())) }.toList(),
             body = reduceCodeBlock(node.code_block())
         )
         // Errors
-        is ParserRuleContext -> { registerReduceError(node); ErrorDecl(node) }
+        is ParserRuleContext -> { registerReduceError(node); ErrorDecl() }
         else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")
     }
+}
+
+/**
+ * Parses an Integer_literalContext to a Short between 0 and 256 from a string. Used for state-declaration's colors
+ */
+fun parseColor(intCtx: CellmataParser.Integer_literalContext): Short {
+    val value = intCtx.text.toShortOrNull()
+    if (value == null || value < 0 || 255 < value) {
+        ErrorLogger.registerError(
+            ErrorFromContext(SourceContext(intCtx), "'${intCtx.text}' is not a valid colour. It must be an integer between 0 and 255.")
+        )
+    }
+    return value ?: 0
 }
 
 /**
@@ -232,10 +255,10 @@ private fun reduceDecl(node: ParseTree): Decl {
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
  */
-fun reduceCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
-    return block.children
+fun reduceCodeBlock(block: CellmataParser.Code_blockContext): CodeBlock {
+    return CodeBlock(SourceContext(block), block.children
         .filter { it !is TerminalNode } // Remove terminals
-        .map { reduceStmt(it) }
+        .map { reduceStmt(it) })
 }
 
 /**
@@ -244,13 +267,40 @@ fun reduceCodeBlock(block: CellmataParser.Code_blockContext): List<Stmt> {
 fun reduce(node: ParserRuleContext): AST {
     return when (node) {
         is CellmataParser.StartContext -> RootNode(
-            ctx = node,
-            world = WorldNode(ctx = node.world_dcl()),
-            // Since ANTLR sets children to null instead of empty list, this should be handled through elvis operator
+            ctx = SourceContext(node),
+            world = WorldNode(
+                ctx = SourceContext(node.world_dcl()),
+                dimensions = if (node.world_dcl().size.height != null) {
+                    listOf(
+                        parseDimension(node.world_dcl().size.width),
+                        parseDimension(node.world_dcl().size.height)
+                    )
+                } else {
+                    listOf(parseDimension(node.world_dcl().size.width))
+                },
+                cellSize = if (node.world_dcl().cellsize != null) node.world_dcl().cellsize.value.text.toIntOrNull() else DEFAULT_CELLSIZE,
+                tickrate = if (node.world_dcl().tickrate != null) node.world_dcl().tickrate.value?.text?.toIntOrNull() else DEFAULT_TICKRATE
+            ),
             body = node.body().children?.map(::reduceDecl) ?: listOf()
         )
-        else -> { registerReduceError(node); ErrorAST(node) }
+        else -> { registerReduceError(node); ErrorAST() }
     }
+}
+
+/**
+ * Parses a single dimension from the world size declaration list
+ */
+fun parseDimension(dim: CellmataParser.World_size_dimContext): WorldDimension {
+    val type = dim.type
+    return WorldDimension(
+        size = dim.size.text.toInt(),
+        type = when (type) {
+            is CellmataParser.DimFiniteEdgeContext -> WorldType.EDGE
+            is CellmataParser.DimFiniteWrappingContext -> WorldType.WRAPPING
+            else -> throw AssertionError()
+        },
+        edge = if (type is CellmataParser.DimFiniteEdgeContext) Identifier(SourceContext(type), type.state.text) else null
+    )
 }
 
 /**
@@ -258,5 +308,5 @@ fun reduce(node: ParserRuleContext): AST {
  * after changing the grammar.
  */
 fun registerReduceError(ctx: ParserRuleContext) {
-    ErrorLogger.registerError(ErrorFromContext(ctx, "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST."))
+    ErrorLogger.registerError(ErrorFromContext(SourceContext(ctx), "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST."))
 }
