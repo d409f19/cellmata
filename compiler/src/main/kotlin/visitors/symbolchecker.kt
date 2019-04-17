@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 /**
  * Logged when a undefined symbol is encountered. This exception indicates there is a use-before-declaration scenario.
  */
-class UndeclaredNameException(ctx: ParserRuleContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is undeclared.")
+class UndeclaredNameException(ctx: SourceContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is undeclared.")
 
 /**
  * Walks through the abstract syntax tree, extracts symbols, and checks for use-before-declaration.
@@ -36,12 +36,12 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         node.body.filter { it !is ConstDecl }.forEach { visit(it) }
     }
 
-    override fun visit(node: NamedExpr) {
+    override fun visit(node: Identifier) {
 
         // Check if the name is in the symbol table
-        val symb = symbolTableSession.getSymbol(node.ident)
+        val symb = symbolTableSession.getSymbol(node.spelling)
         if (symb == null) {
-            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
+            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.spelling))
         }
         super.visit(node)
     }
@@ -66,15 +66,15 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
     }
 
     override fun visit(node: AssignStmt) {
-        if (node.ctx.STMT_LET() == null) { // Check if this is a variable declaration, and not just an assignment
+        if (node.isDeclaration) { // Check if this is a variable declaration, and not just an assignment
+            // declaration
+            symbolTableSession.insertSymbol(node.ident, node)
+        } else {
             // assignment
             val symb = symbolTableSession.getSymbol(node.ident)
             if (symb == null) {
                 ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
             }
-        } else {
-            // declaration
-            symbolTableSession.insertSymbol(node.ident, node)
         }
 
         super.visit(node)
@@ -86,10 +86,26 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         symbolTableSession.closeScope()
     }
 
-    override fun visit(node: FuncExpr) {
+    override fun visit(node: FuncCallExpr) {
         if (symbolTableSession.getSymbol(node.ident) == null) {
             ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
         }
         super.visit(node)
+    }
+
+    override fun visit(node: ForLoopStmt) {
+        // For-loop adds two layers of scopes.
+        // In the outer-layer are the init, condition, and post-iteration.
+        // The inner-layer is the loops body.
+        // This way any loop-control-variables (those in the init-part) are not remade every iteration, but they are
+        // removed when the loop finishes.
+        symbolTableSession.openScope()
+        visit(node.initPart)
+        visit(node.condition)
+        symbolTableSession.openScope()
+        visit(node.body)
+        symbolTableSession.closeScope()
+        visit(node.postIterationPart)
+        symbolTableSession.closeScope()
     }
 }

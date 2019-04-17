@@ -6,19 +6,24 @@ import org.antlr.v4.runtime.tree.ParseTree
 /**
  * Base class for all type classes. This class should be viewed as effectively being an enum.
  */
-sealed class Type
+sealed class Type(val name: String) {
 
-object IntegerType : Type()
-object FloatType : Type()
-object BooleanType : Type()
-object StateType : Type()
-object ActualNeighbourhoodType : Type() // An evaluated neighbourhood
-data class ArrayType(val subtype: Type) : Type()
+    override fun toString(): String {
+        return name
+    }
+}
+
+object IntegerType : Type("int")
+object FloatType : Type("float")
+object BooleanType : Type("bool")
+object StateType : Type("state")
+object LocalNeighbourhoodType : Type("neighbourhood") // An evaluated neighbourhood
+data class ArrayType(val subtype: Type) : Type("array<$subtype>")
 
 /**
  * Default value for types before they're checked by the type checker
  */
-object UncheckedType : Type()
+object UncheckedType : Type("UncheckedType")
 
 /**
  * Convert a parse tree node to the type it represents
@@ -29,7 +34,7 @@ fun typeFromCtx(ctx: ParseTree): Type {
         is CellmataParser.TypeBooleanContext -> BooleanType
         is CellmataParser.TypeIntegerContext -> IntegerType
         is CellmataParser.TypeFloatContext -> FloatType
-        is CellmataParser.TypeNeighbourContext -> ActualNeighbourhoodType
+        is CellmataParser.TypeNeighbourContext -> LocalNeighbourhoodType
         is CellmataParser.TypeStateContext -> StateType
         else -> error("Unknown type")
     }

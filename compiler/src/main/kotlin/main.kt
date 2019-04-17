@@ -2,9 +2,10 @@ package dk.aau.cs.d409f19.cellumata
 
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
+import dk.aau.cs.d409f19.cellumata.ast.AST
+import dk.aau.cs.d409f19.cellumata.ast.Table
 import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
-import dk.aau.cs.d409f19.cellumata.visitors.LiteralExtractorVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
 import org.antlr.v4.runtime.CharStreams
@@ -25,9 +26,6 @@ fun compile(path: Path) {
         val ast = reduce(startContext)
         // Asserts that no errors has been found during the last phase
         ErrorLogger.assertNoErrors()
-
-        // Extract literals
-        LiteralExtractorVisitor().visit(ast)
 
         // Sanity checker
         val sanityChecker = SanityChecker()
@@ -90,3 +88,12 @@ fun main(args: Array<String>) {
         }
     }
 }
+
+/**
+ * Encapsulates all data from the compiler, which may be used for testing
+ */
+data class CompilerData(
+    val parser: CellmataParser,
+    val ast: AST,
+    val symbolTable: Table
+)

@@ -1,5 +1,6 @@
 package dk.aau.cs.d409f19.cellumata
 
+import dk.aau.cs.d409f19.cellumata.ast.SourceContext
 import org.antlr.v4.runtime.ParserRuleContext
 import java.nio.file.Files
 import java.nio.file.Path
@@ -28,20 +29,20 @@ abstract class CompileError(msg: String) : java.lang.RuntimeException(msg) {
 }
 
 /**
- * An compiler error based on the context from the antlr parser.
+ * A compiler error based on the context from the source program.
  */
-open class ErrorFromContext(val ctx: ParserRuleContext, private val description: String) : CompileError(description) {
+open class ErrorFromContext(val ctx: SourceContext, private val description: String) : CompileError(description) {
 
     override fun description(): String {
         return description
     }
 
     override fun getLineNumber(): Int {
-        return ctx.start.line
+        return ctx.lineNumber
     }
 
     override fun getCharPositionInLine(): Int {
-        return ctx.start.charPositionInLine
+        return ctx.charPositionInLine
     }
 }
 
@@ -105,8 +106,21 @@ object ErrorLogger {
         }
     }
 
+    fun printAllErrors() {
+        val sortedErrors = errors.sortedWith(compareBy<CompileError> { it.getLineNumber() }.thenBy { it.getCharPositionInLine() })
+
+        sortedErrors.forEach() {
+            System.err.println("Error at (${it.getLineNumber()}, ${it.getCharPositionInLine()}): ${it.description()}")
+        }
+
+    }
+
     fun allErrors(): List<CompileError> {
         return errors
+    }
+
+    fun reset() {
+        errors.clear()
     }
 
     /**

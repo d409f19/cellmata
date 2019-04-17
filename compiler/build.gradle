@@ -11,6 +11,7 @@ repositories {
 }
 
 task run(type: JavaExec) {
+    group = BasePlugin.BUILD_GROUP
     main = 'dk.aau.cs.d409f19.cellumata.MainKt'
     classpath = sourceSets.main.runtimeClasspath
 
