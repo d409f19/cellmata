@@ -17,7 +17,7 @@ object IntegerType : Type("int")
 object FloatType : Type("float")
 object BooleanType : Type("bool")
 object StateType : Type("state")
-object ActualNeighbourhoodType : Type("neighbourhood") // An evaluated neighbourhood
+object LocalNeighbourhoodType : Type("neighbourhood") // An evaluated neighbourhood
 data class ArrayType(val subtype: Type) : Type("array<$subtype>")
 
 /**
@@ -34,7 +34,7 @@ fun typeFromCtx(ctx: ParseTree): Type {
         is CellmataParser.TypeBooleanContext -> BooleanType
         is CellmataParser.TypeIntegerContext -> IntegerType
         is CellmataParser.TypeFloatContext -> FloatType
-        is CellmataParser.TypeNeighbourContext -> ActualNeighbourhoodType
+        is CellmataParser.TypeNeighbourContext -> LocalNeighbourhoodType
         is CellmataParser.TypeStateContext -> StateType
         else -> error("Unknown type")
     }
