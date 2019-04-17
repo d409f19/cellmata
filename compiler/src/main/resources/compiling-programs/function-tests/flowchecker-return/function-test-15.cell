@@ -1,0 +1,19 @@
+//This file checks that the typechecker can allow branches without returns
+
+world {
+    size = 100 [wrap], 200 [wrap]
+    tickrate = 1
+    cellsize = 5
+}
+
+state ident (0, 0, 0) {
+    become ident;
+}
+
+function f15(int a) int {
+    if (a == 1) {
+    }
+    elif (a == 2) {
+        return 2;
+    } else {return a;}
+}

@@ -1,0 +1,15 @@
+//This file checks that the typechecker evaluates the expression correctly to bool
+
+world {
+    size = 100 [wrap], 200 [wrap]
+    tickrate = 1
+    cellsize = 5
+}
+
+state ident (0, 0, 0) {
+    become ident;
+}
+
+function f5(int a, int b) bool {
+    return (a + b) == (b + a);
+}

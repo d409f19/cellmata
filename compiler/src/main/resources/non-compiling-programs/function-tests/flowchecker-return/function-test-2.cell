@@ -1,3 +1,5 @@
+//This file checks that the typechecker can find returns nested in statements. Also tests return in all branches
+
 world {
     size = 100 [wrap], 200 [wrap]
     tickrate = 1
@@ -8,12 +10,11 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f3(int a, int b) bool {
+function f2(int a, int b) bool {
     let c = true;
     for (let x = a; x < b; x = x+1) {
         if ( x == 5 ) {
-            return c && false;
+            return c;
         }
     }
-    return c && !c;
 }

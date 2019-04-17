@@ -1,3 +1,5 @@
+//This file checks that the typechecker implicitly converts the returntype int+int to float
+
 world {
     size = 100 [wrap], 200 [wrap]
     tickrate = 1
@@ -8,6 +10,6 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f2(int a, int b) float {
+function f4(int a, int b) float {
     return a + b;
 }

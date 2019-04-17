@@ -1,0 +1,15 @@
+//This file checks that the typechecker correctly identifies the returntype float to float
+
+world {
+    size = 100 [wrap], 200 [wrap]
+    tickrate = 1
+    cellsize = 5
+}
+
+state ident (0, 0, 0) {
+    become ident;
+}
+
+function f2(float a) float {
+    return a;
+}

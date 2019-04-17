@@ -4,6 +4,7 @@ import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.CompilerData
 import dk.aau.cs.d409f19.cellumata.ast.*
+import dk.aau.cs.d409f19.cellumata.visitors.FlowChecker
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
 import org.antlr.v4.runtime.CharStreams
@@ -29,6 +30,10 @@ fun compileProgram(program: String): CompilerData {
 
     // Type checking
     TypeChecker(symbolTable).visit(ast)
+
+    // Flow checking
+    val flowChecker = FlowChecker()
+    flowChecker.visit(ast)
 
     return CompilerData(parser, ast, symbolTable)
 }

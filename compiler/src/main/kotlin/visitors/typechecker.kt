@@ -307,14 +307,13 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (expectedReturn != node.value.getType()) {
-            node.value.setType(when {
-                node.value.getType() == IntegerType -> FloatType
-                else -> {
-                    ErrorLogger.registerError(TypeError(node.ctx, "Wrong return type (${node.value.getType()}). Expected $expectedReturn"))
-                    null
-                    }
-                }
-            )
+            if (node.value.getType() == IntegerType)
+                 node.value.setType(FloatType)
+        }
+
+        if (expectedReturn != node.value.getType()) {
+            ErrorLogger.registerError(TypeError(node.ctx, "Wrong return type " +
+                    "(${node.value.getType()}). Expected $expectedReturn"))
         }
     }
 
