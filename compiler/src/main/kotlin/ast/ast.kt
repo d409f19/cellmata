@@ -206,13 +206,20 @@ class ArrayLookupExpr(
 
 /**
  * @param ctx the context from witch this node was created from
- * @param values Elements of the array.
+ * @param body Elements of the array.
  * @param declaredType Type listed before the body/values of the array.
  */
-class ArrayBodyExpr(
+class SizedArrayExpr(
+    ctx: SourceContext,
+    val body: ArrayLiteralExpr?,
+    val declaredType: Type,
+    var declaredSize: List<Int?>
+) : Expr(ctx)
+
+class ArrayLiteralExpr(
     ctx: SourceContext,
     val values: List<Expr>,
-    val declaredType: Type
+    var size: Int = -1
 ) : Expr(ctx)
 
 class Identifier(

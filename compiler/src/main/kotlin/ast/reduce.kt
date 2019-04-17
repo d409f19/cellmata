@@ -24,6 +24,21 @@ import org.antlr.v4.runtime.tree.TerminalNode
 val DEFAULT_CELLSIZE = 8
 val DEFAULT_TICKRATE = 10
 
+private fun getArrayDeclaredSize(array_decl: CellmataParser.Array_declContext): MutableList<Int?> {
+    val l: MutableList<Int?> = if (array_decl.array_prefix().index != null) {
+        mutableListOf(array_decl.array_prefix().index.text.toInt())
+    } else {
+        mutableListOf(null)
+    }
+
+    // Assumption: Array is the only structured type
+    if (array_decl.type_ident() is CellmataParser.TypeArrayContext) {
+        l.addAll(getArrayDeclaredSize((array_decl.type_ident() as CellmataParser.TypeArrayContext).array_decl()))
+    }
+
+    return l
+}
+
 /**
  * Attempts to recursively transform an expression node in the parse tree to create a subtree of the AST.
  *
@@ -120,11 +135,15 @@ private fun reduceExpr(node: ParseTree): Expr {
             ident = node.value.ident.text
         )
         is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = SourceContext(node))
-        is CellmataParser.ArrayValueExprContext -> ArrayBodyExpr(
+        is CellmataParser.ArraySizedValueExprContext -> reduceExpr(node.value)
+        is CellmataParser.Array_value_sizedContext -> SizedArrayExpr(
             ctx = SourceContext(node),
-            values = node.array_value().array_body().expr().map(::reduceExpr),
-            declaredType = typeFromCtx(node.value.type_ident())
+            declaredType = ArrayType(typeFromCtx(node.array_decl().type_ident())),
+            body = if(node.array_value_literal() == null) { null } else { reduceExpr(node.array_value_literal()) as ArrayLiteralExpr },
+            declaredSize = getArrayDeclaredSize(node.array_decl())
         )
+        is CellmataParser.ArrayLiteralExprContext -> reduceExpr(node.value)
+        is CellmataParser.Array_value_literalContext -> ArrayLiteralExpr(SourceContext(node), node.expr().map(::reduceExpr))
         is CellmataParser.LiteralExprContext -> reduceExpr(node.value)
         is CellmataParser.BoolLiteralContext -> BoolLiteral(
             ctx = SourceContext(node),

@@ -60,13 +60,15 @@ interface ASTVisitor<R> {
 
     fun visit(node: ArrayLookupExpr): R
 
-    fun visit(node: ArrayBodyExpr): R
+    fun visit(node: SizedArrayExpr): R
 
     fun visit(node: Identifier): R
 
     fun visit(node: ModuloExpr): R
 
     fun visit(node: FuncCallExpr): R
+
+    fun visit(node: ArrayLiteralExpr): R
 
     fun visit(node: StateIndexExpr): R
 
@@ -81,7 +83,7 @@ interface ASTVisitor<R> {
     fun visit(node: IfStmt): R
 
     fun visit(node: BecomeStmt): R
-  
+
     fun visit(node: ReturnStmt): R
 
     fun visit(node: AST): R
@@ -179,13 +181,14 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
             is ArrayLookupExpr -> visit(node)
-            is ArrayBodyExpr -> visit(node)
+            is SizedArrayExpr -> visit(node)
             is Identifier -> visit(node)
             is FuncCallExpr -> visit(node)
             is StateIndexExpr -> visit(node)
             is IntLiteral -> visit(node)
             is FloatLiteral -> visit(node)
             is BoolLiteral -> visit(node)
+            is ArrayLiteralExpr -> visit(node)
             else -> throw AssertionError()
         }
     }
@@ -299,7 +302,14 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
         visit(node.index)
     }
 
-    override fun visit(node: ArrayBodyExpr) {
+    override fun visit(node: SizedArrayExpr) {
+        if (node.body == null) {
+            return
+        }
+        visit(node.body)
+    }
+
+    override fun visit(node: ArrayLiteralExpr) {
         node.values.forEach { visit(it) }
     }
 
