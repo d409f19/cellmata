@@ -233,6 +233,39 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         node.setType(node.arr.getType())
     }
 
+    /**
+     * Finds the size of the largest subarray in each dimension.
+     * Note: Note if their is empty array literals in the tree, this function may return fewer dimensions than expected.
+     */
+    private fun searchSize(node: ArrayLiteralExpr, sizes: MutableList<Int> = mutableListOf(), depth: Int = 1): MutableList<Int> {
+        if (sizes.size < depth) {
+            sizes.add(node.values.size)
+        } else  if (sizes[depth-1] < node.values.size) {
+            sizes[depth-1] = node.values.size
+        }
+
+        @Suppress("NAME_SHADOWING") var sizes = sizes
+        node.values.forEach {
+            if (it is ArrayLiteralExpr) {
+                sizes = searchSize(it, sizes, depth + 1)
+            }
+        }
+
+        return sizes
+    }
+
+    private fun pushDownSize(n: Expr, size: List<Int>) {
+        if (n is ArrayLiteralExpr) {
+            n.size = size[0]
+
+            if (n.values.size > 1) {
+                n.values.forEach {
+                    pushDownSize(it, size.subList(1, size.size))
+                }
+            }
+        }
+    }
+
     override fun visit(node: SizedArrayExpr) {
         super.visit(node)
 
@@ -293,24 +326,6 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             else -> throw AssertionError("Cannot determine type of array. This case should never be hit!")
         })
 
-        fun searchSize(node: ArrayLiteralExpr, sizes: MutableList<Int> = mutableListOf(), depth: Int = 1): MutableList<Int> {
-            if (sizes.size < depth) {
-                sizes.add(node.values.size)
-            } else  if (sizes[depth-1] < node.values.size) {
-                sizes[depth-1] = node.values.size
-            }
-
-            @Suppress("NAME_SHADOWING") var sizes = sizes
-            node.values.forEach {
-                if (it is ArrayLiteralExpr) {
-                    sizes = searchSize(it, sizes, depth + 1)
-                }
-            }
-
-            return sizes
-        }
-
-
         val sizes = searchSize(node.body)
 
         // compare sizes
@@ -335,18 +350,6 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         }
 
         // push down size
-        fun pushDownSize(n: Expr, size: List<Int>) {
-            if (n is ArrayLiteralExpr) {
-                n.size = size[0]
-
-                if (n.values.size > 1) {
-                    n.values.forEach {
-                        pushDownSize(it, size.subList(1, size.size))
-                    }
-                }
-            }
-        }
-
         pushDownSize(
             node.body,
             finalSizes.map {it!!}.toList()
@@ -357,6 +360,9 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         node.setType(ArrayType(if (node.values.isEmpty()) null else node.values[0].getType()))
+
+        val foundSizes = searchSize(node)
+        pushDownSize(node, foundSizes)
     }
 
     override fun visit(node: Identifier) {

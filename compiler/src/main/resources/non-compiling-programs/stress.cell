@@ -10,8 +10,9 @@ const arr0 = [3]bool;
 const arr1 = [3]bool{ true, false, true };
 const arr2 = [2]bool{ true, true };
 const arr3 = []bool{ false, true };
-const arr4 = [][]bool{ { true, false }, { false, false } };
+const arr4 = [][]bool{ { true, false }, { false } };
 const arr5 = [][]float{ {}, {} };
+const arr6 = { { false, false}, { false } };
 
 const t1 = [2][2]bool{};
 const t2 = [2]bool{};
