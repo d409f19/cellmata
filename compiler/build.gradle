@@ -10,6 +10,26 @@ repositories {
     mavenCentral()
 }
 
+task run(type: JavaExec) {
+    group = BasePlugin.BUILD_GROUP
+    main = 'dk.aau.cs.d409f19.cellumata.MainKt'
+    classpath = sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'dk.aau.cs.d409f19.cellumata.MainKt'
+    }
+
+    // This line of code recursively collects and copies all of a project's files
+    // and adds them to the JAR itself resulting in a 'fat jar'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     antlr "org.antlr:antlr4:4.7.2"
