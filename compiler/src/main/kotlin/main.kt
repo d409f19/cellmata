@@ -16,8 +16,10 @@ import java.nio.file.Paths
 
 val path = Paths.get("src/main/resources/compiling-programs/skeleton.cell")
 
+/**
+ * Compile static program
+ */
 fun main() {
-    // Compile static program
     prodCompilation(path)
 }
 
@@ -59,14 +61,13 @@ fun compile(inputStream: CharStream): CompilerData {
     val scopeChecker = ScopeCheckVisitor()
     scopeChecker.visit(ast)
     val symbolTable = scopeChecker.getSymbolTable()
-    println(symbolTable)
     ErrorLogger.assertNoErrors()
 
     // Type checking
     TypeChecker(symbolTable).visit(ast)
     ErrorLogger.assertNoErrors()
 
-    return CompilerData(parser, ast, symbolTable)
+    return CompilerData(parser, ast, symbolTable, ErrorLogger.hasErrors())
 }
 
 /**
@@ -95,6 +96,7 @@ fun prodCompilation(path: Path) {
  */
 data class CompilerData(
     val parser: CellmataParser,
-    val ast: AST,
-    val symbolTable: Table
+    val ast: AST? = null,
+    val symbolTable: Table? = null,
+    val hasErrors: Boolean? = null
 )
