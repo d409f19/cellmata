@@ -35,6 +35,18 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         }
 
         printLabel(node, builder.toString())
+
+        node.dimensions.forEach { printNode(node, it) }
+
+        super.visit(node)
+    }
+
+    override fun visit(node: WorldDimension) {
+        val builder: StringBuilder = StringBuilder("WorldDimension\\ntype=${node.type}\\nsize=${node.size}")
+        if (node.edge != null) {
+            builder.append("\\nedge${node.edge}")
+        }
+        printLabel(node, builder.toString())
         super.visit(node)
     }
 
@@ -61,8 +73,8 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
 
     override fun visit(node: StateDecl) {
         printLabel(node, "State\\n" + node.ident + "\\nred=" + node.red + "\\ngreen=" + node.green + "\\nblue=" + node.blue)
+        printNode(node, node.body)
         depth++
-        node.body.forEach { printNode(node, it) }
         super.visit(node)
         depth--
     }
@@ -75,14 +87,14 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
 
     override fun visit(node: FuncDecl) {
         printLabel(node, "Function\\n" + node.ident + "\\nargs=" + node.args.size)
+        printNode(node, node.body)
         depth++
         node.args.forEach { printNode(node, it) }
-        node.body.forEach { printNode(node, it) }
         super.visit(node)
         depth--
     }
 
-    override fun visit(node: FunctionArgs) {
+    override fun visit(node: FunctionArgument) {
         printLabel(node, "FunctionArgs\\n" + node.ident)
         super.visit(node)
     }
@@ -115,15 +127,15 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: MoreThanExpr) {
-        printLabel(node, "MoreThanExpr")
+    override fun visit(node: GreaterThanExpr) {
+        printLabel(node, "GreaterThanExpr")
         printNode(node, node.left)
         printNode(node, node.right)
         super.visit(node)
     }
 
-    override fun visit(node: MoreEqExpr) {
-        printLabel(node, "MoreEqExpr")
+    override fun visit(node: GreaterOrEqExpr) {
+        printLabel(node, "GreaterOrEqExpr")
         printNode(node, node.left)
         printNode(node, node.right)
         super.visit(node)
@@ -136,7 +148,7 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: LessEqExpr) {
+    override fun visit(node: LessOrEqExpr) {
         printLabel(node, "LessEqExpr")
         printNode(node, node.left)
         printNode(node, node.right)
@@ -171,14 +183,14 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: NegativeExpr) {
-        printLabel(node, "NegativeExpr")
+    override fun visit(node: NegationExpr) {
+        printLabel(node, "NegationExpr")
         printNode(node, node.value)
         super.visit(node)
     }
 
-    override fun visit(node: InverseExpr) {
-        printLabel(node, "InverseExpr")
+    override fun visit(node: NotExpr) {
+        printLabel(node, "NotExpr")
         printNode(node, node.value)
         super.visit(node)
     }
@@ -195,12 +207,6 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: ParenExpr) {
-        printLabel(node, "ParenExpr")
-        printNode(node, node.expr)
-        super.visit(node)
-    }
-
     override fun visit(node: ModuloExpr) {
         printLabel(node, "ModuloExpr")
         printNode(node, node.left)
@@ -208,8 +214,8 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: FuncExpr) {
-        printLabel(node, "FuncExpr\\n" + node.ident)
+    override fun visit(node: FuncCallExpr) {
+        printLabel(node, "FuncCallExpr\\n" + node.ident)
         node.args.forEach { printNode(node, it) }
         super.visit(node)
     }
@@ -227,7 +233,6 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
             // Insert a node to represent the else block, otherwise the else block is unreadable
             printLabel(node.elseBlock, "Else")
             printNode(node, node.elseBlock)
-            node.elseBlock.forEach { printNode(node.elseBlock, it) }
         }
         super.visit(node)
     }
@@ -236,7 +241,6 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         printLabel(node, "ConditionalBlock")
         printNode(node, node.expr)
         depth++
-        node.block.forEach { printNode(node, it) }
         super.visit(node)
         depth--
     }
@@ -253,8 +257,8 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: NamedExpr) {
-        printLabel(node, "NamedExpr\\n" + node.ident)
+    override fun visit(node: Identifier) {
+        printLabel(node, "Identifier\\n" + node.spelling)
         super.visit(node)
     }
 
@@ -283,13 +287,12 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: ForStmt) {
+    override fun visit(node: ForLoopStmt) {
         printNode(node, node.initPart)
         printNode(node, node.condition)
         printNode(node, node.postIterationPart)
         printNode(node, node.body)
         printLabel(node.body, "body")
-        node.body.forEach { printNode(node.body, it) }
         super.visit(node)
     }
 
@@ -300,6 +303,12 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
 
     override fun visit(node: ContinueStmt) {
         printLabel(node, "ContinueStmt")
+        super.visit(node)
+    }
+
+    override fun visit(node: CodeBlock) {
+        printLabel(node, "CodeBlock")
+        node.body.forEach { printNode(node, it) }
         super.visit(node)
     }
 }
