@@ -9,6 +9,11 @@ const integer = 42;
 const floating = 42.420;
 const goodProgram = true; // May be accurate
 
+neighbourhood foobar {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),         (1, 0)
+}
+
 /* An explanation of the following states would be redundant
    but it's worthwhile trying out multi-line comments
    even just for the sake of writing nonsense */
@@ -40,10 +45,19 @@ state alive5 (0, 0, 0) {
 
 state alive6 (0, 0, 0) {
     let a = -foo(42);
+    let b = bar(a, true);
     become alive1;
 }
 
 // This is a silly function
 function foo(int x) int {
     return x + 42;
+}
+
+function bar(int x, bool y) int {
+    if (y) {
+        return x + 42;
+    } else {
+        return x + 420;
+    }
 }
