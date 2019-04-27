@@ -7,7 +7,7 @@ import dk.aau.cs.d409f19.cellumata.ast.WorldType.WRAPPING
 class PrettyPrinter : BaseASTVisitor() {
 
     // String builder for accumulating the pretty-printed program source
-    var stringBuilder = StringBuilder()
+    private var stringBuilder = StringBuilder()
 
     /**
      * Print accumulated program from string builder
@@ -251,6 +251,17 @@ class PrettyPrinter : BaseASTVisitor() {
 
         // Print division symbol with spaces padding expressions
         stringBuilder.append(" / ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: ModuloExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print modulo symbol with spaces padding expressions
+        stringBuilder.append(" % ")
 
         // Print right-side
         visit(node.right)
