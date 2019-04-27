@@ -16,6 +16,21 @@ class PrettyPrinter : BaseASTVisitor() {
         println(stringBuilder.toString())
     }
 
+    /**
+     * Print newlines for each distinct block
+     */
+    override fun visit(node: RootNode) {
+        // First print world declaration and add linebreak afterwards
+        visit(node.world)
+        stringBuilder.appendln()
+
+        // For each declaration in body, print it and add linebreak afterwards
+        node.body.forEach {
+            visit(it)
+            stringBuilder.appendln()
+        }
+    }
+
     /*
      * Declarations
      */
@@ -62,8 +77,8 @@ class PrettyPrinter : BaseASTVisitor() {
             stringBuilder.appendln("\tcellsize = ${node.cellSize}")
         }
 
-        // When done with all world declaration printing, print closing curly bracket and two newlines
-        stringBuilder.append("}\n\n")
+        // When done with all world declaration printing, print closing curly bracket and newline
+        stringBuilder.appendln("}")
 
     }
 
@@ -91,8 +106,8 @@ class PrettyPrinter : BaseASTVisitor() {
         // Print body
         visit(node.body)
 
-        // When done with printing body of state, print closing curly bracket and two newlines
-        stringBuilder.append("}\n\n")
+        // When done with printing body of state, print closing curly bracket and newline
+        stringBuilder.append("}\n")
     }
 
     /**
@@ -120,8 +135,8 @@ class PrettyPrinter : BaseASTVisitor() {
         // Print body of function
         visit(node.body)
 
-        // Print closing curly bracket and two newlines
-        stringBuilder.append("}\n\n")
+        // Print closing curly bracket and newline
+        stringBuilder.append("}\n")
     }
 
     /**
