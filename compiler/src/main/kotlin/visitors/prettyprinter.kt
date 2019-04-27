@@ -223,6 +223,45 @@ class PrettyPrinter : BaseASTVisitor() {
         stringBuilder.appendln(";")
     }
 
+    override fun visit(node: IfStmt) {
+        // Print all conditional blocks in if-statement
+        for (n in node.conditionals.indices) {
+
+            // If first conditional, then append 'if', else 'elif'. Indent block as well
+            if (n == 0) stringBuilder.append("\tif ")
+            else stringBuilder.append(" elif ")
+
+            // Print each block of code
+            visit(node.conditionals[n])
+        }
+
+        // If else-block exists, print it indented, else put newline
+        if (node.elseBlock != null) {
+            stringBuilder.append(" else {\n\t")
+            visit(node.elseBlock)
+            stringBuilder.appendln("\t}")
+        } else {
+            stringBuilder.appendln()
+        }
+    }
+
+    override fun visit(node: ConditionalBlock) {
+        // Print opening parenthesis before conditional expression
+        stringBuilder.append("(")
+
+        // Print conditional expression
+        visit(node.expr)
+
+        // Print closing parenthesis after conditional expression, opening curly bracket, newline, and tab
+        stringBuilder.append(") {\n\t")
+
+        // Print block associated with conditional
+        visit(node.block)
+
+        // Close block with indented, closing curly bracket
+        stringBuilder.append("\t}")
+    }
+
     /*
      * Expressions
      */

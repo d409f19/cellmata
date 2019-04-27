@@ -46,6 +46,10 @@ state alive5 (0, 0, 0) {
 state alive6 (0, 0, 0) {
     let a = -foo(42);
     let b = bar(a, true);
+
+    if (b != -16) {
+        become alive5;
+    }
     become alive1;
 }
 
@@ -57,7 +61,9 @@ function foo(int x) int {
 function bar(int x, bool y) int {
     if (y) {
         return x + 42;
+    } elif (!y) {
+        return x;
     } else {
-        return x + 420;
+        return x + 4;
     }
 }

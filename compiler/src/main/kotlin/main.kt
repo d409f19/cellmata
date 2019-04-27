@@ -32,11 +32,6 @@ fun compile(path: Path) {
         val sanityChecker = SanityChecker()
         sanityChecker.visit(ast)
 
-        // Build pretty-printed program
-        val prettyPrinter = PrettyPrinter()
-        prettyPrinter.visit(ast)
-        prettyPrinter.print()
-
         // Symbol table and scope
         val scopeChecker = ScopeCheckVisitor()
         scopeChecker.visit(ast)
@@ -46,6 +41,11 @@ fun compile(path: Path) {
         // Type checking
         TypeChecker(symbolTable).visit(ast)
         ErrorLogger.assertNoErrors()
+
+        // Build pretty-printed program
+        val prettyPrinter = PrettyPrinter()
+        prettyPrinter.visit(ast)
+        prettyPrinter.print()
 
     } catch (e: TerminatedCompilationException) {
 
