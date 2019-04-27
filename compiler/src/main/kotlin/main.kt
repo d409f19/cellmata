@@ -5,6 +5,7 @@ import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.AST
 import dk.aau.cs.d409f19.cellumata.ast.Table
 import dk.aau.cs.d409f19.cellumata.ast.reduce
+import dk.aau.cs.d409f19.cellumata.visitors.PrettyPrinter
 import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
@@ -30,6 +31,11 @@ fun compile(path: Path) {
         // Sanity checker
         val sanityChecker = SanityChecker()
         sanityChecker.visit(ast)
+
+        // Build pretty-printed program
+        val prettyPrinter = PrettyPrinter()
+        prettyPrinter.visit(ast)
+        prettyPrinter.print()
 
         // Symbol table and scope
         val scopeChecker = ScopeCheckVisitor()
