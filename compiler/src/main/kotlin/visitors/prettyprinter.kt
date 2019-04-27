@@ -31,6 +31,7 @@ class PrettyPrinter : BaseASTVisitor() {
 
         // For each dimension, print size and type
         for (n in node.dimensions.indices) {
+
             val isLast: Boolean = node.dimensions.lastIndex == n
 
             // Set separator to ", " if not last, else empty
@@ -52,7 +53,7 @@ class PrettyPrinter : BaseASTVisitor() {
         // When done with printing dimension, add linebreak
         stringBuilder.appendln()
 
-        // Print tickrate and cellsize if not null, this could possibly be handled nicer with Elvis operator
+        // Print tickrate and cellsize if not null
         if (node.tickrate != null) {
             stringBuilder.appendln("\ttickrate = ${node.tickrate}")
         }
@@ -102,6 +103,7 @@ class PrettyPrinter : BaseASTVisitor() {
         stringBuilder.append("function ${node.ident}(")
 
         for (n in node.args.indices) {
+
             // Boolean of is the current iteration at the last index
             val isLast = node.args.lastIndex == n
 
@@ -122,6 +124,13 @@ class PrettyPrinter : BaseASTVisitor() {
         stringBuilder.append("}\n\n")
     }
 
+    /**
+     * Print a formal argument of a function declaration
+     */
+    override fun visit(node: FunctionArgument) {
+        stringBuilder.append("${node.getType()} ${node.ident}")
+    }
+
     /*
      * Statements
      */
@@ -138,7 +147,7 @@ class PrettyPrinter : BaseASTVisitor() {
 
     override fun visit(node: BecomeStmt) {
         // Begin become statement with the 'become'-keyword
-        stringBuilder.append("become ")
+        stringBuilder.append("\tbecome ")
 
         // Print state-name
         visit(node.state)
@@ -147,21 +156,19 @@ class PrettyPrinter : BaseASTVisitor() {
         stringBuilder.appendln(";")
     }
 
+    override fun visit(node: ReturnStmt) {
+        stringBuilder.append("\treturn ")
+
+        // Continue printing expression
+        visit(node.value)
+
+        // When done with printing expression, print semicolon and newline
+        stringBuilder.appendln(";")
+    }
+
     /*
      * Expressions
      */
-    override fun visit(node: BoolLiteral) {
-        stringBuilder.append(node.value)
-    }
-
-    override fun visit(node: IntLiteral) {
-        stringBuilder.append(node.value)
-    }
-
-    override fun visit(node: FloatLiteral) {
-        stringBuilder.append(node.value)
-    }
-
     override fun visit(node: FuncCallExpr) {
         // Print function-name postfixed an opening parenthesis
         stringBuilder.append("${node.ident}(")
@@ -174,14 +181,198 @@ class PrettyPrinter : BaseASTVisitor() {
     }
 
     override fun visit(node: Identifier) {
+        // Simply print spelling of identifier
         stringBuilder.append(node.spelling)
+    }
+
+    override fun visit(node: BoolLiteral) {
+        stringBuilder.append(node.value)
+    }
+
+    override fun visit(node: IntLiteral) {
+        stringBuilder.append(node.value)
+    }
+
+    override fun visit(node: FloatLiteral) {
+        stringBuilder.append(node.value)
+    }
+
+    override fun visit(node: AdditionExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print addition symbol with spaces padding expressions
+        stringBuilder.append(" + ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: SubtractionExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print subtraction symbol with spaces padding expressions
+        stringBuilder.append(" - ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: MultiplicationExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print multiplication symbol with spaces padding expressions
+        stringBuilder.append(" * ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: DivisionExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print division symbol with spaces padding expressions
+        stringBuilder.append(" / ")
+
+        // Print right-side
+        visit(node.right)
     }
 
     override fun visit(node: NegationExpr) {
         stringBuilder.append("-")
+
+        // Continue printing value
+        visit(node.value)
     }
 
     override fun visit(node: NotExpr) {
         stringBuilder.append("!")
+
+        // Continue printing value
+        visit(node.value)
+    }
+
+    override fun visit(node: ArrayLookupExpr) {
+        // First print array expression
+        visit(node.arr)
+
+        // Lastly print index expression within brackets
+        stringBuilder.append("[")
+        visit(node.index)
+        stringBuilder.append("]")
+    }
+
+    /**
+     * Prints each element of the array body expression comma-separated
+     */
+    override fun visit(node: ArrayBodyExpr) {
+        // Open expression with opening curly bracket
+        stringBuilder.append("{")
+
+        for (n in node.values.indices) {
+
+            // Boolean of is the current iteration at the last index
+            val isLast = node.values.lastIndex == n
+
+            // Print each element
+            visit(node.values[n])
+
+            // Print separator for given iteration, empty if last, else given separator with space appended
+            stringBuilder.append(if (!isLast) ", " else "")
+
+        }
+        // When done with list, print closing curly bracket
+        stringBuilder.append("}")
+    }
+
+    override fun visit(node: OrExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print boolean 'or' symbol with spaces padding expressions
+        stringBuilder.append(" || ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: AndExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print boolean 'and' symbol with spaces padding expressions
+        stringBuilder.append(" && ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: InequalityExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print boolean inequality symbol with spaces padding expressions
+        stringBuilder.append(" != ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: EqualityExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print boolean equality symbol with spaces padding expressions
+        stringBuilder.append(" == ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: GreaterThanExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print boolean 'greater than' symbol with spaces padding expressions
+        stringBuilder.append(" > ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: GreaterOrEqExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print boolean 'greater than or equal' symbol with spaces padding expressions
+        stringBuilder.append(" >= ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: LessThanExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print boolean 'less than' symbol with spaces padding expressions
+        stringBuilder.append(" < ")
+
+        // Print right-side
+        visit(node.right)
+    }
+
+    override fun visit(node: LessOrEqExpr) {
+        // Print left-side first
+        visit(node.left)
+
+        // Print boolean 'less than or equal' symbol with spaces padding expressions
+        stringBuilder.append(" <= ")
+
+        // Print right-side
+        visit(node.right)
     }
 }
