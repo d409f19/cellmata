@@ -262,6 +262,41 @@ class PrettyPrinter : BaseASTVisitor() {
         stringBuilder.append("\t}")
     }
 
+    override fun visit(node: ForLoopStmt) {
+        // Print 'for (' keyword
+        stringBuilder.append("\tfor (")
+
+        // Print initialisation part, note omission of semicolon, as already exists due to printing of assign statement
+        visit(node.initPart)
+
+        // Print condition
+        visit(node.condition)
+
+        // Print delimiting semicolon
+        stringBuilder.append(";")
+
+        // Print post iteration part
+        visit(node.postIterationPart)
+
+        // End for-loop
+        stringBuilder.appendln(") {")
+
+        // Print body of for-loop
+        visit(node.body)
+
+        // Print closing curly bracket
+        stringBuilder.appendln("}")
+
+    }
+
+    override fun visit(node: BreakStmt) {
+        stringBuilder.appendln("break;")
+    }
+
+    override fun visit(node: ContinueStmt) {
+        stringBuilder.appendln("continue;")
+    }
+
     /*
      * Expressions
      */
