@@ -1,6 +1,6 @@
 package dk.aau.cs.d409f19.cellumata.visitors
 
-import dk.aau.cs.d409f19.cellumata.ast.WorldNode
+import dk.aau.cs.d409f19.cellumata.ast.*
 import dk.aau.cs.d409f19.cellumata.ast.WorldType.EDGE
 import dk.aau.cs.d409f19.cellumata.ast.WorldType.WRAPPING
 
@@ -16,6 +16,12 @@ class PrettyPrinter : BaseASTVisitor() {
         println(stringBuilder.toString())
     }
 
+    /*
+     * Declarations
+     */
+    /**
+     * Build pretty-printed world declaration
+     */
     override fun visit(node: WorldNode) {
         // Begin world block boilerplate
         stringBuilder.appendln("world {")
@@ -34,8 +40,8 @@ class PrettyPrinter : BaseASTVisitor() {
             stringBuilder.append(
                 "${node.dimensions[n].size} ${if (node.dimensions[n].type == WRAPPING) {
                     "[wrap]$separator"
-                } else if (node.dimensions[n].type == EDGE) {
-                    "[edge=${node.dimensions[n].edge}]$separator"
+                } else if (node.dimensions[n].type == EDGE) { // Note the non-null assertion, required for field access
+                    "[edge=${node.dimensions[n].edge!!.spelling}]$separator"
                 } else {
                     "[${node.dimensions[n].type}]$separator"
                 }
@@ -55,8 +61,127 @@ class PrettyPrinter : BaseASTVisitor() {
             stringBuilder.appendln("\tcellsize = ${node.cellSize}")
         }
 
-        // When done with all world declaration printing, print closing curly bracket
-        stringBuilder.appendln("}")
+        // When done with all world declaration printing, print closing curly bracket and two newlines
+        stringBuilder.append("}\n\n")
 
+    }
+
+    /**
+     * Build pretty printed constant declaration
+     */
+    override fun visit(node: ConstDecl) {
+        // Begin constant declaration with const-keyword
+        stringBuilder.append("const ${node.ident} = ")
+
+        // Print expression
+        visit(node.expr)
+
+        // When done with printing expression, print semicolon and newline
+        stringBuilder.appendln(";")
+    }
+
+    /**
+     * Build pretty printed state declaration
+     */
+    override fun visit(node: StateDecl) {
+        // Print signature of state. TODO: must take multi-state-declaration into account when implemented
+        stringBuilder.appendln("state ${node.ident} (${node.red}, ${node.green}, ${node.blue}) {")
+
+        // Print body
+        visit(node.body)
+
+        // When done with printing body of state, print closing curly bracket and two newlines
+        stringBuilder.append("}\n\n")
+    }
+
+    /**
+     * Build pretty printed function declaration
+     */
+    override fun visit(node: FuncDecl) {
+        // Print signature until formal arguments
+        stringBuilder.append("function ${node.ident}(")
+
+        for (n in node.args.indices) {
+            // Boolean of is the current iteration at the last index
+            val isLast = node.args.lastIndex == n
+
+            // Print each argument
+            visit(node.args[n])
+
+            // Print separator for given iteration, empty if last, else given separator with space appended
+            stringBuilder.append(if (!isLast) ", " else "")
+        }
+
+        // Print remaining signature with return type
+        stringBuilder.appendln(") ${node.returnType} {")
+
+        // Print body of function
+        visit(node.body)
+
+        // Print closing curly bracket and two newlines
+        stringBuilder.append("}\n\n")
+    }
+
+    /*
+     * Statements
+     */
+    override fun visit(node: AssignStmt) {
+        // If assignment is declaration, put 'let' keyword in front of statement
+        stringBuilder.append("\t${if (node.isDeclaration) "let" else ""} ${node.ident} = ")
+
+        // Print expression
+        visit(node.expr)
+
+        // When done printing expression, print semicolon and newline
+        stringBuilder.appendln(";")
+    }
+
+    override fun visit(node: BecomeStmt) {
+        // Begin become statement with the 'become'-keyword
+        stringBuilder.append("become ")
+
+        // Print state-name
+        visit(node.state)
+
+        // When done printing expression, print semicolon and newline
+        stringBuilder.appendln(";")
+    }
+
+    /*
+     * Expressions
+     */
+    override fun visit(node: BoolLiteral) {
+        stringBuilder.append(node.value)
+    }
+
+    override fun visit(node: IntLiteral) {
+        stringBuilder.append(node.value)
+    }
+
+    override fun visit(node: FloatLiteral) {
+        stringBuilder.append(node.value)
+    }
+
+    override fun visit(node: FuncCallExpr) {
+        // Print function-name postfixed an opening parenthesis
+        stringBuilder.append("${node.ident}(")
+
+        // Print each actual parameter
+        node.args.forEach(::visit)
+
+        // Print closing parenthesis
+        stringBuilder.append(")")
+    }
+
+    override fun visit(node: Identifier) {
+        stringBuilder.append(node.spelling)
+    }
+
+    override fun visit(node: NegationExpr) {
+        stringBuilder.append("-")
+    }
+
+    override fun visit(node: NotExpr) {
+        stringBuilder.append("!")
     }
 }
