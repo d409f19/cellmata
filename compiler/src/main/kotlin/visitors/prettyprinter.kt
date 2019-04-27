@@ -146,6 +146,48 @@ class PrettyPrinter : BaseASTVisitor() {
         stringBuilder.append("${node.getType()} ${node.ident}")
     }
 
+    override fun visit(node: NeighbourhoodDecl) {
+        // Print 'neighbourhood'-keyword, identifier of neighbourhood, opening curly bracket, newline, and tab
+        stringBuilder.append("neighbourhood ${node.ident} {\n\t")
+
+        // Print all coordinates inline
+        for (n in node.coords.indices) {
+
+            // Boolean of is the current iteration at the last index
+            val isLast = node.coords.lastIndex == n
+
+            // Print each coordinate
+            visit(node.coords[n])
+
+            // Print separator for given iteration, empty if last, else given separator with space appended
+            stringBuilder.append(if (!isLast) ", " else "")
+        }
+
+        // Print newline, closing curly bracket, and newline
+        stringBuilder.append("\n}\n")
+    }
+
+    override fun visit(node: Coordinate) {
+        // Print opening parenthesis of given coordinate
+        stringBuilder.append("(")
+
+        // For each axe in given coordinates axes
+        for (n in node.axes.indices) {
+
+            // Boolean of is the current iteration at the last index
+            val isLast = node.axes.lastIndex == n
+
+            // Print each point
+            stringBuilder.append(node.axes[n])
+
+            // Print separator for given iteration, empty if last, else given separator with space appended
+            stringBuilder.append(if (!isLast) ", " else "")
+        }
+
+        // Print closing parenthesis of given coordinate
+        stringBuilder.append(")")
+    }
+
     /*
      * Statements
      */
@@ -188,8 +230,18 @@ class PrettyPrinter : BaseASTVisitor() {
         // Print function-name postfixed an opening parenthesis
         stringBuilder.append("${node.ident}(")
 
-        // Print each actual parameter
-        node.args.forEach(::visit)
+        // Print all actual parameters inline
+        for (n in node.args.indices) {
+
+            // Boolean of is the current iteration at the last index
+            val isLast = node.args.lastIndex == n
+
+            // Print each argument
+            visit(node.args[n])
+
+            // Print separator for given iteration, empty if last, else given separator with space appended
+            stringBuilder.append(if (!isLast) ", " else "")
+        }
 
         // Print closing parenthesis
         stringBuilder.append(")")
