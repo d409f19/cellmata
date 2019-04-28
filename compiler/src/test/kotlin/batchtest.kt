@@ -2,11 +2,11 @@ package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
@@ -50,7 +50,7 @@ class BatchTest {
         @ParameterizedTest
         @MethodSource("getCompilingPrograms")
         fun batchPass(program: String) {
-            compileProgram(program)
+            compileTestProgram(program)
             // If any errors found, print them and throw exception
             if (ErrorLogger.hasErrors()) {
                 ErrorLogger.printAllErrors()
@@ -93,9 +93,7 @@ class BatchTest {
         @ParameterizedTest
         @MethodSource("getNonCompilingPrograms")
         fun batchFail(program: String) {
-            val compileData = compileProgram(program)
-            // Assert that errors are found
-            assertTrue(ErrorLogger.hasErrors() || compileData.parser.numberOfSyntaxErrors > 0)
+            assertThrows<TerminatedCompilationException> { compileTestProgram(program) }
         }
     }
 }

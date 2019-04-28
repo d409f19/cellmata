@@ -32,8 +32,10 @@ class ASTTest {
         @ParameterizedTest
         @MethodSource("worldDeclDimensionData")
         fun worldDeclOneDimensionTest(dimSize: String) {
+
             // Get compiler data of boilerplate program with only world declaration and dimOneSize as dimSize
-            val compilerData = compileProgram(getWorldDeclString(dimSize))
+            val compilerData = compileTestProgramParserASTInsecure(getWorldDeclString(dimSize))
+
             // Casting ast to RootNode
             val rootNode = compilerData.ast as RootNode
 
@@ -43,6 +45,7 @@ class ASTTest {
                 rootNode.world.dimensions[0].size,
                 "Dimension one size was not passed value of: $dimSize"
             )
+
         }
 
         /**
@@ -54,7 +57,13 @@ class ASTTest {
             // Get compiler data of boilerplate program with only world declaration and both dimensions of dimSize,
             // setting twoDimensional to true as this is required by getWorldDeclString
             val compilerData =
-                compileProgram(getWorldDeclString(dimOneSize = dimSize, dimTwoSize = dimSize, twoDimensional = true))
+                compileTestProgramParserASTInsecure(
+                    getWorldDeclString(
+                        dimOneSize = dimSize,
+                        dimTwoSize = dimSize,
+                        twoDimensional = true
+                    )
+                )
             // Casting ast to RootNode
             val rootNode = compilerData.ast as RootNode
 
@@ -86,7 +95,7 @@ class ASTTest {
         fun worldDeclTickrateTest(tickrate: String) {
             // Get compiler data of boilerplate program with only world declaration and tickrate set
             val compilerData =
-                compileProgram(getWorldDeclString(tickrate = tickrate))
+                compileTestProgramParserASTInsecure(getWorldDeclString(tickrate = tickrate))
             // Casting ast to RootNode
             val rootNode = compilerData.ast as RootNode
 
@@ -113,7 +122,7 @@ class ASTTest {
         fun worldDeclCellsizeTest(cellsize: String) {
             // Get compiler data of boilerplate program with only world declaration and cellsize set
             val compilerData =
-                compileProgram(getWorldDeclString(tickrate = cellsize))
+                compileTestProgramParserASTInsecure(getWorldDeclString(tickrate = cellsize))
             // Casting ast to RootNode
             val rootNode = compilerData.ast as RootNode
 
@@ -131,7 +140,7 @@ class ASTTest {
         @Test
         fun worldDeclOneDimensionWorldTypeTest() {
             // Get compiler data of boilerplate program with only world declaration and dimOneType as wrapping
-            val compilerData = compileProgram(getWorldDeclString(dimOneType = "wrap"))
+            val compilerData = compileTestProgramParserASTInsecure(getWorldDeclString(dimOneType = "wrap"))
             // Casting ast to RootNode
             val rootNode = compilerData.ast as RootNode
 
@@ -150,7 +159,12 @@ class ASTTest {
         fun worldDeclTwoDimensionWorldTypeTest() {
             // Get compiler data of boilerplate program with only world declaration and dimTwoType as wrapping,
             // setting twoDimensional to true as this is required by getWorldDeclString
-            val compilerData = compileProgram(getWorldDeclString(dimTwoType = "wrap", twoDimensional = true))
+            val compilerData = compileTestProgramParserASTInsecure(
+                getWorldDeclString(
+                    dimTwoType = "wrap",
+                    twoDimensional = true
+                )
+            )
             // Casting ast to RootNode
             val rootNode = compilerData.ast as RootNode
 
@@ -160,6 +174,7 @@ class ASTTest {
                 rootNode.world.dimensions[1].type,
                 "Dimension one world type was not 'wrap'"
             )
+
         }
     }
 
@@ -183,7 +198,7 @@ class ASTTest {
         @MethodSource("constDeclIntegerData")
         fun constDeclIntegerTest(value: String) {
             // Get AST for boilerplate program with only world declaration and constant declaration
-            val compilerData = compileProgram(getWorldDeclString() + "\n\n" + getConstDeclString(value = value))
+            val compilerData = compileTestProgramInsecure(getWorldDeclString() + "\n\n" + getConstDeclString(value = value))
 
 
             // Cast first body of rootNode to ConstDecl
@@ -206,7 +221,7 @@ class ASTTest {
         @ValueSource(strings = ["true", "false"])
         fun constDeclBooleanTest(value: String) {
             // Get AST for boilerplate program with only world declaration and constant declaration
-            val compilerData = compileProgram(getWorldDeclString() + "\n\n" + getConstDeclString(value = value))
+            val compilerData = compileTestProgramInsecure(getWorldDeclString() + "\n\n" + getConstDeclString(value = value))
 
             // Cast first body of rootNode to ConstDecl
             val const = (compilerData.ast as RootNode).body[0] as ConstDecl
@@ -228,7 +243,7 @@ class ASTTest {
         @ValueSource(strings = ["3.14159", "1000.99", "123456.789"])
         fun constDeclFloatTest(value: String) {
             // Get AST for boilerplate program with only world declaration and constant declaration
-            val compilerData = compileProgram(getWorldDeclString() + "\n\n" + getConstDeclString(value = value))
+            val compilerData = compileTestProgramInsecure(getWorldDeclString() + "\n\n" + getConstDeclString(value = value))
 
             // Cast first body of rootNode to ConstDecl
             val const = (compilerData.ast as RootNode).body[0] as ConstDecl
@@ -254,7 +269,7 @@ class ASTTest {
         @Test
         fun stateDeclTest() {
             // Get AST for boilerplate program
-            val compilerData = compileProgram(getBoilerplateProgramString())
+            val compilerData = compileTestProgramParserASTInsecure(getBoilerplateProgramString())
 
             // Second body of RootNode should be StateDecl
             val state = (compilerData.ast as RootNode).body[1] as StateDecl
@@ -292,7 +307,7 @@ class ASTTest {
         @MethodSource("stateDeclIdentifierData")
         fun stateDeclIdentifierTest(identifier: String) {
             // Get AST for boilerplate program
-            val compilerData = compileProgram(getWorldDeclString() + getStateDeclString(ident = identifier))
+            val compilerData = compileTestProgramParserASTInsecure(getWorldDeclString() + getStateDeclString(ident = identifier))
 
             // First body of RootNode should be StateDecl
             val state = (compilerData.ast as RootNode).body[0] as StateDecl
