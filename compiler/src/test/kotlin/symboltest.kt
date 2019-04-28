@@ -65,7 +65,7 @@ class SymbolTest {
 
     /**
      * Returns the list of reserved words for testing data. Note that this cannot be passed to test by:
-     * @ValueSource("strings = RESERVED_WORDS") as JUnit5 complains that the source is not compileSource-time static
+     * '@ValueSource("strings = RESERVED_WORDS")' as JUnit5 complains that the source is not compile-time static
      */
     fun parserReservedSymbolsData(): List<String> {
         return RESERVED_WORDS
