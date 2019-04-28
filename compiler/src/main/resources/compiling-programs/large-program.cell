@@ -40,6 +40,16 @@ state alive4 (0, 0, 0) {
 
 state alive5 (0, 0, 0) {
     let a = -foo(42);
+    let x = 0;
+    for (x = 5; x >= a; x = x + 1) {
+        if (x != 0) {
+            x = -5;
+            break; 
+        } else {
+            x = 42 + 3 / 176 * 22;
+            continue;
+        }
+    }
     become alive6;
 }
 
