@@ -11,6 +11,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.opentest4j.AssertionFailedError
 import java.io.File
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.fail as Fail
@@ -97,7 +98,13 @@ class BatchTest {
         @ParameterizedTest
         @MethodSource("getNonCompilingPrograms")
         fun batchFail(filename: String, program: String) {
-            assertThrows<TerminatedCompilationException> {
+            try {
+                assertThrows<TerminatedCompilationException> {
+                    compileTestProgram(program)
+                }
+            } catch (e: AssertionFailedError) {
+                // If compilation does not throw a TerminatedCompilationException,
+                // compile again and assert for errors in either ErrorLogger or parser
                 val compileData = compileTestProgram(program)
                 // Assert that errors are found
                 assertTrue(
