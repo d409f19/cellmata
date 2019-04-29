@@ -44,10 +44,17 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
         Timer().scheduleAtFixedRate(object: TimerTask() {
             override fun run() {
 
-                // Iterate all cells
+                // Iterate over all cells, find their new state, and draw the new state
                 for ((x, row) in grid.withIndex()) {
                     for ((y, state) in row.withIndex()) {
-                        g.color = Color(state.red, state.green, state.blue)
+
+                        // Find new state by executing the state's logic. If the logic does not return a StateDecl
+                        // then use the old state
+                        val newState = (visit(state.body).takeIf { it is StateDecl } ?: state) as StateDecl
+                        grid[x][y] = newState
+
+                        // Draw
+                        g.color = Color(newState.red, newState.green, newState.blue)
                         g.fillRect(x * cellSize, y * cellSize, cellSize, cellSize)
                     }
                 }
@@ -82,7 +89,22 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
     }
 
     override fun visit(node: Expr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (node) {
+            is BinaryExpr -> visit(node)
+            is NegationExpr -> visit(node)
+            is NotExpr -> visit(node)
+            is ArrayLookupExpr -> visit(node)
+            is ArrayBodyExpr -> visit(node)
+            is Identifier -> visit(node)
+            is FuncCallExpr -> visit(node)
+            is StateIndexExpr -> visit(node)
+            is IntLiteral -> visit(node)
+            is FloatLiteral -> visit(node)
+            is BoolLiteral -> visit(node)
+            is IntToFloatConversion -> visit(node)
+            is StateArrayToLocalNeighbourhoodConversion -> visit(node)
+            is ErrorExpr -> AssertionError("ErrorExpr (${node.ctx.lineNumber}, ${node.ctx.charPositionInLine}) made it to the interpreter.")
+        }
     }
 
     override fun visit(node: BinaryExpr): Any {
@@ -166,7 +188,7 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
     }
 
     override fun visit(node: Identifier): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return symbolTableSession.getSymbol(node.spelling) ?: AssertionError("\"${node.spelling}\" at ${node.ctx} is not declared but made it to interpreter.")
     }
 
     override fun visit(node: ModuloExpr): Any {
@@ -190,7 +212,16 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
     }
 
     override fun visit(node: Stmt): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when(node) {
+            is AssignStmt -> visit(node)
+            is IfStmt -> visit(node)
+            is BecomeStmt -> visit(node)
+            is ReturnStmt -> visit(node)
+            is ForLoopStmt -> visit(node)
+            is BreakStmt -> visit(node)
+            is ContinueStmt -> visit(node)
+            is ErrorStmt -> AssertionError("ErrorStmt from ${node.ctx} made it to the interpreter.")
+        }
     }
 
     override fun visit(node: AssignStmt): Any {
@@ -202,7 +233,7 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
     }
 
     override fun visit(node: BecomeStmt): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return visit(node.state)
     }
 
     override fun visit(node: ReturnStmt): Any {
@@ -246,7 +277,15 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
     }
 
     override fun visit(node: CodeBlock): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // Execute each statement in order, until one returns something else than Unit. Return that value.
+        for (statement in node.body) {
+            val value = visit(statement)
+            if (value != Unit) {
+                return value
+            }
+        }
+
+        // No return/become value found, so this block returns Unit
+        return Unit
     }
 }
-

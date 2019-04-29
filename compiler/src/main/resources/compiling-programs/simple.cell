@@ -5,9 +5,9 @@ world {
 }
 
 state Alive (0, 0, 0) {
-
+    become Dead;
 }
 
 state Dead (255, 255, 255) {
-
+    become Alive;
 }
