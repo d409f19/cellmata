@@ -1,0 +1,13 @@
+world {
+    size = 50 [wrap], 50 [wrap]
+    tickrate = 15
+    cellsize = 15
+}
+
+state Alive (0, 0, 0) {
+
+}
+
+state Dead (255, 255, 255) {
+
+}

@@ -3,8 +3,10 @@ package dk.aau.cs.d409f19.cellumata
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.AST
+import dk.aau.cs.d409f19.cellumata.ast.RootNode
 import dk.aau.cs.d409f19.cellumata.ast.Table
 import dk.aau.cs.d409f19.cellumata.ast.reduce
+import dk.aau.cs.d409f19.cellumata.interpreter.Interpreter
 import dk.aau.cs.d409f19.cellumata.visitors.ASTGrapher
 import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
@@ -16,9 +18,9 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.io.File
 
-fun compile(path: Path) {
+fun compile(settings: CompilerSettings) {
     try {
-        val inputStream = CharStreams.fromPath(path)
+        val inputStream = CharStreams.fromPath(settings.sourcePath)
         val lexer = CellmataLexer(inputStream)
         val tokenStream = CommonTokenStream(lexer)
         val parser = CellmataParser(tokenStream)
@@ -43,12 +45,15 @@ fun compile(path: Path) {
         TypeChecker(symbolTable).visit(ast)
         ErrorLogger.assertNoErrors()
 
-        File("ast.gs").outputStream().use { out -> ASTGrapher(out).visit(ast) }
+        if (settings.interpret) {
+            Interpreter(ast as RootNode, symbolTable).start()
+        }
+
     } catch (e: TerminatedCompilationException) {
 
         // Compilation failed due to errors in program code
         System.err.println("Compilation failed: ${e.message}")
-        ErrorLogger.printAllErrors(path)
+        ErrorLogger.printAllErrors(settings.sourcePath)
 
     } catch (e: Exception) {
 
@@ -56,7 +61,7 @@ fun compile(path: Path) {
         // Printing stack trace and errors for debugging reasons
         e.printStackTrace()
         System.err.println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
-        ErrorLogger.printAllErrors(path)
+        ErrorLogger.printAllErrors(settings.sourcePath)
     }
 }
 
@@ -78,19 +83,33 @@ fun main(args: Array<String>) {
 
         } else {
 
+            // Settings
+            var interpret = false
+
             // Read other arguments
             for (i in 1 until args.size) {
                 val arg = args[i]
                 when (arg) {
                     // Current we have no options
+                    "--interpret" -> interpret = true
                     else -> { println("'$arg' is not a valid option."); return }
                 }
             }
 
-            compile(path)
+            val settings = CompilerSettings(
+                path,
+                interpret
+            )
+
+            compile(settings)
         }
     }
 }
+
+data class CompilerSettings(
+    val sourcePath: Path,
+    val interpret: Boolean = false
+)
 
 /**
  * Encapsulates all data from the compiler, which may be used for testing

@@ -240,8 +240,8 @@ private fun reduceDecl(node: ParseTree): Decl {
 /**
  * Parses an Integer_literalContext to a Short between 0 and 256 from a string. Used for state-declaration's colors
  */
-fun parseColor(intCtx: CellmataParser.Integer_literalContext): Short {
-    val value = intCtx.text.toShortOrNull()
+fun parseColor(intCtx: CellmataParser.Integer_literalContext): Int {
+    val value = intCtx.text.toIntOrNull()
     if (value == null || value < 0 || 255 < value) {
         ErrorLogger.registerError(
             ErrorFromContext(SourceContext(intCtx), "'${intCtx.text}' is not a valid colour. It must be an integer between 0 and 255.")

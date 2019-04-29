@@ -302,9 +302,9 @@ class ConstDecl(
 class StateDecl(
     ctx: SourceContext,
     var ident: String,
-    var red: Short,
-    var blue: Short,
-    var green: Short,
+    var red: Int,
+    var blue: Int,
+    var green: Int,
     val body: CodeBlock
 ) : Decl(ctx)
 
