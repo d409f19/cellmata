@@ -313,18 +313,16 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         }
 
         // ToDo implicit conversion, declaredType == float, and valuesType == integer -> type = float
-        node.setType(when {
-            node.body.values.isNotEmpty() -> {
+        node.setType(if (node.body.values.isNotEmpty()) {
                 if (node.declaredType is ArrayType && !compareType(node.declaredType.subtype, valuesType)) {
                     ErrorLogger.registerError(TypeError(node.ctx, "Cannot determine type of array since initialised values does not match the declared type."))
                     node.setType(null)
                     return
                 }
                 node.declaredType
-            }
-            node.body.values.isEmpty() -> node.declaredType
-            else -> throw AssertionError("Cannot determine type of array. This case should never be hit!")
-        })
+            } else {
+                node.declaredType
+            })
 
         val sizes = searchSize(node.body)
 
