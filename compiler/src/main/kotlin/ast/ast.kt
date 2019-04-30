@@ -402,9 +402,9 @@ class IfStmt(
 
 class ForLoopStmt(
     ctx: SourceContext,
-    val initPart: AssignStmt,
+    val initPart: AssignStmt?,
     val condition: Expr,
-    val postIterationPart: AssignStmt,
+    val postIterationPart: AssignStmt?,
     val body: CodeBlock
 ) : Stmt(ctx)
 
