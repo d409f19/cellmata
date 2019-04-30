@@ -8,12 +8,11 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f19(int a) int {
+function f3(int a) int {
     for (let x = a; x < a; x = x+1) {
         for (let y = a; y < a; x = y+1) {
             return y + x;
         }
     }
-
     return a;
 }

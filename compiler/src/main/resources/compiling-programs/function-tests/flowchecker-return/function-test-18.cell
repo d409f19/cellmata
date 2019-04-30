@@ -1,4 +1,4 @@
-//This file checks that the typechecker correctly identifies the returntype int to int
+//should be deleted
 
 world {
     size = 100 [wrap], 200 [wrap]
@@ -10,6 +10,10 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f15(int a) int {
+function f17(int a, int b) bool {
+    let c = a < b;
+    let d = 2;
+    let e = 3;
+    let f = d < e;
     return true;
 }

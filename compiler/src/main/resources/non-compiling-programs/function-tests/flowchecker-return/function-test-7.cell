@@ -10,13 +10,9 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f9(int a) int {
-    if (a == 1) {
-        }
-    elif (a == 2) {
-    }
-    else {
-        return a+1;
-    }
-    return a;
+function f12(int a) int {
+    if (a == 1) {return 1;}
+    elif (a == 2) {return 2;}
+    elif (a == 3) {}
+    elif (a == 4) {return 2;}
 }

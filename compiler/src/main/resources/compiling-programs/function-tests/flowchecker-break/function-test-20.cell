@@ -8,15 +8,16 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f1(int a) int {
+function f4(int a) int {
     for (let x = a; x < a; x = x+1) {
-        if (b) {
-            break;
+        if (true) {
             return a;
-            let x = 7;
+        } elif (true) {
+            return a;
         } else {
             break;
-            return a;
         }
+        let b = a; // unreachable
     }
+    return a;
 }

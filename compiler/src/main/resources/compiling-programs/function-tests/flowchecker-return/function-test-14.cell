@@ -10,7 +10,7 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f14(int a) int {
+function f13(int a) int {
     if (a == 1) {
         return a;
     } else {return a;}

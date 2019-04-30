@@ -8,13 +8,9 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f1(int a) int {
+function f4(int a) int {
     for (let x = a; x < a; x = x+1) {
-        if (b) {
-            break;
-            return a;
-            let x = 7;
-        } else {
+        if (true) {
             break;
             return a;
         }
