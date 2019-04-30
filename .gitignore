@@ -5,4 +5,5 @@ build/
 gradle-app.settings
 .gradletaskcache
 /compiler/out/
+/compiler/runtime/out/
 /compiler/src/main/gen/
