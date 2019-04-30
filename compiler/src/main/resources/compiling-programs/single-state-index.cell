@@ -4,7 +4,7 @@ world {
     cellsize = 5
 }
 
-state ident 5 (0, 0, 0) {
+state ident (0, 0, 0) {
     // Assumes that the semantics of a hashtag is also the id of a given state in a non-multi-state state, which would be 0
     if (# == 2) {
         become ident;
