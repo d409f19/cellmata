@@ -18,6 +18,9 @@ import org.junit.jupiter.api.Assertions.fail as Fail
 
 private const val passingBatchDir = "src/main/resources/compiling-programs/"
 private const val failingBatchDir = "src/main/resources/non-compiling-programs/"
+private const val failingBatchMissingFeaturesDir = "src/main/resources/non-compiling-feature-programs/"
+
+private val failingDirs = listOf(failingBatchDir, failingBatchMissingFeaturesDir)
 
 class BatchTest {
 
@@ -81,11 +84,15 @@ class BatchTest {
          */
         private fun getNonCompilingPrograms(): Stream<Arguments> {
             val list = mutableListOf<Arguments>()
-            // Walk top-down
-            File(failingBatchDir).walk().forEach {
-                // If it is a file and has extension 'cell'
-                if (it.isFile && it.extension == "cell") {
-                    list.add(Arguments.of(it.name, it.readText()))
+
+            // For each dir of failing programs
+            failingDirs.forEach {
+                // Walk top-down
+                File(it).walk().forEach {
+                    // If it is a file and has extension 'cell'
+                    if (it.isFile && it.extension == "cell") {
+                        list.add(Arguments.of(it.name, it.readText()))
+                    }
                 }
             }
             return list.stream()
