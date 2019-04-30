@@ -6,9 +6,9 @@ world {
 
 state ident (0, 0, 0) {
     let even = 0;
-    let arr = {2, 1, 2, 3, 4};
+    let arr = {-1, 1, 2, 3, 4};
 
-    for (arr[2] = 5; x >= 0; x = x - 1) {
+    for (arr[2] = 5; arr[2] >= 0; arr[2] = arr[2] - 1) {
         // If current number is even, increment counter
         if (x % 2 == 0) {
             even = even + 1;
