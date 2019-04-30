@@ -6,7 +6,8 @@ world {
 
 state ident (0, 0, 0) {
     let even = 0;
-    let arr = [5] int;
+    //let arr = [5] int; //TODO: Note that this fails due to possible dependency on #96. Workaround below:
+    let arr = {1, 2, 3, 4, 5};
 
     for (arr[2] = arr[3]; x >= 0; x = x - 1) {
         // If current number is even, increment counter
