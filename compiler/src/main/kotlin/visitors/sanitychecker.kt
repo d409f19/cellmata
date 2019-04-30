@@ -66,6 +66,13 @@ class SanityChecker : BaseASTVisitor() {
             ErrorLogger.registerError(SanityError(node.ctx, "Return statements cannot be in states"))
     }
 
+    // Throws an error if a # is found outside a state
+    override fun visit(node: StateIndexExpr) {
+        super.visit(node)
+        if (!inAState)
+            ErrorLogger.registerError(SanityError(node.ctx, "# is only allowed in states"))
+    }
+
     var inALoop = false
 
     override fun visit(node: ForLoopStmt) {
