@@ -5,6 +5,7 @@ import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.AST
 import dk.aau.cs.d409f19.cellumata.ast.Table
 import dk.aau.cs.d409f19.cellumata.ast.reduce
+import dk.aau.cs.d409f19.cellumata.visitors.PrettyPrinter
 import dk.aau.cs.d409f19.cellumata.visitors.ASTGrapher
 import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
@@ -43,6 +44,11 @@ fun compile(path: Path) {
         // Type checking
         TypeChecker(symbolTable).visit(ast)
         ErrorLogger.assertNoErrors()
+
+        // Build pretty-printed program
+        val prettyPrinter = PrettyPrinter()
+        prettyPrinter.visit(ast)
+        prettyPrinter.print()
 
         File("ast.gs").outputStream().use { out -> ASTGrapher(out).visit(ast) }
     } catch (e: TerminatedCompilationException) {
