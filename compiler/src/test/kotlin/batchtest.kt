@@ -99,24 +99,35 @@ class BatchTest {
         }
 
         /**
-         * Batch-compiles all programs under the non-compiling dir and fails on error-free compilation
+         * Batch-compiles all programs under the non-compiling dirs and fails on error-free compilation.
+         * Also checks that ErrorLogger handles errors correctly during assertNoErrors-calls under compilation.
          * TODO: differentiate between different failing compilations
          */
         @ParameterizedTest
         @MethodSource("getNonCompilingPrograms")
         fun batchFail(filename: String, program: String) {
             try {
-                assertThrows<TerminatedCompilationException> {
+                assertThrows<TerminatedCompilationException>(
+                    "Non-compiling program did not throw a TerminatedCompilationException! Filename: $filename"
+                ) {
                     compileTestProgram(program)
                 }
             } catch (e: AssertionFailedError) {
                 // If compilation does not throw a TerminatedCompilationException,
-                // compile again and assert for errors in either ErrorLogger or parser
+                // compile again and assert for errors in parser
                 val compileData = compileTestProgram(program)
-                // Assert that errors are found
+
+                // Assert that no errors are contained in ErrorLogger, as this would indicate a fault with asserting for no errors
                 assertTrue(
-                    ErrorLogger.hasErrors() || compileData.parser.numberOfSyntaxErrors > 0,
-                    "Non-compiling program compiled! Filename: $filename"
+                    !ErrorLogger.hasErrors(),
+                    "Non-compiling program failed spectacularly! Errorlogger initially didn't throw an " +
+                            "TerminatedCompilationException, yet the ErrorLogger contains errors!"
+                )
+
+                // Assert that parsing errors are found
+                assertTrue(
+                    compileData.parser.numberOfSyntaxErrors > 0,
+                    "Non-compiling program had neither any TerminatedCompilationException nor parsing-errors! Filename: $filename"
                 )
             }
         }
