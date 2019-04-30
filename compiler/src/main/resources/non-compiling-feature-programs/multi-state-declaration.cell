@@ -4,6 +4,6 @@ world {
     cellsize = 5
 }
 
-state ident 5 (0, 0, 0) {
+state ident [5] (0, 0, 0) {
     become ident;
 }
