@@ -2,6 +2,7 @@ package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -14,7 +15,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.opentest4j.AssertionFailedError
 import java.io.File
 import java.util.stream.Stream
-import org.junit.jupiter.api.Assertions.fail as Fail
 
 private const val passingBatchDir = "src/main/resources/compiling-programs/"
 private const val failingBatchDir = "src/main/resources/non-compiling-programs/"
@@ -118,8 +118,8 @@ class BatchTest {
                 val compileData = compileTestProgram(program)
 
                 // Assert that no errors are contained in ErrorLogger, as this would indicate a fault with asserting for no errors
-                assertTrue(
-                    !ErrorLogger.hasErrors(),
+                assertFalse(
+                    ErrorLogger.hasErrors(),
                     "Non-compiling program failed spectacularly! Errorlogger initially didn't throw an " +
                             "TerminatedCompilationException, yet the ErrorLogger contains errors!"
                 )
