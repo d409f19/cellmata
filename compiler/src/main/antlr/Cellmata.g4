@@ -72,10 +72,10 @@ type_ident
 
 // Array
 array_decl : array_prefix type_ident ;
-array_value : array_prefix type_ident array_body ;
-array_body : BLOCK_START (expr (LIST_SEP expr)*)? BLOCK_END ;
-array_prefix : SQ_BRACKET_START integer_literal? SQ_BRACKET_END ;
-array_lookup: var_ident SQ_BRACKET_START expr SQ_BRACKET_END ;
+array_value_sized : array_decl array_value_literal? ;
+array_value_literal : BLOCK_START (expr (LIST_SEP expr)*)? BLOCK_END ;
+array_prefix : SQ_BRACKET_START index=integer_literal? SQ_BRACKET_END ;
+array_lookup: array=expr SQ_BRACKET_START index=expr SQ_BRACKET_END ;
 
 // Literals
 literal
@@ -98,7 +98,8 @@ expr : '#' # stateIndexExpr
     | ident=var_ident # varExpr
     | value=literal # literalExpr
     | PAREN_START value=expr PAREN_END # parenExpr
-    | value=array_value # arrayValueExpr
+    | value=array_value_sized # arraySizedValueExpr
+    | value=array_value_literal # arrayLiteralExpr
     | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
     | OP_NOT value=expr # notExpr
     | OP_MINUS value=expr # negationExpr
