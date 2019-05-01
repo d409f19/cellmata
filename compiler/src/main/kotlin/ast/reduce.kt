@@ -278,8 +278,8 @@ fun reduce(node: ParserRuleContext): AST {
                 } else {
                     listOf(parseDimension(node.world_dcl().size.width))
                 },
-                cellSize = if (node.world_dcl().cellsize != null) node.world_dcl().cellsize.value.text.toIntOrNull() else DEFAULT_CELLSIZE,
-                tickrate = if (node.world_dcl().tickrate != null) node.world_dcl().tickrate.value?.text?.toIntOrNull() else DEFAULT_TICKRATE
+                cellSize = if (node.world_dcl().world_options().cellsize != null) node.world_dcl().world_options().cellsize.value.text.toIntOrNull() else DEFAULT_CELLSIZE,
+                tickrate = if (node.world_dcl().world_options().tickrate != null) node.world_dcl().world_options().tickrate.value?.text?.toIntOrNull() else DEFAULT_TICKRATE
             ),
             body = node.body().children?.map(::reduceDecl) ?: listOf()
         )
