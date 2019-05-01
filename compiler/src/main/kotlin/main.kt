@@ -15,6 +15,8 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 data class CompilerSettings(
+    val verbose: Boolean = false,
+    val veryVerbose: Boolean = false,
     val doPrettyPrinting: Boolean = false,
     val doGraphing: Boolean = false
 )
@@ -37,6 +39,8 @@ fun main(args: Array<String>) {
 
         } else {
 
+            var verbose = false
+            var veryVerbose = false
             var doPrettyPrinting = false
             var doGraph = false
 
@@ -44,6 +48,11 @@ fun main(args: Array<String>) {
             for (i in 1 until args.size) {
                 val arg = args[i]
                 when (arg) {
+                    "-v" -> verbose = true
+                    "-vv" -> {
+                        verbose = true
+                        veryVerbose = true
+                    }
                     "--pretty" -> doPrettyPrinting = true
                     "--graph" -> doGraph = true
                     else -> {
@@ -53,6 +62,8 @@ fun main(args: Array<String>) {
             }
 
             val settings = CompilerSettings(
+                verbose,
+                veryVerbose,
                 doPrettyPrinting,
                 doGraph
             )
@@ -109,18 +120,22 @@ fun compile(source: CharStream, settings: CompilerSettings): CompilerData {
 fun prodCompilation(sourcePath: Path, settings: CompilerSettings) {
     try {
         compile(CharStreams.fromPath(sourcePath), settings)
+        ErrorLogger.printAllWarnings(if (settings.veryVerbose) Files.lines(sourcePath) else null)
+
     } catch (e: TerminatedCompilationException) {
 
         // Compilation failed due to errors in program code
         System.err.println("Compilation failed: ${e.message}")
-        ErrorLogger.printAllErrors(sourcePath)
+        ErrorLogger.printAllWarnings(if (settings.veryVerbose) Files.lines(sourcePath) else null)
+        ErrorLogger.printAllErrors(if (settings.verbose) Files.lines(sourcePath) else null)
 
     } catch (e: Exception) {
 
         // Printing stack trace and errors for debugging purposes
         e.printStackTrace()
         System.err.println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
-        ErrorLogger.printAllErrors(sourcePath)
+        ErrorLogger.printAllWarnings(if (settings.veryVerbose) Files.lines(sourcePath) else null)
+        ErrorLogger.printAllErrors(if (settings.verbose) Files.lines(sourcePath) else null)
     }
 }
 
