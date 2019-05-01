@@ -201,9 +201,18 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: ArrayBodyExpr) {
-        printLabel(node, "ArrayBodyExpr")
-        node.values.map { printNode(node, it) }
+    override fun visit(node: SizedArrayExpr) {
+        printLabel(node, "SizedArrayExpr\\ntype=${node.declaredType}\\nsize=${node.declaredSize.map { it.toString() }.joinToString(", ")}")
+        if (node.body != null) {
+            printNode(node, node.body)
+            visit(node.body)
+        }
+        super.visit(node)
+    }
+
+    override fun visit(node: ArrayLiteralExpr) {
+        printLabel(node, "ArrayLiteralExpr\\nsize=${node.size}")
+        node.values.forEach { printNode(node, it); visit(it) }
         super.visit(node)
     }
 
