@@ -5,67 +5,19 @@ import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.AST
 import dk.aau.cs.d409f19.cellumata.ast.Table
 import dk.aau.cs.d409f19.cellumata.ast.reduce
-import dk.aau.cs.d409f19.cellumata.visitors.PrettyPrinter
-import dk.aau.cs.d409f19.cellumata.visitors.ASTGrapher
-import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
-import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
-import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
+import dk.aau.cs.d409f19.cellumata.visitors.*
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.io.File
 
-fun compile(path: Path) {
-    try {
-        val inputStream = CharStreams.fromPath(path)
-        val lexer = CellmataLexer(inputStream)
-        val tokenStream = CommonTokenStream(lexer)
-        val parser = CellmataParser(tokenStream)
-
-        // Build AST
-        val startContext = parser.start()
-        val ast = reduce(startContext)
-        // Asserts that no errors has been found during the last phase
-        ErrorLogger.assertNoErrors()
-
-        // Sanity checker
-        val sanityChecker = SanityChecker()
-        sanityChecker.visit(ast)
-
-        // Symbol table and scope
-        val scopeChecker = ScopeCheckVisitor()
-        scopeChecker.visit(ast)
-        val symbolTable = scopeChecker.getSymbolTable()
-        ErrorLogger.assertNoErrors()
-
-        // Type checking
-        TypeChecker(symbolTable).visit(ast)
-        ErrorLogger.assertNoErrors()
-
-        // Build pretty-printed program
-        val prettyPrinter = PrettyPrinter()
-        prettyPrinter.visit(ast)
-        prettyPrinter.print()
-
-        File("ast.gs").outputStream().use { out -> ASTGrapher(out).visit(ast) }
-    } catch (e: TerminatedCompilationException) {
-
-        // Compilation failed due to errors in program code
-        System.err.println("Compilation failed: ${e.message}")
-        ErrorLogger.printAllErrors(path)
-
-    } catch (e: Exception) {
-
-        // Critical error happened, maybe something is be wrong in the compiler
-        // Printing stack trace and errors for debugging reasons
-        e.printStackTrace()
-        System.err.println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
-        ErrorLogger.printAllErrors(path)
-    }
-}
+data class CompilerSettings(
+    val doPrettyPrinting: Boolean = false,
+    val doGraphing: Boolean = false
+)
 
 fun main(args: Array<String>) {
 
@@ -85,43 +37,36 @@ fun main(args: Array<String>) {
 
         } else {
 
+            var doPrettyPrinting = false
+            var doGraph = false
+
             // Read other arguments
             for (i in 1 until args.size) {
                 val arg = args[i]
                 when (arg) {
-                    // Current we have no options
+                    "--pretty" -> doPrettyPrinting = true
+                    "--graph" -> doGraph = true
                     else -> {
                         println("'$arg' is not a valid option."); return
                     }
                 }
             }
 
-            prodCompilation(path)
+            val settings = CompilerSettings(
+                doPrettyPrinting,
+                doGraph
+            )
+
+            prodCompilation(path, settings)
         }
     }
 }
 
 /**
- * Compile program from given source at path
- */
-fun compileSource(source: Path): CompilerData {
-    // Actually compile program and return compiler-data
-    return compile(CharStreams.fromPath(source))
-}
-
-/**
- * Compile program from given source string
- */
-fun compileSource(source: String): CompilerData {
-    // Actually compile program and return compiler-data
-    return compile(CharStreams.fromString(source))
-}
-
-/**
  * Compile program from given CharStream as input
  */
-fun compile(inputStream: CharStream): CompilerData {
-    val lexer = CellmataLexer(inputStream)
+fun compile(source: CharStream, settings: CompilerSettings): CompilerData {
+    val lexer = CellmataLexer(source)
     val tokenStream = CommonTokenStream(lexer)
     val parser = CellmataParser(tokenStream)
 
@@ -145,27 +90,37 @@ fun compile(inputStream: CharStream): CompilerData {
     TypeChecker(symbolTable).visit(ast)
     ErrorLogger.assertNoErrors()
 
+    // Pretty printing
+    if (settings.doPrettyPrinting) {
+        PrettyPrinter().print(ast)
+    }
+
+    // Graph printing TODO add output file to settings
+    if (settings.doGraphing) {
+        File("ast.gs").outputStream().use { out -> ASTGrapher(out).visit(ast) }
+    }
+
     return CompilerData(parser, ast, symbolTable, ErrorLogger.hasErrors())
 }
 
 /**
  * Production compile function, outputs useful information to user on errors in source and possibly the compiler itself
  */
-fun prodCompilation(path: Path) {
+fun prodCompilation(sourcePath: Path, settings: CompilerSettings) {
     try {
-        compileSource(path)
+        compile(CharStreams.fromPath(sourcePath), settings)
     } catch (e: TerminatedCompilationException) {
 
         // Compilation failed due to errors in program code
         System.err.println("Compilation failed: ${e.message}")
-        ErrorLogger.printAllErrors(path)
+        ErrorLogger.printAllErrors(sourcePath)
 
     } catch (e: Exception) {
 
         // Printing stack trace and errors for debugging purposes
         e.printStackTrace()
         System.err.println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
-        ErrorLogger.printAllErrors(path)
+        ErrorLogger.printAllErrors(sourcePath)
     }
 }
 
