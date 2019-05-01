@@ -7,12 +7,16 @@ const_decl : STMT_CONST const_ident ASSIGN expr END ;
 const_ident : IDENT ;
 
 // World
-world_dcl : STMT_WORLD BLOCK_START size=world_size tickrate=world_tickrate? cellsize=world_cellsize? BLOCK_END ;
+world_dcl : STMT_WORLD BLOCK_START size=world_size world_options BLOCK_END ;
 world_size : WORLD_SIZE ASSIGN width=world_size_dim (LIST_SEP height=world_size_dim)?;
 world_size_dim : size=integer_literal SQ_BRACKET_START type=world_size_dim_finite SQ_BRACKET_END ;
 world_size_dim_finite
     : WORLD_WRAP # dimFiniteWrapping
     | WORLD_EDGE ASSIGN state=IDENT # dimFiniteEdge
+    ;
+world_options
+    : tickrate=world_tickrate? cellsize=world_cellsize?
+    | cellsize=world_cellsize? tickrate=world_tickrate?
     ;
 world_tickrate : WORLD_TICKRATE ASSIGN value=integer_literal ;
 world_cellsize : WORLD_CELLSIZE ASSIGN value=integer_literal ;
