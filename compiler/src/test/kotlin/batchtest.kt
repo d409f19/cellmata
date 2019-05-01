@@ -3,17 +3,21 @@ package dk.aau.cs.d409f19
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.opentest4j.AssertionFailedError
 import java.io.File
 import java.util.stream.Stream
-import org.junit.jupiter.api.Assertions.fail as Fail
 
 private const val passingBatchDir = "src/main/resources/compiling-programs/"
 private const val failingBatchDir = "src/main/resources/non-compiling-programs/"
+private const val failingBatchMissingFeaturesDir = "src/main/resources/non-compiling-feature-programs/"
+
+private val failingDirs = listOf(failingBatchDir, failingBatchMissingFeaturesDir)
 
 class BatchTest {
 
@@ -77,29 +81,50 @@ class BatchTest {
          */
         private fun getNonCompilingPrograms(): Stream<Arguments> {
             val list = mutableListOf<Arguments>()
-            // Walk top-down
-            File(failingBatchDir).walk().forEach {
-                // If it is a file and has extension 'cell'
-                if (it.isFile && it.extension == "cell") {
-                    list.add(Arguments.of(it.name, it.readText()))
+
+            // For each dir of failing programs
+            failingDirs.forEach {
+                // Walk top-down
+                File(it).walk().forEach {
+                    // If it is a file and has extension 'cell'
+                    if (it.isFile && it.extension == "cell") {
+                        list.add(Arguments.of(it.name, it.readText()))
+                    }
                 }
             }
             return list.stream()
         }
 
         /**
-         * Batch-compiles all programs under the non-compiling dir and fails on error-free compilation
+         * Batch-compiles all programs under the non-compiling dirs and fails on error-free compilation.
+         * Also checks that ErrorLogger handles errors correctly during assertNoErrors-calls under compilation.
          * TODO: differentiate between different failing compilations
          */
         @ParameterizedTest
         @MethodSource("getNonCompilingPrograms")
         fun batchFail(filename: String, program: String) {
-            assertThrows<TerminatedCompilationException> {
+            try {
+                assertThrows<TerminatedCompilationException>(
+                    "Non-compiling program did not throw a TerminatedCompilationException! Filename: $filename"
+                ) {
+                    compileTestProgram(program)
+                }
+            } catch (e: AssertionFailedError) {
+                // If compilation does not throw a TerminatedCompilationException,
+                // compile again and assert for errors in parser
                 val compileData = compileTestProgram(program)
-                // Assert that errors are found
+
+                // Assert that no errors are contained in ErrorLogger, as this would indicate a fault with asserting for no errors
+                assertFalse(
+                    ErrorLogger.hasErrors(),
+                    "Non-compiling program failed spectacularly! Errorlogger initially didn't throw an " +
+                            "TerminatedCompilationException, yet the ErrorLogger contains errors!"
+                )
+
+                // Assert that parsing errors are found
                 assertTrue(
-                    ErrorLogger.hasErrors() || compileData.parser.numberOfSyntaxErrors > 0,
-                    "Non-compiling program compiled! Filename: $filename"
+                    compileData.parser.numberOfSyntaxErrors > 0,
+                    "Non-compiling program had neither any TerminatedCompilationException nor parsing-errors! Filename: $filename"
                 )
             }
         }

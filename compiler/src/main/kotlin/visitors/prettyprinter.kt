@@ -266,8 +266,8 @@ class PrettyPrinter : BaseASTVisitor() {
         // Print 'for (' keyword
         stringBuilder.append("\tfor (")
 
-        // Print initialisation part, note omission of semicolon, as already exists due to printing of assign statement
-        visit(node.initPart)
+        // Print initialisation part if not null, note omission of semicolon, as already exists due to printing of assign statement
+        node.initPart?.let { visit(it) }
 
         // Print condition
         visit(node.condition)
@@ -275,8 +275,8 @@ class PrettyPrinter : BaseASTVisitor() {
         // Print delimiting semicolon
         stringBuilder.append(";")
 
-        // Print post iteration part
-        visit(node.postIterationPart)
+        // Print post iteration part if not null
+        node.postIterationPart?.let { visit(it) }
 
         // End for-loop
         stringBuilder.appendln(") {")
