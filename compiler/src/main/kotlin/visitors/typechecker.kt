@@ -299,6 +299,8 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         /**
          * Compares two types, handles nested checking for arrays.
          * Null is equal to any other type.
+         *
+         * @return Returns true if the type are the same, accounting for wildcard matching
          */
         fun compareType(type1: Type?, type2: Type?): Boolean {
             if (type1 == null || type2 == null) {
