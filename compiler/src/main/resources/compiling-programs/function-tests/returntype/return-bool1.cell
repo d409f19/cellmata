@@ -8,6 +8,6 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f7(bool a) bool {
-    return a;
+function f(int a) bool {
+    return a == a;
 }

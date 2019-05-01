@@ -12,11 +12,11 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f1(int a) int {
+function f(int a) int {
     for (let x = a; x < a; x = x+1) {
         for (let y = a; y < a; x = y+1) {
             break;
-            let b = a; // unreachable
+            let b = a; // unreachable, warning should be produced in line 18
         }
         return a;
     }
