@@ -417,10 +417,35 @@ class PrettyPrinter : BaseASTVisitor() {
         stringBuilder.append("]")
     }
 
+
+    override fun visit(node: SizedArrayExpr) {
+        // Print declared sizes if not empty
+        if (node.declaredSize.isNotEmpty()) {
+            // For each dimension in array
+            node.declaredSize.forEach {
+                // Open size bracket
+                stringBuilder.append("[")
+
+                // If size exists for current dimension, print it, else ignore
+                if (it != null) stringBuilder.append(it)
+
+                // Open size bracket
+                stringBuilder.append("]")
+            }
+
+            // Print type
+            stringBuilder.append(node.declaredType)
+
+            // Print array literal expression if not null
+            if (node.body != null) visit(node.body)
+
+        }
+    }
+
     /**
-     * Prints each element of the array body expression comma-separated
+     * Prints each element of the array literal expression comma-separated
      */
-    override fun visit(node: ArrayBodyExpr) {
+    override fun visit(node: ArrayLiteralExpr) {
         // Open expression with opening curly bracket
         stringBuilder.append("{")
 
@@ -431,6 +456,7 @@ class PrettyPrinter : BaseASTVisitor() {
 
             // Print each element
             visit(node.values[n])
+
 
             // Print separator for given iteration, empty if last, else given separator with space appended
             stringBuilder.append(if (!isLast) ", " else "")
