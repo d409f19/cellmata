@@ -326,19 +326,19 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
                 node.declaredType
             })
 
-        val sizes = searchSize(node.body)
+        val literalSizes = searchSize(node.body)
 
         // compare sizes
-        if (sizes.size > node.declaredSize.size) {
+        if (literalSizes.size > node.declaredSize.size) {
             throw AssertionError("Type consistency check has failed, it should have already caught this")
         }
-        val finalSizes = node.declaredSize.mapIndexed { i, size ->
-            if (size == null && i >= sizes.size) {
+        val finalSizes = node.declaredSize.mapIndexed { i, declaredSize ->
+            if (declaredSize == null && i >= literalSizes.size) {
                 null
-            } else if (size == null || (i < sizes.size-1 && sizes[i] > size)) {
-                sizes[i]
+            } else if (declaredSize == null || (i < literalSizes.size-1 && literalSizes[i] > declaredSize)) {
+                literalSizes[i]
             } else {
-                size
+                declaredSize
             }
         }.toList()
 
