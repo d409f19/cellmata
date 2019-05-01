@@ -24,6 +24,11 @@ import org.antlr.v4.runtime.tree.TerminalNode
 val DEFAULT_CELLSIZE = 8
 val DEFAULT_TICKRATE = 10
 
+/**
+ * Get the size declared as part of the sized arrays type declaration.
+ *
+ * @return Returns a list of sizes from the type declaration, and null for any dimension which has to be inferred. Example "[10][][30]bool{}" would return 10, null, 30
+ */
 private fun getArrayDeclaredSize(array_decl: CellmataParser.Array_declContext): MutableList<Int?> {
     val l: MutableList<Int?> = if (array_decl.array_prefix().index != null) {
         mutableListOf(array_decl.array_prefix().index.text.toInt())

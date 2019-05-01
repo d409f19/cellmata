@@ -235,7 +235,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
 
     /**
      * Finds the size of the largest subarray in each dimension.
-     * Note: Note if their is empty array literals in the tree, this function may return fewer dimensions than expected.
+     * Note: if there are empty array literals in the tree, this function may return fewer dimensions than expected.
      */
     private fun searchSize(node: ArrayLiteralExpr, sizes: MutableList<Int> = mutableListOf(), depth: Int = 1): MutableList<Int> {
         if (sizes.size < depth) {

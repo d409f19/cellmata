@@ -219,7 +219,7 @@ class SizedArrayExpr(
 class ArrayLiteralExpr(
     ctx: SourceContext,
     val values: List<Expr>,
-    var size: Int = -1
+    var size: Int? = null
 ) : Expr(ctx)
 
 class Identifier(
