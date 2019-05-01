@@ -2,13 +2,10 @@ package dk.aau.cs.d409f19
 
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
