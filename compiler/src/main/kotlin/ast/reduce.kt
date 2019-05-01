@@ -61,32 +61,32 @@ private fun reduceExpr(node: ParseTree): Expr {
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.NotEqExprContext -> InequalityExpr(
+        is CellmataParser.InequalityExprContext -> InequalityExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.EqExprContext -> EqualityExpr(
+        is CellmataParser.EqualityExprContext -> EqualityExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.MoreEqExprContext -> GreaterOrEqExpr(
+        is CellmataParser.GreaterOrEqExprContext -> GreaterOrEqExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.MoreExprContext -> GreaterThanExpr(
+        is CellmataParser.GreaterThanExprContext -> GreaterThanExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.LessEqExprContext -> LessOrEqExpr(
+        is CellmataParser.LessOrEqExprContext -> LessOrEqExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.LessExprContext -> LessThanExpr(
+        is CellmataParser.LessThanExprContext -> LessThanExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)

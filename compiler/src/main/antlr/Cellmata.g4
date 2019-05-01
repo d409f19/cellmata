@@ -108,12 +108,12 @@ expr : '#' # stateIndexExpr
     | left=expr OP_MULTIPLY right=expr # multiplictionExpr
     | left=expr OP_MINUS right=expr # substractionExpr
     | left=expr OP_PLUS right=expr # additionExpr
-    | left=expr OP_LESS_EQ right=expr # lessEqExpr
-    | left=expr OP_LESS right=expr # lessExpr
-    | left=expr OP_MORE_EQ right=expr # moreEqExpr
-    | left=expr OP_MORE right=expr # moreExpr
-    | left=expr OP_COMPARE right=expr # eqExpr
-    | left=expr OP_COMPARE_NOT right=expr # notEqExpr
+    | left=expr OP_LESS_OR_EQ right=expr # lessOrEqExpr
+    | left=expr OP_LESS_THAN right=expr # lessThanExpr
+    | left=expr OP_GREATER_OR_EQ right=expr # greaterOrEqExpr
+    | left=expr OP_GREATER_THAN right=expr # greaterThanExpr
+    | left=expr OP_EQUALITY right=expr # equalityExpr
+    | left=expr OP_INEQUALITY right=expr # inequalityExpr
     | left=expr OP_AND right=expr # andExpr
     | left=expr OP_OR right=expr # orExpr
     ;
@@ -141,18 +141,18 @@ PAREN_START : '(' ;
 PAREN_END : ')' ;
 END : ';' ;
 
-OP_COMPARE : '==' ;
-OP_COMPARE_NOT : '!=' ;
+OP_EQUALITY : '==' ;
+OP_INEQUALITY : '!=' ;
 OP_NOT : '!' ;
 OP_PLUS : '+' ;
 OP_MINUS : '-' ;
 OP_MULTIPLY : '*' ;
 OP_DIVIDE : '/' ;
 OP_MODULO : '%' ;
-OP_LESS : '<' ;
-OP_LESS_EQ : '<=' ;
-OP_MORE : '>' ;
-OP_MORE_EQ : '>=' ;
+OP_LESS_THAN : '<' ;
+OP_LESS_OR_EQ : '<=' ;
+OP_GREATER_THAN : '>' ;
+OP_GREATER_OR_EQ : '>=' ;
 OP_AND : '&&' ;
 OP_OR : '||' ;
 
