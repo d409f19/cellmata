@@ -100,12 +100,12 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         // This way any loop-control-variables (those in the init-part) are not remade every iteration, but they are
         // removed when the loop finishes.
         symbolTableSession.openScope()
-        visit(node.initPart)
+        node.initPart?.let { visit(it) }
         visit(node.condition)
         symbolTableSession.openScope()
         visit(node.body)
         symbolTableSession.closeScope()
-        visit(node.postIterationPart)
+        node.postIterationPart?.let { visit(it) }
         symbolTableSession.closeScope()
     }
 }

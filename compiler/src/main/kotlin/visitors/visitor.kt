@@ -370,9 +370,9 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     }
 
     override fun visit(node: ForLoopStmt) {
-        visit(node.initPart)
+        node.initPart?.let { visit(it) }
         visit(node.condition)
-        visit(node.postIterationPart)
+        node.postIterationPart?.let { visit(it) }
         visit(node.body)
     }
 

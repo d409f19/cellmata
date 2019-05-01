@@ -288,9 +288,9 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
     }
 
     override fun visit(node: ForLoopStmt) {
-        printNode(node, node.initPart)
+        node.initPart?.let { printNode(node, it) }
         printNode(node, node.condition)
-        printNode(node, node.postIterationPart)
+        node.postIterationPart?.let { printNode(node, it) }
         printNode(node, node.body)
         printLabel(node.body, "body")
         super.visit(node)
