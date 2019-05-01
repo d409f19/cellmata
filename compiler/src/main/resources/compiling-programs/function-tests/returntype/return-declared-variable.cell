@@ -1,3 +1,5 @@
+//Currently functions must have parameters, when issue #108 is fixed, the parameter can be removed
+
 world {
     size = 100 [wrap], 200 [wrap]
     tickrate = 1
@@ -8,7 +10,7 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f() bool {
+function f(int a) bool {
     let c = true;
     return c;
 }

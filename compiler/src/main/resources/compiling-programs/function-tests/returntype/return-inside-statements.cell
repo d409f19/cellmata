@@ -8,8 +8,8 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f(bool a) bool {
-    for (let x = a; x < b; x = x+1) {
+function f(bool a, int b) bool {
+    for (let x = 0; x < b; x = x+1) {
         if ( x == 5 ) {
             return a;
         }

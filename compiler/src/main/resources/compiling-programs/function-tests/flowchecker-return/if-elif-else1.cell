@@ -8,11 +8,11 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f(bool a, int b) bool {
-    for (let x = 0; x < b; x = x+1) {
-        if ( x == 5 ) {
-            return a && !a;
-        }
+function f(int a) int {
+    if (a == 1) {
+    } elif (a == 2) {
+    } else {
+        return a+1;
     }
     return a;
 }

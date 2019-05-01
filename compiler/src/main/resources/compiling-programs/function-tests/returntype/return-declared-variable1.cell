@@ -1,5 +1,3 @@
-//should be deleted
-
 world {
     size = 100 [wrap], 200 [wrap]
     tickrate = 1
@@ -10,10 +8,10 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f17(int a, int b) bool {
-    let c = a < b;
-    let d = 2;
+function f(int a, int b) bool {
+    let c = a;
+    let d = c;
     let e = 3;
     let f = d < e;
-    return true;
+    return f;
 }

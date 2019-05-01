@@ -1,0 +1,22 @@
+world {
+    size = 100 [wrap], 200 [wrap]
+    tickrate = 1
+    cellsize = 5
+}
+
+state ident (0, 0, 0) {
+    become ident;
+}
+
+function f(int a) int {
+    if (a == 1) {
+        return 1;
+    } else {
+        return 2;
+    }
+
+    for (let x = a; x < a; x = x+1) {
+        let y = 2;
+    }
+    return 3;
+}
