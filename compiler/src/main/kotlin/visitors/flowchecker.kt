@@ -389,7 +389,8 @@ class FlowChecker : ASTVisitor<Flow> {
                         "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
                                 ": Code after statement never met, reason: return statement"
                     )
-                    //
+                    /*if a return blocking code is met, return. If this is the first Stmt in the codeblock
+                    the function still is guaranteed to meet a return, else it is not guaranteed to meet a return*/
                     return if (i == 0) Flow(containsReturn = true) else Flow(containsReturn = false)
                 }
                 //if the visited node has a break/continue that blocks further code in the block, produce error
