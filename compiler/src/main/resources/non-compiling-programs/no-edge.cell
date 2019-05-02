@@ -1,5 +1,5 @@
 world {
-    size = 100 [wrap], 200 [wrap];
+    size = 100 [edge], 200 [wrap];
 }
 
 state ident (0, 0, 0) {

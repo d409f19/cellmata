@@ -107,9 +107,9 @@ fun getWorldDeclString(
     // If two dimensional, declare second dimension, else empty string
     val twoDimDecl = if (twoDimensional!!) ", $dimTwoSize[$dimTwoType]" else ""
     return """world {
-            |  size = $dimOneSize[$dimOneType]$twoDimDecl
-            |  tickrate = $tickrate
-            |  cellsize = $cellsize
+            |  size = $dimOneSize[$dimOneType]$twoDimDecl;
+            |  tickrate = $tickrate;
+            |  cellsize = $cellsize;
             |}
             |
             | """.trimMargin()

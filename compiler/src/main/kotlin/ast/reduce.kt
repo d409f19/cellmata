@@ -302,8 +302,15 @@ fun reduce(node: ParserRuleContext): AST {
                 } else {
                     listOf(parseDimension(node.world_dcl().size.width))
                 },
-                cellSize = if (node.world_dcl().world_options().cellsize != null) node.world_dcl().world_options().cellsize.value.text.toIntOrNull() else DEFAULT_CELLSIZE,
-                tickrate = if (node.world_dcl().world_options().tickrate != null) node.world_dcl().world_options().tickrate.value?.text?.toIntOrNull() else DEFAULT_TICKRATE
+                edge = if (node.world_dcl().edge != null) {
+                    Identifier(SourceContext(node.world_dcl().edge.IDENT().symbol), node.world_dcl().edge.IDENT().text)
+                } else null,
+                cellSize = if (node.world_dcl().world_options().cellsize != null) {
+                    node.world_dcl().world_options().cellsize.value?.text?.toIntOrNull() ?: throw AssertionError()
+                } else DEFAULT_CELLSIZE,
+                tickrate = if (node.world_dcl().world_options().tickrate != null) {
+                    node.world_dcl().world_options().tickrate.value?.text?.toIntOrNull() ?: throw AssertionError()
+                } else DEFAULT_TICKRATE
             ),
             body = node.body().children?.map(::reduceDecl) ?: listOf()
         )
@@ -322,8 +329,7 @@ fun parseDimension(dim: CellmataParser.World_size_dimContext): WorldDimension {
             is CellmataParser.DimFiniteEdgeContext -> WorldType.EDGE
             is CellmataParser.DimFiniteWrappingContext -> WorldType.WRAPPING
             else -> throw AssertionError()
-        },
-        edge = if (type is CellmataParser.DimFiniteEdgeContext) Identifier(SourceContext(type), type.state.text) else null
+        }
     )
 }
 
