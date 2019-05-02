@@ -1,19 +1,20 @@
 package dk.aau.cs.d409f19.cellumata.visitors
 
 
-import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.CompileError
+import dk.aau.cs.d409f19.cellumata.CompileWarning
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 
 /**
  * The error thrown when a become, continue, break or return statement is in a place where it should not be
  */
-class SanityError(ctx: SourceContext, description: String) : ErrorFromContext(ctx, description)
+class SanityError(ctx: SourceContext, description: String) : CompileError(ctx, description)
 
 /**
  * The error for incorrect number of dimensions for coordinates
  */
-class DimensionsError(ctx: SourceContext, description: String) : ErrorFromContext(ctx, description)
+class DimensionsError(ctx: SourceContext, description: String) : CompileError(ctx, description)
 
 /**
  * A class to check that a become, return, break and continue statement does not appear in a place it should not be
@@ -36,7 +37,7 @@ class SanityChecker : BaseASTVisitor() {
 
     override fun visit(node: Coordinate) {
         if (dimensions != node.axes.size) {
-            ErrorLogger.registerError(DimensionsError(node.ctx, "Coordinate does not match the number of dimensions declared in the world-declaration."))
+            ErrorLogger += DimensionsError(node.ctx, "Coordinate does not match the number of dimensions declared in the world-declaration.")
         }
         super.visit(node)
     }
@@ -45,7 +46,7 @@ class SanityChecker : BaseASTVisitor() {
     override fun visit(node: BecomeStmt) {
         super.visit(node)
         if (inAFunction)
-            ErrorLogger.registerError(SanityError(node.ctx, "Become statements cannot be in functions"))
+            ErrorLogger += SanityError(node.ctx, "Become statements cannot be in functions")
     }
 
     var inAState = false
@@ -63,14 +64,14 @@ class SanityChecker : BaseASTVisitor() {
     override fun visit(node: ReturnStmt) {
         super.visit(node)
         if (inAState)
-            ErrorLogger.registerError(SanityError(node.ctx, "Return statements cannot be in states"))
+            ErrorLogger += SanityError(node.ctx, "Return statements cannot be in states")
     }
 
     // Throws an error if a # is found outside a state
     override fun visit(node: StateIndexExpr) {
         super.visit(node)
         if (!inAState)
-            ErrorLogger.registerError(SanityError(node.ctx, "# is only allowed in states"))
+            ErrorLogger += SanityError(node.ctx, "# is only allowed in states")
     }
 
     var inALoop = false
@@ -85,14 +86,14 @@ class SanityChecker : BaseASTVisitor() {
     override fun visit(node: BreakStmt) {
         super.visit(node)
         if (!inALoop)
-            ErrorLogger.registerError(SanityError(node.ctx, "Break statements are only allowed in loops"))
+            ErrorLogger += SanityError(node.ctx, "Break statements are only allowed in loops")
     }
 
     // Throws an error if a continue is found outside a loop
     override fun visit(node: ContinueStmt) {
         super.visit(node)
         if (!inALoop)
-            ErrorLogger.registerError(SanityError(node.ctx, "Continue statements are only allowed in loops"))
+            ErrorLogger += SanityError(node.ctx, "Continue statements are only allowed in loops")
     }
 
     // Checks if there are 0 or 1 state,
@@ -102,8 +103,8 @@ class SanityChecker : BaseASTVisitor() {
         super.visit(node)
 
         if (numberOfStates == 0)
-            ErrorLogger.registerError(SanityError(node.ctx, "A state is needed"))
+            ErrorLogger += SanityError(node.ctx, "A state is needed")
         else if (numberOfStates == 1)
-            System.err.println("Warning: There is only one state")
+            ErrorLogger += CompileWarning(null, "There is only one state")
     }
 }
