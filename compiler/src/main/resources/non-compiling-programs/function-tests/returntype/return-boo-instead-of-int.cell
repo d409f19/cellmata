@@ -8,8 +8,6 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f(int a) int {
-    if (a == 1) {
-        return a;
-    } else {return a;}
+function f(bool a) int {
+    return a;
 }

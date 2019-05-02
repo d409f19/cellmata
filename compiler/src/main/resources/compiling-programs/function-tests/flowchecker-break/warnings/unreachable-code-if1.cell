@@ -8,14 +8,14 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f6(int a) int {
+function f(int a) int {
     for (let x = a; x < a; x = x+1) {
-        if (b) {
+        if (true) {
             return a;
-            let x = 7;
         } else {
             break;
-            return a;
         }
+        let b = a;
     }
+    return a;
 }

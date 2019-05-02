@@ -1,5 +1,3 @@
-//This file checks that the typechecker can allow branches without returns
-
 world {
     size = 100 [wrap], 200 [wrap]
     tickrate = 1

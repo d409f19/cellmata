@@ -12,12 +12,8 @@ function f(int a) int {
     for (let x = a; x < a; x = x+1) {
         if (true) {
             return a;
-        } elif (true) {
-            return a;
         } else {
             break;
         }
-        let b = a; // unreachable
     }
-    return a;
 }

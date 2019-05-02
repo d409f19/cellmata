@@ -9,7 +9,8 @@ state ident (0, 0, 0) {
 }
 
 function f(int a) int {
-    if (a == 1) {
+    for (let x = a; x < a; x = x+1) {
+        break;
         return a;
-    } else {return a;}
+    }
 }

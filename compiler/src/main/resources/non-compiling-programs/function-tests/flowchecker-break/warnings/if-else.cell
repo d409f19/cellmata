@@ -10,10 +10,11 @@ state ident (0, 0, 0) {
 
 function f(int a) int {
     for (let x = a; x < a; x = x+1) {
-        for (let y = a; y < a; x = y+1) {
-            break;
-            let b = a; // unreachable, warning should be produced on line 14
+        if (b) {
+            return a;
+            let x = 1;
+        } else {
+            return a;
         }
-        return a;
     }
 }
