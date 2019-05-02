@@ -1,19 +1,23 @@
 package dk.aau.cs.d409f18.cellumata.codegen.kotlin.runtime
 
-import dk.aau.cs.d409f18.cellumata.codegen.kotlin.runtime.*
 import org.junit.jupiter.api.Test
 
 class WorldTest {
 
     @Test
     fun single_iteration_test() {
-        val dims = listOf(2, 2)
+        val worldConfig = WorldConfiguration(
+            dims = listOf(2, 2),
+            colors = listOf(),
+            cellSize = 2,
+            tickrate = 500
+        )
         val program = object : IProgram {
             override fun updateCell(worldView: IWorldView): Int {
                 return 1
             }
         }
-        val driver = Driver(dims, program, worldType = WrappingWorldType())
+        val driver = Driver(worldConfig, program, worldType = WrappingWorldType())
 
         driver.worldCurrent.setCell(0, 0, state = 0)
         driver.worldCurrent.setCell(0, 1, state = 0)

@@ -92,8 +92,8 @@ class MultiWorldType(private val edge: Int, private val dimTypes: List<Dimension
 }
 
 open class Driver(private val worldConfig: WorldConfiguration, private val program: IProgram, private val worldType: IWorldType) {
-    protected var worldCurrent = World(worldConfig.dims)
-    protected var worldNext = World(worldConfig.dims)
+    var worldCurrent = World(worldConfig.dims)
+    var worldNext = World(worldConfig.dims)
 
     open fun run() {
         while(true) {
