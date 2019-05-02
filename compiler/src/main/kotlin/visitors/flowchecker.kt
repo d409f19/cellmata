@@ -275,47 +275,51 @@ class FlowChecker : ASTVisitor<Flow> {
     }
 
     override fun visit(node: IfStmt): Flow {
-        //flags used to determine whether or not the IfStmt should return true on its Flow() fields.
-        //If any conditional (if-elif) has a return/break/continue the elseMustContainXXX is set to true
-        //as the else (if it exists) should also has a return/break/continue for the entire IfStmt to return true on this
-        //The containsXXX is used to show if the else has a return/break/continue
-        var elseMustContainReturn = false
-        var elseMustContainBreak = false
-
-        var containsReturn = false
-        var containsBreak = false
+        /*flags used to determine whether or not the IfStmt should return true on its Flow() fields.
+        guaranteedExit used because an IfStmt can be guaranteed to exit a function with either Break/return,
+        while neither containsReturn or containsBreak are true.
+        Assumes all variables to be true, and set to false if a branch without return/break/continue is met*/
+        var containsReturn = true
+        var containsBreak = true
         var guaranteedExit = true
 
 
         node.conditionals.forEach {
             val flow = visit(it)
 
-            if (flow.containsReturn) {
-                elseMustContainReturn = true
+            if (!flow.containsReturn) {
+                containsReturn = false
             }
 
-            if (flow.containsBreak) {
-                elseMustContainBreak = true
+            if (!flow.containsBreak) {
+                containsBreak = false
             }
 
             if (!flow.containsReturn && !flow.containsBreak) {
                 guaranteedExit = false
             }
-
         }
 
         if (node.elseBlock != null) {
             val flow = visit(node.elseBlock)
-            containsReturn = flow.containsReturn
 
-            containsBreak = flow.containsBreak
-        } else guaranteedExit = false
+            if (!flow.containsReturn) {
+                containsReturn = false
+            }
 
-        //the AND of the elseMustContainXXX and containsXXX must be true, for the IfStmt is to always meet this
-        //Stmt
+            if (!flow.containsBreak) {
+                containsBreak = false
+            }
+        } else {
+            //if no elseBlock exists, the IfStmt can not guarantee to exit with either return or break
+            guaranteedExit = false
+            containsReturn = false
+            containsBreak = false
+        }
+
         return Flow(
-            elseMustContainReturn && containsReturn,
-            elseMustContainBreak && containsBreak || guaranteedExit
+            containsReturn,
+            containsBreak || guaranteedExit
         )
     }
 
@@ -341,33 +345,30 @@ class FlowChecker : ASTVisitor<Flow> {
         return visit(node.body)
     }
 
-    //if a breakStmt is met, return true. This field represents both break and continue
+    //if a breakStmt is met, return true. containsBreak field represents both break and continue
     override fun visit(node: BreakStmt): Flow {
         // no-op
         return Flow(containsBreak = true)
     }
 
-    //if a ContinueStmt is met, return true. This field represents both break and continue
+    //if a ContinueStmt is met, return true. containsBreak field represents both break and continue
     override fun visit(node: ContinueStmt): Flow {
         // no-op
         return Flow(containsBreak = true)
     }
 
     override fun visit(node: CodeBlock): Flow {
-
+        //variables used to
         var containsReturn = false
         var containsBreak = false
-        var returnPossible = false
 
-        //visit all Stmts in the body
+        //visit all Stmts in the body, index used to print line number
         for (i in 0 until node.body.size) {
 
-            //save values to be used to determine if any warnings should be produced
-            //val isForLoop = node.body[i] is ForLoopStmt
             val flow = visit(node.body[i])
 
             //codeAfterThisBlock asserts that there is at least 2 Stmts in the body. No warnings will be
-            //produced if the current Stmt is the last
+            //produced if the current Stmt is the last, as it can not possibly block any further code inside the block
             val codeAfterThisBlock = i < node.body.size - 1 || i == 0 && 1 < node.body.size
 
             //saves the values from the visit()
@@ -376,106 +377,31 @@ class FlowChecker : ASTVisitor<Flow> {
             }
 
             if (flow.containsReturn) {
-                //returnPossible is to be used to determine if the entire body has the possibility to return
-                returnPossible = true
-                //containsReturn can be changed in the for-loop
                 containsReturn = true
             }
 
-            //makes sure that the current Stmt is not the last, else no Stmts will be blocked by a
-            //return/break/continue
+            /*makes sure that the current Stmt is not the last, else no Stmts will be blocked by a
+            return/break/continue*/
             if (codeAfterThisBlock) when {
-                //if the visited node has a return that blocks further code in the block, produce error
-                //the block producing this warnings might be nested, so the containsReturn value is set to false,
-                //as to not produce more warnings referring to the same returnStmt
+                //if the visited node has a return that blocks further code in the block, produce warning
                 containsReturn -> {
                     println(
                         "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
                                 ": Code after statement never met, reason: return statement"
                     )
+                    //
                     return if (i == 0) Flow(containsReturn = true) else Flow(containsReturn = false)
                 }
-                //if the visisted node has a break/continue that blocks further code in the block, produce error
-                //the block producing this warnings might be nested, so the containsBreak value is set to false,
-                //as to not produce more warnings referring to the same break/continueStmt
+                //if the visited node has a break/continue that blocks further code in the block, produce error
                 containsBreak && node.body[i] !is ForLoopStmt -> {
                     println(
                         "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
                                 ": Code after statement never met, reason: break/continue statement"
                     )
-                    return Flow(containsReturn = returnPossible, containsBreak = false)
+                    return Flow(containsReturn = containsReturn, containsBreak = false)
                 }
             }
         }
-        return Flow(returnPossible, containsBreak)
+        return Flow(containsReturn, containsBreak)
     }
-
-
-    /*
-        override fun visit(node: CodeBlock): Flow {
-
-        var containsReturn = false
-        var containsBreak = false
-        var returnPossible = false
-
-        //visit all Stmts in the body
-        for (i in 0 until node.body.size) {
-
-            //save values to be used to determine if any warnings should be produced
-            //val isForLoop = node.body[i] is ForLoopStmt
-            val flow = visit(node.body[i])
-
-            //codeAfterThisBlock asserts that there is at least 2 Stmts in the body. No warnings will be
-            //produced if the current Stmt is the last
-            val codeAfterThisBlock = i < node.body.size - 1 || i == 0 && 1 < node.body.size
-
-            //saves the values from the visit()
-            if (flow.containsBreak) {
-                containsBreak = true
-            }
-
-            if (flow.containsReturn) {
-                //returnPossible is to be used to determine if the entire body has the possibility to return
-                returnPossible = true
-                //containsReturn can be changed in the for-loop
-                containsReturn = true
-            }
-
-            //makes sure that the current Stmt is not the last, else no Stmts will be blocked by a
-            //return/break/continue
-            if (codeAfterThisBlock) when {
-                //if the visisted IfStmt is guaranteed to exit, produce error that refers to start of entire
-                // IfStmt, instead of a specific return/break/continue
-                flow.guaranteeExit -> {
-                    println(
-                        "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
-                                ": Code in the block after if block on line ${node.body[i].ctx.lineNumber} never met"
-                    )
-                }
-                //if the visisted node has a return that blocks further code in the block, produce error
-                //the block producing this warnings might be nested, so the containsReturn value is set to false,
-                //as to not produce more warnings referring to the same returnStmt
-                containsReturn -> {
-                    println(
-                        "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
-                                ": Code after statement never met, reason: return"
-                    )
-                    containsReturn = false
-                }
-                //if the visisted node has a break/continue that blocks further code in the block, produce error
-                //the block producing this warnings might be nested, so the containsBreak value is set to false,
-                //as to not produce more warnings referring to the same break/continueStmt
-                containsBreak && node.body[i] !is ForLoopStmt -> {
-                    println(
-                        "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
-                                ": Code after statement never met, reason: break"
-                    )
-                    containsBreak = false
-                }
-            }
-        }
-
-        return Flow(returnPossible, containsBreak)
-    }
-     */
 }
