@@ -6,6 +6,12 @@ import dk.aau.cs.d409f19.cellumata.ast.AST
 import dk.aau.cs.d409f19.cellumata.ast.Table
 import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.visitors.*
+import dk.aau.cs.d409f19.cellumata.visitors.PrettyPrinter
+import dk.aau.cs.d409f19.cellumata.visitors.ASTGrapher
+import dk.aau.cs.d409f19.cellumata.visitors.KotlinCodegen
+import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
+import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
+import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream

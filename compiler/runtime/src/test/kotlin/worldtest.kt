@@ -1,7 +1,6 @@
-<<<<<<< HEAD
+package dk.aau.cs.d409f18.cellumata.codegen.kotlin.runtime
+
 import dk.aau.cs.d409f18.cellumata.codegen.kotlin.runtime.*
-=======
->>>>>>> 985fa35... New runtime for kotlin codegen
 import org.junit.jupiter.api.Test
 
 class WorldTest {
