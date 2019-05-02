@@ -1,5 +1,6 @@
 world {
     size = 100 [edge], 200 [wrap];
+    // error due to missing edge = ident
 }
 
 state ident (0, 0, 0) {

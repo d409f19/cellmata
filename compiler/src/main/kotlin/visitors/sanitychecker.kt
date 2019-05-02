@@ -29,7 +29,7 @@ class SanityChecker : BaseASTVisitor() {
         super.visit(node)
         dimensions = node.dimensions.size
         if (worldHasEdge && node.edge == null) {
-            ErrorLogger.registerError(SanityError(node.ctx, "A dimension is an [edge], but the edge state was not declared."))
+            ErrorLogger += SanityError(node.ctx, "A dimension is an [edge], but the edge state was not declared.")
         }
     }
 
