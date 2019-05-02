@@ -1,11 +1,12 @@
 package dk.aau.cs.d409f19.cellumata.visitors
 
+import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.CompileWarning
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 
 class FlowWarning(ctx: SourceContext, description: String) : CompileWarning(ctx, description)
-
+class FlowError(ctx: SourceContext, description: String) : CompileError(ctx, description)
 
 //Flow is used to show which branch contains returns/break/continue. containsBreak includes both break and continue
 data class Flow(
@@ -136,12 +137,11 @@ class FlowChecker : ASTVisitor<Flow> {
 
     override fun visit(node: FuncDecl): Flow {
         node.args.forEach { visit(it) }
-
         val flow = visit(node.body)
         //If the body of the function is not guaranteed to meet return, register error
         if (!flow.containsReturn) {
             ErrorLogger += (
-                    FlowWarning(
+                    FlowError(
                         node.ctx,
                         "Function ${node.ident} not guaranteed to meet return statement"
                     )
@@ -426,10 +426,6 @@ class FlowChecker : ASTVisitor<Flow> {
                         node.body[i].ctx,
                         "Code after statement never met, reason: return statement"
                     )
-                    /*println(
-                        "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
-                                ": Code after statement never met, reason: return statement"
-                    )*/
                     /*if a return blocking code is met, return. If this is the first Stmt in the codeblock
                     the function still is guaranteed to meet a return, else it is not guaranteed to meet a return*/
                     return if (i == 0) Flow(containsReturn = true) else Flow(containsReturn = false)
@@ -440,10 +436,6 @@ class FlowChecker : ASTVisitor<Flow> {
                         node.body[i].ctx,
                         "Code after statement never met, reason: break/continue statement"
                     )
-                    /*println(
-                        "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
-                                ": Code after statement never met, reason: break/continue statement"
-                    )*/
                     return Flow(containsReturn = containsReturn, containsBreak = false)
                 }
             }

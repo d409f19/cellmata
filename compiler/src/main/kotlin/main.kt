@@ -101,6 +101,11 @@ fun compile(source: CharStream, settings: CompilerSettings): CompilerData {
     TypeChecker(symbolTable).visit(ast)
     ErrorLogger.assertNoErrors()
 
+    // Flow checking
+    val flowChecker = FlowChecker()
+    flowChecker.visit(ast)
+    ErrorLogger.assertNoErrors()
+
     // Pretty printing
     if (settings.doPrettyPrinting) {
         PrettyPrinter().print(ast)
