@@ -1,10 +1,10 @@
 package dk.aau.cs.d409f19.cellumata.visitors
 
-import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.CompileWarning
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 
-class FlowError(ctx: SourceContext, description: String) : ErrorFromContext(ctx, description)
+class FlowWarning(ctx: SourceContext, description: String) : CompileWarning(ctx, description)
 
 
 //Flow is used to show which branch contains returns/break/continue. containsBreak includes both break and continue
@@ -15,6 +15,59 @@ data class Flow(
 
 
 class FlowChecker : ASTVisitor<Flow> {
+
+    override fun visit(node: BinaryExpr): Flow {
+        when (node) {
+            is BinaryArithmeticExpr -> visit(node)
+            is BinaryBooleanExpr -> visit(node)
+            is NumericComparisonExpr -> visit(node)
+        }
+        return Flow()
+    }
+
+    override fun visit(node: BinaryArithmeticExpr): Flow {
+        when (node) {
+            is AdditionExpr -> visit(node)
+            is SubtractionExpr -> visit(node)
+            is MultiplicationExpr -> visit(node)
+            is DivisionExpr -> visit(node)
+            is ModuloExpr -> visit(node)
+        }
+        return Flow()
+    }
+
+    override fun visit(node: BinaryBooleanExpr): Flow {
+        when (node) {
+            is OrExpr -> visit(node)
+            is AndExpr -> visit(node)
+        }
+        return Flow()
+    }
+
+    override fun visit(node: NumericComparisonExpr): Flow {
+        when (node) {
+            is InequalityExpr -> visit(node)
+            is EqualityExpr -> visit(node)
+            is GreaterThanExpr -> visit(node)
+            is GreaterOrEqExpr -> visit(node)
+            is LessThanExpr -> visit(node)
+            is LessOrEqExpr -> visit(node)
+        }
+        return Flow()
+    }
+
+    override fun visit(node: SizedArrayExpr): Flow {
+        if (node.body == null) {
+            return Flow()
+        }
+        return visit(node.body)
+    }
+
+    override fun visit(node: ArrayLiteralExpr): Flow {
+        node.values.forEach { visit(it) }
+        return Flow()
+    }
+
     override fun visit(node: AST): Flow {
         when (node) {
             is RootNode -> visit(node)
@@ -87,41 +140,30 @@ class FlowChecker : ASTVisitor<Flow> {
         val flow = visit(node.body)
         //If the body of the function is not guaranteed to meet return, register error
         if (!flow.containsReturn) {
-            ErrorLogger.registerError(
-                FlowError(
-                    node.ctx,
-                    "Function ${node.ident} not guaranteed to meet return statement"
-                )
-            )
+            ErrorLogger += (
+                    FlowWarning(
+                        node.ctx,
+                        "Function ${node.ident} not guaranteed to meet return statement"
+                    )
+                    )
         }
         return Flow()
     }
 
     override fun visit(node: Expr): Flow {
         when (node) {
-            is OrExpr -> visit(node)
-            is AndExpr -> visit(node)
-            is InequalityExpr -> visit(node)
-            is EqualityExpr -> visit(node)
-            is GreaterThanExpr -> visit(node)
-            is GreaterOrEqExpr -> visit(node)
-            is LessThanExpr -> visit(node)
-            is LessOrEqExpr -> visit(node)
-            is AdditionExpr -> visit(node)
-            is SubtractionExpr -> visit(node)
-            is MultiplicationExpr -> visit(node)
-            is DivisionExpr -> visit(node)
+            is BinaryExpr -> visit(node)
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
             is ArrayLookupExpr -> visit(node)
-            is ArrayBodyExpr -> visit(node)
+            is SizedArrayExpr -> visit(node)
             is Identifier -> visit(node)
-            is ModuloExpr -> visit(node)
             is FuncCallExpr -> visit(node)
             is StateIndexExpr -> visit(node)
             is IntLiteral -> visit(node)
             is FloatLiteral -> visit(node)
             is BoolLiteral -> visit(node)
+            is ArrayLiteralExpr -> visit(node)
             else -> throw AssertionError()
         }
         return Flow()
@@ -210,11 +252,6 @@ class FlowChecker : ASTVisitor<Flow> {
     override fun visit(node: ArrayLookupExpr): Flow {
         visit(node.arr)
         visit(node.index)
-        return Flow()
-    }
-
-    override fun visit(node: ArrayBodyExpr): Flow {
-        node.values.forEach { visit(it) }
         return Flow()
     }
 
@@ -339,9 +376,9 @@ class FlowChecker : ASTVisitor<Flow> {
     }
 
     override fun visit(node: ForLoopStmt): Flow {
-        visit(node.initPart)
+        node.initPart?.let { visit(it) }
         visit(node.condition)
-        visit(node.postIterationPart)
+        node.postIterationPart?.let { visit(it) }
         return visit(node.body)
     }
 
@@ -385,20 +422,28 @@ class FlowChecker : ASTVisitor<Flow> {
             if (codeAfterThisBlock) when {
                 //if the visited node has a return that blocks further code in the block, produce warning
                 containsReturn -> {
-                    println(
+                    ErrorLogger += FlowWarning(
+                        node.body[i].ctx,
+                        "Code after statement never met, reason: return statement"
+                    )
+                    /*println(
                         "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
                                 ": Code after statement never met, reason: return statement"
-                    )
+                    )*/
                     /*if a return blocking code is met, return. If this is the first Stmt in the codeblock
                     the function still is guaranteed to meet a return, else it is not guaranteed to meet a return*/
                     return if (i == 0) Flow(containsReturn = true) else Flow(containsReturn = false)
                 }
                 //if the visited node has a break/continue that blocks further code in the block, produce error
                 containsBreak && node.body[i] !is ForLoopStmt -> {
-                    println(
+                    ErrorLogger += FlowWarning(
+                        node.body[i].ctx,
+                        "Code after statement never met, reason: break/continue statement"
+                    )
+                    /*println(
                         "Warning ${node.body[i].ctx.lineNumber}:${node.body[i].ctx.charPositionInLine} " +
                                 ": Code after statement never met, reason: break/continue statement"
-                    )
+                    )*/
                     return Flow(containsReturn = containsReturn, containsBreak = false)
                 }
             }

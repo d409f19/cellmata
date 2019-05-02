@@ -22,6 +22,14 @@ interface ASTVisitor<R> {
 
     fun visit(node: Expr): R
 
+    fun visit(node: BinaryExpr): R
+
+    fun visit(node: BinaryArithmeticExpr): R
+
+    fun visit(node: BinaryBooleanExpr): R
+
+    fun visit(node: NumericComparisonExpr): R
+
     fun visit(node: OrExpr): R
 
     fun visit(node: AndExpr): R
@@ -52,13 +60,15 @@ interface ASTVisitor<R> {
 
     fun visit(node: ArrayLookupExpr): R
 
-    fun visit(node: ArrayBodyExpr): R
+    fun visit(node: SizedArrayExpr): R
 
     fun visit(node: Identifier): R
 
     fun visit(node: ModuloExpr): R
 
     fun visit(node: FuncCallExpr): R
+
+    fun visit(node: ArrayLiteralExpr): R
 
     fun visit(node: StateIndexExpr): R
 
@@ -73,7 +83,7 @@ interface ASTVisitor<R> {
     fun visit(node: IfStmt): R
 
     fun visit(node: BecomeStmt): R
-  
+
     fun visit(node: ReturnStmt): R
 
     fun visit(node: AST): R
@@ -166,31 +176,56 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     }
 
     override fun visit(node: Expr) {
-        when(node) {
+        when (node) {
+            is BinaryExpr -> visit(node)
+            is NegationExpr -> visit(node)
+            is NotExpr -> visit(node)
+            is ArrayLookupExpr -> visit(node)
+            is SizedArrayExpr -> visit(node)
+            is Identifier -> visit(node)
+            is FuncCallExpr -> visit(node)
+            is StateIndexExpr -> visit(node)
+            is IntLiteral -> visit(node)
+            is FloatLiteral -> visit(node)
+            is BoolLiteral -> visit(node)
+            is ArrayLiteralExpr -> visit(node)
+            else -> throw AssertionError()
+        }
+    }
+    
+    override fun visit(node: BinaryExpr) {
+        when (node) {
+            is BinaryArithmeticExpr -> visit(node)
+            is BinaryBooleanExpr -> visit(node)
+            is NumericComparisonExpr -> visit(node)
+        }
+    }
+
+    override fun visit(node: BinaryArithmeticExpr) {
+        when (node) {
+            is AdditionExpr -> visit(node)
+            is SubtractionExpr -> visit(node)
+            is MultiplicationExpr -> visit(node)
+            is DivisionExpr -> visit(node)
+            is ModuloExpr -> visit(node)
+        }
+    }
+    
+    override fun visit(node: BinaryBooleanExpr) {
+        when (node) {
             is OrExpr -> visit(node)
             is AndExpr -> visit(node)
+        }
+    }
+
+    override fun visit(node: NumericComparisonExpr) {
+        when (node) {
             is InequalityExpr -> visit(node)
             is EqualityExpr -> visit(node)
             is GreaterThanExpr -> visit(node)
             is GreaterOrEqExpr -> visit(node)
             is LessThanExpr -> visit(node)
             is LessOrEqExpr -> visit(node)
-            is AdditionExpr -> visit(node)
-            is SubtractionExpr -> visit(node)
-            is MultiplicationExpr -> visit(node)
-            is DivisionExpr -> visit(node)
-            is NegationExpr -> visit(node)
-            is NotExpr -> visit(node)
-            is ArrayLookupExpr -> visit(node)
-            is ArrayBodyExpr -> visit(node)
-            is Identifier -> visit(node)
-            is ModuloExpr -> visit(node)
-            is FuncCallExpr -> visit(node)
-            is StateIndexExpr -> visit(node)
-            is IntLiteral -> visit(node)
-            is FloatLiteral -> visit(node)
-            is BoolLiteral -> visit(node)
-            else -> throw AssertionError()
         }
     }
 
@@ -267,7 +302,14 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
         visit(node.index)
     }
 
-    override fun visit(node: ArrayBodyExpr) {
+    override fun visit(node: SizedArrayExpr) {
+        if (node.body == null) {
+            return
+        }
+        visit(node.body)
+    }
+
+    override fun visit(node: ArrayLiteralExpr) {
         node.values.forEach { visit(it) }
     }
 
@@ -338,9 +380,9 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     }
 
     override fun visit(node: ForLoopStmt) {
-        visit(node.initPart)
+        node.initPart?.let { visit(it) }
         visit(node.condition)
-        visit(node.postIterationPart)
+        node.postIterationPart?.let { visit(it) }
         visit(node.body)
     }
 

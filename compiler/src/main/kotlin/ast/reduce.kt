@@ -1,7 +1,7 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
 import dk.aau.cs.d409f19.antlr.CellmataParser
-import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import org.antlr.v4.runtime.ParserRuleContext
@@ -25,6 +25,26 @@ val DEFAULT_CELLSIZE = 8
 val DEFAULT_TICKRATE = 10
 
 /**
+ * Get the size declared as part of the sized arrays type declaration.
+ *
+ * @return Returns a list of sizes from the type declaration, and null for any dimension which has to be inferred. Example "[10][][30]bool{}" would return 10, null, 30
+ */
+private fun getArrayDeclaredSize(array_decl: CellmataParser.Array_declContext): MutableList<Int?> {
+    val l: MutableList<Int?> = if (array_decl.array_prefix().index != null) {
+        mutableListOf(array_decl.array_prefix().index.text.toInt())
+    } else {
+        mutableListOf(null)
+    }
+
+    // Assumption: Array is the only structured type
+    if (array_decl.type_ident() is CellmataParser.TypeArrayContext) {
+        l.addAll(getArrayDeclaredSize((array_decl.type_ident() as CellmataParser.TypeArrayContext).array_decl()))
+    }
+
+    return l
+}
+
+/**
  * Attempts to recursively transform an expression node in the parse tree to create a subtree of the AST.
  *
  * @throws AssertionError thrown when encountering an unexpected node in the parse tree.
@@ -41,32 +61,32 @@ private fun reduceExpr(node: ParseTree): Expr {
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.NotEqExprContext -> InequalityExpr(
+        is CellmataParser.InequalityExprContext -> InequalityExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.EqExprContext -> EqualityExpr(
+        is CellmataParser.EqualityExprContext -> EqualityExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.MoreEqExprContext -> GreaterOrEqExpr(
+        is CellmataParser.GreaterOrEqExprContext -> GreaterOrEqExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.MoreExprContext -> GreaterThanExpr(
+        is CellmataParser.GreaterThanExprContext -> GreaterThanExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.LessEqExprContext -> LessOrEqExpr(
+        is CellmataParser.LessOrEqExprContext -> LessOrEqExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
         )
-        is CellmataParser.LessExprContext -> LessThanExpr(
+        is CellmataParser.LessThanExprContext -> LessThanExpr(
             ctx = SourceContext(node),
             left = reduceExpr(node.left),
             right = reduceExpr(node.right)
@@ -120,11 +140,15 @@ private fun reduceExpr(node: ParseTree): Expr {
             ident = node.value.ident.text
         )
         is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = SourceContext(node))
-        is CellmataParser.ArrayValueExprContext -> ArrayBodyExpr(
+        is CellmataParser.ArraySizedValueExprContext -> reduceExpr(node.value)
+        is CellmataParser.Array_value_sizedContext -> SizedArrayExpr(
             ctx = SourceContext(node),
-            values = node.array_value().array_body().expr().map(::reduceExpr),
-            declaredType = typeFromCtx(node.value.type_ident())
+            declaredType = ArrayType(typeFromCtx(node.array_decl().type_ident())),
+            body = if(node.array_value_literal() == null) { null } else { reduceExpr(node.array_value_literal()) as ArrayLiteralExpr },
+            declaredSize = getArrayDeclaredSize(node.array_decl())
         )
+        is CellmataParser.ArrayLiteralExprContext -> reduceExpr(node.value)
+        is CellmataParser.Array_value_literalContext -> ArrayLiteralExpr(SourceContext(node), node.expr().map(::reduceExpr))
         is CellmataParser.LiteralExprContext -> reduceExpr(node.value)
         is CellmataParser.BoolLiteralContext -> BoolLiteral(
             ctx = SourceContext(node),
@@ -178,9 +202,9 @@ private fun reduceStmt(node: ParseTree): Stmt {
         )
         is CellmataParser.For_stmtContext -> ForLoopStmt(
             ctx = SourceContext(node),
-            initPart = reduceStmt(node.for_init().assignment()) as AssignStmt,
+            initPart = if (node.for_init() == null) null else reduceStmt(node.for_init().assignment()) as AssignStmt,
             condition = reduceExpr(node.for_condition().expr()),
-            postIterationPart = reduceStmt(node.for_post_iteration().assignment()) as AssignStmt,
+            postIterationPart = if (node.for_post_iteration() == null) null else reduceStmt(node.for_post_iteration().assignment()) as AssignStmt,
             body = reduceCodeBlock(node.code_block())
         )
         is CellmataParser.Break_stmtContext -> BreakStmt(ctx = SourceContext(node))
@@ -243,9 +267,7 @@ private fun reduceDecl(node: ParseTree): Decl {
 fun parseColor(intCtx: CellmataParser.Integer_literalContext): Short {
     val value = intCtx.text.toShortOrNull()
     if (value == null || value < 0 || 255 < value) {
-        ErrorLogger.registerError(
-            ErrorFromContext(SourceContext(intCtx), "'${intCtx.text}' is not a valid colour. It must be an integer between 0 and 255.")
-        )
+        ErrorLogger += CompileError(SourceContext(intCtx), "'${intCtx.text}' is not a valid colour. It must be an integer between 0 and 255.")
     }
     return value ?: 0
 }
@@ -278,8 +300,8 @@ fun reduce(node: ParserRuleContext): AST {
                 } else {
                     listOf(parseDimension(node.world_dcl().size.width))
                 },
-                cellSize = if (node.world_dcl().cellsize != null) node.world_dcl().cellsize.value.text.toIntOrNull() else DEFAULT_CELLSIZE,
-                tickrate = if (node.world_dcl().tickrate != null) node.world_dcl().tickrate.value?.text?.toIntOrNull() else DEFAULT_TICKRATE
+                cellSize = if (node.world_dcl().world_options().cellsize != null) node.world_dcl().world_options().cellsize.value.text.toIntOrNull() else DEFAULT_CELLSIZE,
+                tickrate = if (node.world_dcl().world_options().tickrate != null) node.world_dcl().world_options().tickrate.value?.text?.toIntOrNull() else DEFAULT_TICKRATE
             ),
             body = node.body().children?.map(::reduceDecl) ?: listOf()
         )
@@ -308,5 +330,5 @@ fun parseDimension(dim: CellmataParser.World_size_dimContext): WorldDimension {
  * after changing the grammar.
  */
 fun registerReduceError(ctx: ParserRuleContext) {
-    ErrorLogger.registerError(ErrorFromContext(SourceContext(ctx), "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST."))
+    ErrorLogger += CompileError(SourceContext(ctx), "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST.")
 }

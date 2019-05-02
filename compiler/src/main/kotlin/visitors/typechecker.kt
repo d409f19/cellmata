@@ -1,15 +1,14 @@
 package dk.aau.cs.d409f19.cellumata.visitors
 
-import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
-import org.antlr.v4.runtime.ParserRuleContext
 import kotlin.AssertionError
 
 /**
  * Error for violation of the type rules
  */
-class TypeError(ctx: SourceContext, description: String) : ErrorFromContext(ctx, description)
+class TypeError(ctx: SourceContext, description: String) : CompileError(ctx, description)
 
 /**
  * Synthesizes types by moving them up the abstract syntax tree according to the type rules, and check that there is no violation of the type rules
@@ -21,10 +20,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.left.getType() != BooleanType) {
-            ErrorLogger.registerError(TypeError(node.left.ctx, "Expected boolean expression in left hand side of or-expression."))
+            ErrorLogger += TypeError(node.left.ctx, "Expected boolean expression in left hand side of or-expression.")
         }
         if (node.right.getType() != BooleanType) {
-            ErrorLogger.registerError(TypeError(node.right.ctx, "Expected boolean expression in right hand side of or-expression."))
+            ErrorLogger += TypeError(node.right.ctx, "Expected boolean expression in right hand side of or-expression.")
         }
 
         node.setType(BooleanType)
@@ -34,10 +33,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.left.getType() != BooleanType) {
-            ErrorLogger.registerError(TypeError(node.left.ctx, "Expected boolean expression in left hand side of and-expression."))
+            ErrorLogger += TypeError(node.left.ctx, "Expected boolean expression in left hand side of and-expression.")
         }
         if (node.right.getType() != BooleanType) {
-            ErrorLogger.registerError(TypeError(node.right.ctx, "Expected boolean expression in right hand side of and-expression."))
+            ErrorLogger += TypeError(node.right.ctx, "Expected boolean expression in right hand side of and-expression.")
         }
 
         node.setType(BooleanType)
@@ -53,12 +52,12 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
             node.left.getType() == StateType && node.right.getType() == StateType -> BooleanType
-            node.left.getType() == ActualNeighbourhoodType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
-            node.left.getType() == ActualNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
-            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
+            node.left.getType() == LocalNeighbourhoodType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
+            node.left.getType() == LocalNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
+            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
             node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Could not compare the types of right and left hand side of inequality-expression."))
+                ErrorLogger += TypeError(node.ctx, "Could not compare the types of right and left hand side of inequality-expression.")
                 null
             }
         })
@@ -74,12 +73,12 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
             node.left.getType() == StateType && node.right.getType() == StateType -> BooleanType
-            node.left.getType() == ActualNeighbourhoodType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
-            node.left.getType() == ActualNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
-            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == ActualNeighbourhoodType -> BooleanType
+            node.left.getType() == LocalNeighbourhoodType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
+            node.left.getType() == LocalNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
+            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
             node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Could not compare the types of right and left hand side of equality-expression."))
+                ErrorLogger += TypeError(node.ctx, "Could not compare the types of right and left hand side of equality-expression.")
                 null
             }
         })
@@ -94,7 +93,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
                 null
             }
         })
@@ -109,7 +108,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
                 null
             }
         })
@@ -124,7 +123,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
                 null
             }
         })
@@ -139,7 +138,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
                 null
             }
         })
@@ -154,7 +153,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
                 null
             }
         })
@@ -169,7 +168,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
                 null
             }
         })
@@ -184,7 +183,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
                 null
             }
         })
@@ -199,7 +198,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
                 null
             }
         })
@@ -212,7 +211,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             IntegerType -> IntegerType
             FloatType -> FloatType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Only float or integer can be negative."))
+                ErrorLogger += TypeError(node.ctx, "Only float or integer can be negative.")
                 null
             }
         })
@@ -222,7 +221,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.value.getType() != BooleanType) {
-            ErrorLogger.registerError(TypeError(node.ctx, "Can only invert boolean expressions."))
+            ErrorLogger += TypeError(node.ctx, "Can only invert boolean expressions.")
         }
 
         node.setType(BooleanType)
@@ -234,53 +233,136 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         node.setType(node.arr.getType())
     }
 
-    override fun visit(node: ArrayBodyExpr) {
+    /**
+     * Finds the size of the largest subarray in each dimension.
+     * Note: if there are empty array literals in the tree, this function may return fewer dimensions than expected.
+     */
+    private fun searchSize(node: ArrayLiteralExpr, sizes: MutableList<Int> = mutableListOf(), depth: Int = 1): MutableList<Int> {
+        if (sizes.size < depth) {
+            sizes.add(node.values.size)
+        } else  if (sizes[depth-1] < node.values.size) {
+            sizes[depth-1] = node.values.size
+        }
+
+        @Suppress("NAME_SHADOWING") var sizes = sizes
+        node.values.forEach {
+            if (it is ArrayLiteralExpr) {
+                sizes = searchSize(it, sizes, depth + 1)
+            }
+        }
+
+        return sizes
+    }
+
+    private fun pushDownSize(n: Expr, size: List<Int>) {
+        if (n is ArrayLiteralExpr) {
+            n.size = size[0]
+
+            if (n.values.size > 1) {
+                n.values.forEach {
+                    pushDownSize(it, size.subList(1, size.size))
+                }
+            }
+        }
+    }
+
+    override fun visit(node: SizedArrayExpr) {
         super.visit(node)
 
         /*
-        * Scenarios that has to be checked:
-        *
-        * Has declared type, and has values -> Check value consistency, and check declared type matches values type
-        * Has declared type, but no values  -> Used declared type
-        * No declared type, and has values  -> Check value consistency
-        * No declared type, and no values   -> Impossible
-        * */
+         * Scenarios that has to be checked:
+         *
+         * Has declared type, and has values -> Check value consistency, and check declared type matches values type
+         * Has declared type, but no values  -> Used declared type
+         */
+
+        if(node.body == null) {
+            return
+        }
 
         val valuesType: Type?
-        if (node.values.isEmpty()) {
+        if (node.body.values.isEmpty()) {
             // No values specified, nothing to check against
             valuesType = null
         } else {
             // Check consistency of types
-            val types = node.values.map { it.getType() }.toList()
+            val types = node.body.values.map { it.getType() }.toList()
             if (types.distinct().count() > 1) {
                 // ToDo int to float conversion
-                ErrorLogger.registerError(TypeError(node.ctx, "Cannot determine type of array because it is initialised with multiple types."))
+                ErrorLogger += TypeError(node.ctx, "Cannot determine type of array because it is initialised with multiple types.")
                 node.setType(null)
                 return
             }
             valuesType = types.first() // Pick any one because we have already checked they are identical
         }
 
+        /**
+         * Compares two types, handles nested checking for arrays.
+         * Null is equal to any other type.
+         *
+         * @return Returns true if the type are the same, accounting for wildcard matching
+         */
+        fun compareType(type1: Type?, type2: Type?): Boolean {
+            if (type1 == null || type2 == null) {
+                return true
+            }
+
+            if (type1 is ArrayType && type2 is ArrayType) {
+                return compareType(type1.subtype, type2.subtype)
+            }
+
+            return type1 == type2
+        }
+
         // ToDo implicit conversion, declaredType == float, and valuesType == integer -> type = float
-        node.setType(when {
-            node.declaredType != null && node.values.isNotEmpty() -> {
-                if (node.declaredType != valuesType) {
-                    ErrorLogger.registerError(TypeError(node.ctx, "Cannot determine type of array since initialised values does not match the declared type."))
+        node.setType(if (node.body.values.isNotEmpty()) {
+                if (node.declaredType is ArrayType && !compareType(node.declaredType.subtype, valuesType)) {
+                    ErrorLogger += TypeError(node.ctx, "Cannot determine type of array since initialised values does not match the declared type.")
                     node.setType(null)
                     return
                 }
                 node.declaredType
+            } else {
+                node.declaredType
+            })
+
+        val literalSizes = searchSize(node.body)
+
+        // compare sizes
+        if (literalSizes.size > node.declaredSize.size) {
+            throw AssertionError("Type consistency check has failed, it should have already caught this")
+        }
+        val finalSizes = node.declaredSize.mapIndexed { i, declaredSize ->
+            if (declaredSize == null && i >= literalSizes.size) {
+                null
+            } else if (declaredSize == null || (i < literalSizes.size-1 && literalSizes[i] > declaredSize)) {
+                literalSizes[i]
+            } else {
+                declaredSize
             }
-            node.declaredType != null && node.values.isEmpty() -> node.declaredType
-            node.declaredType == null && node.values.isNotEmpty() -> valuesType
-            node.declaredType == null && node.values.isEmpty() -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Cannot determine type of array."))
-                node.setType(null)
-                return
+        }.toList()
+
+        // check that all dimensions has a size
+        finalSizes.forEach {
+            if (it == null) {
+                throw AssertionError("A dimension has undetermined size")
             }
-            else -> throw AssertionError("Cannot determine type of array. This case should never be hit!")
-        })
+        }
+
+        // push down size
+        pushDownSize(
+            node.body,
+            finalSizes.map {it!!}.toList()
+        )
+    }
+
+    override fun visit(node: ArrayLiteralExpr) {
+        super.visit(node)
+
+        node.setType(ArrayType(if (node.values.isEmpty()) null else node.values[0].getType()))
+
+        val foundSizes = searchSize(node)
+        pushDownSize(node, foundSizes)
     }
 
     override fun visit(node: Identifier) {
@@ -297,7 +379,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
             node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
             else -> {
-                ErrorLogger.registerError(TypeError(node.ctx, "Right and left hand side of must be either float or integer."))
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
                 null
             }
         })
@@ -307,13 +389,14 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (expectedReturn != node.value.getType()) {
-            if (node.value.getType() == IntegerType)
-                 node.value.setType(FloatType)
-        }
-
-        if (expectedReturn != node.value.getType()) {
-            ErrorLogger.registerError(TypeError(node.ctx, "Wrong return type " +
-                    "(${node.value.getType()}). Expected $expectedReturn"))
+            node.value.setType(when {
+                node.value.getType() == IntegerType -> FloatType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Wrong return type (${node.value.getType()}). Expected $expectedReturn")
+                    null
+                    }
+                }
+            )
         }
     }
 

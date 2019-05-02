@@ -7,12 +7,16 @@ const_decl : STMT_CONST const_ident ASSIGN expr END ;
 const_ident : IDENT ;
 
 // World
-world_dcl : STMT_WORLD BLOCK_START size=world_size tickrate=world_tickrate? cellsize=world_cellsize? BLOCK_END ;
+world_dcl : STMT_WORLD BLOCK_START size=world_size world_options BLOCK_END ;
 world_size : WORLD_SIZE ASSIGN width=world_size_dim (LIST_SEP height=world_size_dim)?;
 world_size_dim : size=integer_literal SQ_BRACKET_START type=world_size_dim_finite SQ_BRACKET_END ;
 world_size_dim_finite
     : WORLD_WRAP # dimFiniteWrapping
     | WORLD_EDGE ASSIGN state=IDENT # dimFiniteEdge
+    ;
+world_options
+    : tickrate=world_tickrate? cellsize=world_cellsize?
+    | cellsize=world_cellsize? tickrate=world_tickrate?
     ;
 world_tickrate : WORLD_TICKRATE ASSIGN value=integer_literal ;
 world_cellsize : WORLD_CELLSIZE ASSIGN value=integer_literal ;
@@ -68,10 +72,10 @@ type_ident
 
 // Array
 array_decl : array_prefix type_ident ;
-array_value : array_prefix type_ident array_body ;
-array_body : BLOCK_START (expr (LIST_SEP expr)*)? BLOCK_END ;
-array_prefix : SQ_BRACKET_START integer_literal? SQ_BRACKET_END ;
-array_lookup: var_ident SQ_BRACKET_START expr SQ_BRACKET_END ;
+array_value_sized : array_decl array_value_literal? ;
+array_value_literal : BLOCK_START (expr (LIST_SEP expr)*)? BLOCK_END ;
+array_prefix : SQ_BRACKET_START index=integer_literal? SQ_BRACKET_END ;
+array_lookup: array=expr SQ_BRACKET_START index=expr SQ_BRACKET_END ;
 
 // Literals
 literal
@@ -94,7 +98,8 @@ expr : '#' # stateIndexExpr
     | ident=var_ident # varExpr
     | value=literal # literalExpr
     | PAREN_START value=expr PAREN_END # parenExpr
-    | value=array_value # arrayValueExpr
+    | value=array_value_sized # arraySizedValueExpr
+    | value=array_value_literal # arrayLiteralExpr
     | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
     | OP_NOT value=expr # notExpr
     | OP_MINUS value=expr # negationExpr
@@ -103,12 +108,12 @@ expr : '#' # stateIndexExpr
     | left=expr OP_MULTIPLY right=expr # multiplictionExpr
     | left=expr OP_MINUS right=expr # substractionExpr
     | left=expr OP_PLUS right=expr # additionExpr
-    | left=expr OP_LESS_EQ right=expr # lessEqExpr
-    | left=expr OP_LESS right=expr # lessExpr
-    | left=expr OP_MORE_EQ right=expr # moreEqExpr
-    | left=expr OP_MORE right=expr # moreExpr
-    | left=expr OP_COMPARE right=expr # eqExpr
-    | left=expr OP_COMPARE_NOT right=expr # notEqExpr
+    | left=expr OP_LESS_OR_EQ right=expr # lessOrEqExpr
+    | left=expr OP_LESS_THAN right=expr # lessThanExpr
+    | left=expr OP_GREATER_OR_EQ right=expr # greaterOrEqExpr
+    | left=expr OP_GREATER_THAN right=expr # greaterThanExpr
+    | left=expr OP_EQUALITY right=expr # equalityExpr
+    | left=expr OP_INEQUALITY right=expr # inequalityExpr
     | left=expr OP_AND right=expr # andExpr
     | left=expr OP_OR right=expr # orExpr
     ;
@@ -116,7 +121,7 @@ expr : '#' # stateIndexExpr
 // Functions
 func : ident=func_ident PAREN_START (expr (LIST_SEP expr)* )? PAREN_END ;
 func_ident : IDENT ;
-func_decl : STMT_FUNC func_ident PAREN_START func_decl_arg (LIST_SEP func_decl_arg)* PAREN_END type_ident code_block ;
+func_decl : STMT_FUNC func_ident PAREN_START (func_decl_arg (LIST_SEP func_decl_arg)* )? PAREN_END type_ident code_block ;
 func_decl_arg : type_ident IDENT ;
 
 // Tokens
@@ -136,18 +141,18 @@ PAREN_START : '(' ;
 PAREN_END : ')' ;
 END : ';' ;
 
-OP_COMPARE : '==' ;
-OP_COMPARE_NOT : '!=' ;
+OP_EQUALITY : '==' ;
+OP_INEQUALITY : '!=' ;
 OP_NOT : '!' ;
 OP_PLUS : '+' ;
 OP_MINUS : '-' ;
 OP_MULTIPLY : '*' ;
 OP_DIVIDE : '/' ;
 OP_MODULO : '%' ;
-OP_LESS : '<' ;
-OP_LESS_EQ : '<=' ;
-OP_MORE : '>' ;
-OP_MORE_EQ : '>=' ;
+OP_LESS_THAN : '<' ;
+OP_LESS_OR_EQ : '<=' ;
+OP_GREATER_THAN : '>' ;
+OP_GREATER_OR_EQ : '>=' ;
 OP_AND : '&&' ;
 OP_OR : '||' ;
 

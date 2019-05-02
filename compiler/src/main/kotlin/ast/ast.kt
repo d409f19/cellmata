@@ -7,17 +7,26 @@ import org.antlr.v4.runtime.Token
  * The SourceContext data class contains the position of the context in the source code from which an AST node was created.
  * @param lineNumber The line number in the source program. In the range 1..n
  * @param charPositionInLine The position of the first character of the AST node in source program. In the range 0..n-1
+ * @param text The context as the a string from the original source code
  */
-data class SourceContext(val lineNumber: Int, val charPositionInLine: Int) {
-    constructor(ctx: ParserRuleContext) : this(ctx.start.line, ctx.start.charPositionInLine)
-    constructor(token: Token) : this(token.line, token.charPositionInLine)
+data class SourceContext(
+    val lineNumber: Int,
+    val charPositionInLine: Int,
+    val text: String
+) {
+    constructor(ctx: ParserRuleContext) : this(ctx.start.line, ctx.start.charPositionInLine, ctx.text)
+    constructor(token: Token) : this(token.line, token.charPositionInLine, token.text)
+
+    override fun toString(): String {
+        return "($lineNumber:$charPositionInLine)"
+    }
 }
 
 /**
  * A special instance of SourceContext. It is used for nodes that are not from the source program, e.g. it could be
  * from the standard environment like a built-in function.
  */
-val EMPTY_CONTEXT = SourceContext(0, 0)
+val EMPTY_CONTEXT = SourceContext(0, 0, "")
 
 /**
  * Nodes that hold a value or that can produce a value should implement TypedNode to expose the type of that value
@@ -82,7 +91,7 @@ class WorldNode(
 /**
  * An expression is either a literal, an identifier, or some operation that produces a value.
  */
-abstract class Expr(
+sealed class Expr(
     ctx: SourceContext,
     private var type: Type? = UncheckedType
 ) : AST(ctx), TypedNode {
@@ -90,77 +99,103 @@ abstract class Expr(
     override fun setType(type: Type?) { this.type = type }
 }
 
+/**
+ * A BinaryExpr has exactly two child expressions. It is used to generalize behaviour of binary expressions in various visitors.
+ */
+sealed class BinaryExpr(ctx: SourceContext, var left: Expr, var right: Expr) : Expr(ctx)
+
+/**
+ * A BinaryArithmeticExpr has exactly two child expressions which are both numeric expressions, and the
+ * BinaryArithmeticExpr itself also returns a number.
+ * It is used to generalize behaviour of binary arithmetic expressions in various visitors.
+ */
+sealed class BinaryArithmeticExpr(ctx: SourceContext, left: Expr, right: Expr) : BinaryExpr(ctx, left, right)
+
+/**
+ * A NumericComparisonExpr has exactly two child expressions which are both numeric expressions, but the
+ * NumericComparisonExpr itself also returns a boolean.
+ * It is used to generalize behaviour of comparison expressions in various visitors.
+ */
+sealed class NumericComparisonExpr(ctx: SourceContext, left: Expr, right: Expr) : BinaryExpr(ctx, left, right)
+
+/**
+ * A BinaryBooleanExpr has exactly two child expressions which are both boolean expressions, and the
+ * BinaryArithmeticExpr itself also returns a number.
+ * It is used to generalize behaviour of binary boolean expressions in various visitors.
+ */
+sealed class BinaryBooleanExpr(ctx: SourceContext, left: Expr, right: Expr) : BinaryExpr(ctx, left, right)
+
 class OrExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryBooleanExpr(ctx, left, right)
 
 class AndExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryBooleanExpr(ctx, left, right)
 
 class InequalityExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class EqualityExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class GreaterThanExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class GreaterOrEqExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class LessThanExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class LessOrEqExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : NumericComparisonExpr(ctx, left, right)
 
 class AdditionExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 class SubtractionExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 class MultiplicationExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 class DivisionExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 class NegationExpr(
     ctx: SourceContext,
@@ -180,13 +215,20 @@ class ArrayLookupExpr(
 
 /**
  * @param ctx the context from witch this node was created from
- * @param values Elements of the array.
+ * @param body Elements of the array.
  * @param declaredType Type listed before the body/values of the array.
  */
-class ArrayBodyExpr(
+class SizedArrayExpr(
+    ctx: SourceContext,
+    val body: ArrayLiteralExpr?,
+    val declaredType: Type,
+    var declaredSize: List<Int?>
+) : Expr(ctx)
+
+class ArrayLiteralExpr(
     ctx: SourceContext,
     val values: List<Expr>,
-    val declaredType: Type
+    var size: Int? = null
 ) : Expr(ctx)
 
 class Identifier(
@@ -196,9 +238,9 @@ class Identifier(
 
 class ModuloExpr(
     ctx: SourceContext,
-    val left: Expr,
-    val right: Expr
-) : Expr(ctx)
+    left: Expr,
+    right: Expr
+) : BinaryArithmeticExpr(ctx, left, right)
 
 /**
  * Presents a function call in abstract syntax tree
@@ -250,7 +292,7 @@ class IntToFloatConversion(val expr: Expr) : Expr(expr.ctx, FloatType)
 /**
  * Internal node used to represent an implicit conversion from a array of states to a neighbourhood.
  */
-class StateArrayToActualNeighbourhoodConversion(val expr: Expr) : Expr(expr.ctx, ActualNeighbourhoodType)
+class StateArrayToLocalNeighbourhoodConversion(val expr: Expr) : Expr(expr.ctx, LocalNeighbourhoodType)
 
 /*
  * Declarations
@@ -376,9 +418,9 @@ class IfStmt(
 
 class ForLoopStmt(
     ctx: SourceContext,
-    val initPart: AssignStmt,
+    val initPart: AssignStmt?,
     val condition: Expr,
-    val postIterationPart: AssignStmt,
+    val postIterationPart: AssignStmt?,
     val body: CodeBlock
 ) : Stmt(ctx)
 

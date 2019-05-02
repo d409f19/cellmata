@@ -3,25 +3,41 @@ package dk.aau.cs.d409f19
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.CompilerData
-import dk.aau.cs.d409f19.cellumata.ast.*
+import dk.aau.cs.d409f19.cellumata.CompilerSettings
+import dk.aau.cs.d409f19.cellumata.ErrorLogger
+import dk.aau.cs.d409f19.cellumata.ast.reduce
+import dk.aau.cs.d409f19.cellumata.compile
 import dk.aau.cs.d409f19.cellumata.visitors.FlowChecker
+import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 
 /**
- * Compiles a Cellmata program given as string parameter
+ * Compile a Cellmata program given as string parameter
  */
-fun compileProgram(program: String): CompilerData {
-    val source = CharStreams.fromString(program)
-    val lexer = CellmataLexer(source)
+fun compileTestProgram(program: String, settings: CompilerSettings = CompilerSettings()): CompilerData {
+    return compile(CharStreams.fromString(program), settings)
+}
+
+/**
+ * Compile a Cellmata program insecurely given as string parameter and returns all compiler data.
+ * Note that this function may yield strange exceptions and errors
+ * as it DOES NOT assert for no errors between compiler phases.
+ */
+fun compileTestProgramInsecure(program: String): CompilerData {
+    val lexer = CellmataLexer(CharStreams.fromString(program))
     val tokenStream = CommonTokenStream(lexer)
     val parser = CellmataParser(tokenStream)
 
     // Build AST
     val startContext = parser.start()
     val ast = reduce(startContext)
+
+    // Sanity checker
+    val sanityChecker = SanityChecker()
+    sanityChecker.visit(ast)
 
     // Symbol table and scope
     val scopeChecker = ScopeCheckVisitor()
@@ -35,7 +51,27 @@ fun compileProgram(program: String): CompilerData {
     val flowChecker = FlowChecker()
     flowChecker.visit(ast)
 
-    return CompilerData(parser, ast, symbolTable)
+    return CompilerData(parser, ast, symbolTable, ErrorLogger.hasErrors())
+}
+
+/**
+ * Compile a Cellmata program insecurely given as string parameter and returns parser and AST as compiler data.
+ * Note that this function may yield strange exceptions and errors
+ * as it DOES NOT assert for no errors between compiler phases.
+ */
+fun compileTestProgramParserASTInsecure(program: String): CompilerData {
+    val lexer = CellmataLexer(CharStreams.fromString(program))
+    val tokenStream = CommonTokenStream(lexer)
+    val parser = CellmataParser(tokenStream)
+
+    // Build AST
+    val startContext = parser.start()
+    val ast = reduce(startContext)
+
+    // Sanity checker
+    val sanityChecker = SanityChecker()
+    sanityChecker.visit(ast)
+    return CompilerData(parser, ast, hasErrors = ErrorLogger.hasErrors())
 }
 
 /**
