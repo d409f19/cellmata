@@ -1,7 +1,7 @@
 package dk.aau.cs.d409f19.cellumata.ast
 
 import dk.aau.cs.d409f19.antlr.CellmataParser
-import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import org.antlr.v4.runtime.ParserRuleContext
@@ -267,9 +267,7 @@ private fun reduceDecl(node: ParseTree): Decl {
 fun parseColor(intCtx: CellmataParser.Integer_literalContext): Short {
     val value = intCtx.text.toShortOrNull()
     if (value == null || value < 0 || 255 < value) {
-        ErrorLogger.registerError(
-            ErrorFromContext(SourceContext(intCtx), "'${intCtx.text}' is not a valid colour. It must be an integer between 0 and 255.")
-        )
+        ErrorLogger += CompileError(SourceContext(intCtx), "'${intCtx.text}' is not a valid colour. It must be an integer between 0 and 255.")
     }
     return value ?: 0
 }
@@ -338,5 +336,5 @@ fun parseDimension(dim: CellmataParser.World_size_dimContext): WorldDimension {
  * after changing the grammar.
  */
 fun registerReduceError(ctx: ParserRuleContext) {
-    ErrorLogger.registerError(ErrorFromContext(SourceContext(ctx), "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST."))
+    ErrorLogger += CompileError(SourceContext(ctx), "Unexpected parsing context (${ctx.javaClass}). Parse tree could not be mapped to AST.")
 }

@@ -12,7 +12,8 @@ class PrettyPrinter : BaseASTVisitor() {
     /**
      * Print accumulated program from string builder
      */
-    fun print() {
+    fun print(ast: AST) {
+        visit(ast)
         println(stringBuilder.toString())
     }
 

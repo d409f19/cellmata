@@ -3,9 +3,10 @@ package dk.aau.cs.d409f19
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.CompilerData
+import dk.aau.cs.d409f19.cellumata.CompilerSettings
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.reduce
-import dk.aau.cs.d409f19.cellumata.compileSource
+import dk.aau.cs.d409f19.cellumata.compile
 import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
@@ -15,8 +16,8 @@ import org.antlr.v4.runtime.CommonTokenStream
 /**
  * Compile a Cellmata program given as string parameter
  */
-fun compileTestProgram(program: String): CompilerData {
-    return compileSource(program)
+fun compileTestProgram(program: String, settings: CompilerSettings = CompilerSettings()): CompilerData {
+    return compile(CharStreams.fromString(program), settings)
 }
 
 /**

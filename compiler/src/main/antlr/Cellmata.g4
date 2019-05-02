@@ -122,7 +122,7 @@ expr : '#' # stateIndexExpr
 // Functions
 func : ident=func_ident PAREN_START (expr (LIST_SEP expr)* )? PAREN_END ;
 func_ident : IDENT ;
-func_decl : STMT_FUNC func_ident PAREN_START func_decl_arg (LIST_SEP func_decl_arg)* PAREN_END type_ident code_block ;
+func_decl : STMT_FUNC func_ident PAREN_START (func_decl_arg (LIST_SEP func_decl_arg)* )? PAREN_END type_ident code_block ;
 func_decl_arg : type_ident IDENT ;
 
 // Tokens
