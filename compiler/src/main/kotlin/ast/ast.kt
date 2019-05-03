@@ -565,7 +565,6 @@ class CodeBlock(
  * Error nodes are used when something goes wrong in reduce.kt and is returned by the failing function.
  */
 class ErrorAST : AST(EMPTY_CONTEXT)
-
 class ErrorDecl : Decl(EMPTY_CONTEXT)
 class ErrorStmt : Stmt(EMPTY_CONTEXT)
 class ErrorExpr : Expr(EMPTY_CONTEXT)
