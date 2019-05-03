@@ -406,7 +406,7 @@ class FlowChecker : ASTVisitor<Flow> {
 
             //codeAfterThisBlock asserts that there is at least 2 Stmts in the body. No warnings will be
             //produced if the current Stmt is the last, as it can not possibly block any further code inside the block
-            val codeAfterThisBlock = i < node.body.size - 1 || i == 0 && 1 < node.body.size
+            val codeAfterThisBlock = i < node.body.size - 1
 
             //saves the values from the visit()
             if (flow.containsBreak) {
