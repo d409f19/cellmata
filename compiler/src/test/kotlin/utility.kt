@@ -75,6 +75,19 @@ fun compileTestProgramParserASTInsecure(program: String): CompilerData {
 }
 
 /**
+ * Compile a Cellmata program insecurely given as string parameter and returns only parser as compiler data.
+ * Note that this function may yield strange exceptions and errors
+ * as it DOES NOT assert for no errors between compiler phases
+ */
+fun compileTestProgramParserInsecure(program: String): CompilerData {
+    val lexer = CellmataLexer(CharStreams.fromString(program))
+    val tokenStream = CommonTokenStream(lexer)
+    val parser = CellmataParser(tokenStream)
+
+    return CompilerData(parser = parser, hasErrors = ErrorLogger.hasErrors())
+}
+
+/**
  * Sets up a Cellmata parser and returns it
  */
 fun getParser(program: String): CellmataParser {
