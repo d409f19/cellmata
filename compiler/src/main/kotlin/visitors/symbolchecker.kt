@@ -16,7 +16,7 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
     private val symbolTableSession: CreatingSymbolTableSession = CreatingSymbolTableSession(symbolTable = symbolTable)
 
     /**
-     * @return The filed symbol table
+     * @return The filled symbol table
      */
     fun getSymbolTable(): Table {
         return symbolTableSession.getRootTable()

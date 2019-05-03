@@ -19,7 +19,20 @@ data class Table(
 /**
  * An error logged when there is an attempt to redefine an already defined symbol in the code that is being compiled.
  */
-class SymbolRedefinitionError(ctx: SourceContext, val ident: String) : CompileError(ctx, "\"$ident\" is already defined")
+class SymbolRedefinitionError(ctx: SourceContext, val ident: String) :
+    CompileError(ctx, "\"$ident\" is already defined")
+
+/**
+ * An error logged when there is an attempt to redefine a builtin function
+ */
+class BuiltinFunctionRedefinitionError(ctx: SourceContext, val ident: String) :
+    CompileError(ctx, "Redefinition of builtin function: \"$ident\" is not allowed")
+
+/**
+ * An error logged when there is an attempt to use a reserved keyword
+ */
+class ReservedKeywordError(ctx: SourceContext, val ident: String) :
+    CompileError(ctx, "Incorrect use of reserved keyword: \"$ident\"")
 
 /**
  * List of language keywords that can't be used as identifiers
@@ -75,7 +88,7 @@ class SymbolTable {
     fun getSymbolType(name: String): Type? {
         val symbol = getSymbol(name) ?: return null
 
-        return when(symbol) {
+        return when (symbol) {
             is TypedNode -> symbol.getType()
             is StateDecl -> StateType
             is ConstDecl -> symbol.type
@@ -109,6 +122,16 @@ class CreatingSymbolTableSession(symbolTable: Table) {
     init {
         scopeStack.push(Table(tables = mutableListOf(symbolTable))) // God scope
         scopeStack.push(symbolTable)
+        //TODO: preload symboltable with builtin functions
+        insertSymbol(BuiltinFuncCount.ident, BuiltinFuncCount)
+        insertSymbol(BuiltinFuncRandi.ident, BuiltinFuncRandi)
+        insertSymbol(BuiltinFuncRandf.ident, BuiltinFuncRandf)
+        insertSymbol(BuiltinFuncAbsi.ident, BuiltinFuncAbsi)
+        insertSymbol(BuiltinFuncAbsf.ident, BuiltinFuncAbsf)
+        insertSymbol(BuiltinFuncFloor.ident, BuiltinFuncFloor)
+        insertSymbol(BuiltinFuncCeil.ident, BuiltinFuncCeil)
+        insertSymbol(BuiltinFuncRoot.ident, BuiltinFuncRoot)
+        insertSymbol(BuiltinFuncPow.ident, BuiltinFuncPow)
     }
 
     /**
@@ -136,8 +159,10 @@ class CreatingSymbolTableSession(symbolTable: Table) {
     fun insertSymbol(ident: String, node: AST) {
         val table = scopeStack.peek()
 
-        if (RESERVED_WORDS.contains(ident) || table.symbols.containsKey(ident)) {
-            ErrorLogger += SymbolRedefinitionError(node.ctx, ident)
+        when {
+            RESERVED_WORDS.contains(ident) -> ErrorLogger += ReservedKeywordError(node.ctx, ident)
+            getSymbol(ident) is BuiltinFunc -> ErrorLogger += BuiltinFunctionRedefinitionError(node.ctx, ident)
+            table.symbols.containsKey(ident) -> ErrorLogger += SymbolRedefinitionError(node.ctx, ident)
         }
 
         table.symbols[ident] = node
@@ -163,7 +188,7 @@ class CreatingSymbolTableSession(symbolTable: Table) {
     fun getSymbolType(name: String): Type? {
         val symbol = getSymbol(name) ?: return null
 
-        return when(symbol) {
+        return when (symbol) {
             is TypedNode -> symbol.getType()
             is StateDecl -> StateType
             is ConstDecl -> symbol.type
@@ -235,7 +260,7 @@ class ViewingSymbolTableSession(val symbolTable: Table) {
     fun getSymbolType(name: String): Type? {
         val symbol = getSymbol(name) ?: return null
 
-        return when(symbol) {
+        return when (symbol) {
             is TypedNode -> symbol.getType()
             is StateDecl -> StateType
             is ConstDecl -> symbol.type

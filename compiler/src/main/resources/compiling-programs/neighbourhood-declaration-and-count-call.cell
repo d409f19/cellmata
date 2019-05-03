@@ -1,9 +1,3 @@
-/*
-    Error at (22, 12): "count" is undeclared.
-    let x = count(pseudomoore, ident);
-            ^
-*/
-
 world {
     size = 100 [wrap], 200 [wrap]
     tickrate = 1
