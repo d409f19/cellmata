@@ -4,7 +4,6 @@ import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 import kotlin.AssertionError
-import kotlin.math.min
 
 /**
  * Error for violation of the type rules
