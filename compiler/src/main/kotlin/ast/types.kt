@@ -18,7 +18,11 @@ object FloatType : Type("float")
 object BooleanType : Type("bool")
 object StateType : Type("state")
 object LocalNeighbourhoodType : Type("neighbourhood") // An evaluated neighbourhood
-data class ArrayType(val subtype: Type) : Type("array<$subtype>")
+data class ArrayType(val subtype: Type) : Type("array<$subtype>") {
+    override fun toString(): String {
+        return "array<$subtype>"
+    }
+}
 
 /**
  * Default value for types before they're checked by the type checker

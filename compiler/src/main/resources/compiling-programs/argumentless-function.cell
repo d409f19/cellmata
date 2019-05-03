@@ -1,0 +1,14 @@
+world {
+    size = 100 [wrap], 200 [wrap]
+    tickrate = 1
+    cellsize = 5
+}
+
+state ident (0, 0, 0) {
+    let x = constantFunction();
+    become ident;
+}
+
+function constantFunction() int {
+    return 2 + 2;
+}

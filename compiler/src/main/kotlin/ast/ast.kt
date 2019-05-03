@@ -7,17 +7,26 @@ import org.antlr.v4.runtime.Token
  * The SourceContext data class contains the position of the context in the source code from which an AST node was created.
  * @param lineNumber The line number in the source program. In the range 1..n
  * @param charPositionInLine The position of the first character of the AST node in source program. In the range 0..n-1
+ * @param text The context as the a string from the original source code
  */
-data class SourceContext(val lineNumber: Int, val charPositionInLine: Int) {
-    constructor(ctx: ParserRuleContext) : this(ctx.start.line, ctx.start.charPositionInLine)
-    constructor(token: Token) : this(token.line, token.charPositionInLine)
+data class SourceContext(
+    val lineNumber: Int,
+    val charPositionInLine: Int,
+    val text: String
+) {
+    constructor(ctx: ParserRuleContext) : this(ctx.start.line, ctx.start.charPositionInLine, ctx.text)
+    constructor(token: Token) : this(token.line, token.charPositionInLine, token.text)
+
+    override fun toString(): String {
+        return "($lineNumber:$charPositionInLine)"
+    }
 }
 
 /**
  * A special instance of SourceContext. It is used for nodes that are not from the source program, e.g. it could be
  * from the standard environment like a built-in function.
  */
-val EMPTY_CONTEXT = SourceContext(0, 0)
+val EMPTY_CONTEXT = SourceContext(0, 0, "")
 
 /**
  * Nodes that hold a value or that can produce a value should implement TypedNode to expose the type of that value
@@ -206,13 +215,20 @@ class ArrayLookupExpr(
 
 /**
  * @param ctx the context from witch this node was created from
- * @param values Elements of the array.
+ * @param body Elements of the array.
  * @param declaredType Type listed before the body/values of the array.
  */
-class ArrayBodyExpr(
+class SizedArrayExpr(
+    ctx: SourceContext,
+    val body: ArrayLiteralExpr?,
+    val declaredType: Type,
+    var declaredSize: List<Int?>
+) : Expr(ctx)
+
+class ArrayLiteralExpr(
     ctx: SourceContext,
     val values: List<Expr>,
-    val declaredType: Type
+    var size: Int? = null
 ) : Expr(ctx)
 
 class Identifier(
@@ -402,9 +418,9 @@ class IfStmt(
 
 class ForLoopStmt(
     ctx: SourceContext,
-    val initPart: AssignStmt,
+    val initPart: AssignStmt?,
     val condition: Expr,
-    val postIterationPart: AssignStmt,
+    val postIterationPart: AssignStmt?,
     val body: CodeBlock
 ) : Stmt(ctx)
 
