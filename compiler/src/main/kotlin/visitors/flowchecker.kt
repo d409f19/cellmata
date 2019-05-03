@@ -291,8 +291,8 @@ class FlowChecker : ASTVisitor<Flow> {
         return Flow()
     }
 
-    //default Flow() returns false on all fields. The specific nodes that can have true on some fields,
-    //returns the value directly from the visit, such that the true values 'flows up' in the tree
+    /*default Flow() returns false on all fields. The specific nodes that can have true on some fields,
+    returns the value directly from the visit, such that the true values 'flows up' in the tree*/
     override fun visit(node: Stmt): Flow {
         when (node) {
             is AssignStmt -> visit(node)
@@ -404,8 +404,8 @@ class FlowChecker : ASTVisitor<Flow> {
 
             val flow = visit(node.body[i])
 
-            //codeAfterThisBlock asserts that there is at least 2 Stmts in the body. No warnings will be
-            //produced if the current Stmt is the last, as it can not possibly block any further code inside the block
+            /*codeAfterThisBlock asserts that there is at least 2 Stmts in the body. No warnings will be
+            produced if the current Stmt is the last, as it can not possibly block any further code inside the block*/
             val codeAfterThisBlock = i < node.body.size - 1
 
             //saves the values from the visit()
@@ -426,7 +426,7 @@ class FlowChecker : ASTVisitor<Flow> {
                         node.body[i].ctx,
                         "Code after statement never met, reason: return statement"
                     )
-                    return Flow(containsReturn = true)
+                    return Flow(containsReturn)
                 }
                 //if the visited node has a break/continue that blocks further code in the block, produce error
                 containsBreak && node.body[i] !is ForLoopStmt -> {
@@ -434,7 +434,7 @@ class FlowChecker : ASTVisitor<Flow> {
                         node.body[i].ctx,
                         "Code after statement never met, reason: break/continue statement"
                     )
-                    return Flow(containsReturn = containsReturn, containsBreak = false)
+                    return Flow(containsReturn, containsBreak)
                 }
             }
         }
