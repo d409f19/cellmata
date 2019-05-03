@@ -6,12 +6,12 @@ world {
 
 neighbourhood pseudomoore {
     (-1, 1), (0, 1), (1, 1),
-    (-1, 0),         (1, 0),
-    (-1, -1), (-1, 0), (1, -1)
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
 }
 
 state ident (0, 0, 0) {
-    // Count number of 'ident' in 'pseudomoore'
-    let x = count(pseudomoore, ident);
+    // Number of 'ident' neighbours in pseudomoore neighbourhood
+    let x = count(ident, pseudomoore);
     become ident;
 }
