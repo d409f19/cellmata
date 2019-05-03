@@ -379,7 +379,8 @@ class FlowChecker : ASTVisitor<Flow> {
         node.initPart?.let { visit(it) }
         visit(node.condition)
         node.postIterationPart?.let { visit(it) }
-        return visit(node.body)
+        visit(node.body)
+        return Flow()
     }
 
     //if a breakStmt is met, return true. containsBreak field represents both break and continue
