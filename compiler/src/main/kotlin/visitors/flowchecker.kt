@@ -425,7 +425,8 @@ class FlowChecker : ASTVisitor<Flow> {
                 containsReturn -> {
                     ErrorLogger += FlowWarning(
                         node.body[i].ctx,
-                        "Code after statement never met, reason: return statement"
+                        "Code in block after statement on line ${node.body[i].ctx.lineNumber}" +
+                                " never met, reason: return statement"
                     )
                     return Flow(containsReturn)
                 }
@@ -433,7 +434,8 @@ class FlowChecker : ASTVisitor<Flow> {
                 containsBreak && node.body[i] !is ForLoopStmt -> {
                     ErrorLogger += FlowWarning(
                         node.body[i].ctx,
-                        "Code after statement never met, reason: break/continue statement"
+                        "Code in block after statement on line ${node.body[i].ctx.lineNumber}" +
+                                " never met, reason: break/continue statement"
                     )
                     return Flow(containsReturn, containsBreak)
                 }
