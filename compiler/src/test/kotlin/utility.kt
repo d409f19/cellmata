@@ -39,6 +39,10 @@ fun compileTestProgramInsecure(program: String): CompilerData {
     val sanityChecker = SanityChecker()
     sanityChecker.visit(ast)
 
+    // Flow checking
+    val flowChecker = FlowChecker()
+    flowChecker.visit(ast)
+
     // Symbol table and scope
     val scopeChecker = ScopeCheckVisitor()
     scopeChecker.visit(ast)
@@ -47,9 +51,6 @@ fun compileTestProgramInsecure(program: String): CompilerData {
     // Type checking
     TypeChecker(symbolTable).visit(ast)
 
-    // Flow checking
-    val flowChecker = FlowChecker()
-    flowChecker.visit(ast)
 
     return CompilerData(parser, ast, symbolTable, ErrorLogger.hasErrors())
 }
