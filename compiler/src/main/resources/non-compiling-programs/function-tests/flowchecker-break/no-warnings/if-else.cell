@@ -8,7 +8,7 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f(int a) int {
+function f() int {
     for (let x = a; x < a; x = x+1) {
         if (true) {
             let b = a;

@@ -10,11 +10,10 @@ state ident (0, 0, 0) {
 
 function f(int a) int {
     if (a == 1) {
-    }
-    elif (a == 2) {
+    } elif (a == 2) {
        if ( a == 3) {
-            return 2;
-        }
+            return a;
+       }
     } else {}
     return a;
 }
