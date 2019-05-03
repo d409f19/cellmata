@@ -122,16 +122,7 @@ class CreatingSymbolTableSession(symbolTable: Table) {
     init {
         scopeStack.push(Table(tables = mutableListOf(symbolTable))) // God scope
         scopeStack.push(symbolTable)
-        //TODO: preload symboltable with builtin functions
-        insertSymbol(BuiltinFuncCount.ident, BuiltinFuncCount)
-        insertSymbol(BuiltinFuncRandi.ident, BuiltinFuncRandi)
-        insertSymbol(BuiltinFuncRandf.ident, BuiltinFuncRandf)
-        insertSymbol(BuiltinFuncAbsi.ident, BuiltinFuncAbsi)
-        insertSymbol(BuiltinFuncAbsf.ident, BuiltinFuncAbsf)
-        insertSymbol(BuiltinFuncFloor.ident, BuiltinFuncFloor)
-        insertSymbol(BuiltinFuncCeil.ident, BuiltinFuncCeil)
-        insertSymbol(BuiltinFuncRoot.ident, BuiltinFuncRoot)
-        insertSymbol(BuiltinFuncPow.ident, BuiltinFuncPow)
+        preloadBuiltinFunctions()
     }
 
     /**
@@ -203,6 +194,21 @@ class CreatingSymbolTableSession(symbolTable: Table) {
     fun getRootTable(): Table {
         // Get global scope from god scope
         return scopeStack[0].tables[0]
+    }
+
+    /**
+     * Preload table at top of stack with builtin functions
+     */
+    private fun preloadBuiltinFunctions() {
+        insertSymbol(BuiltinFuncCount.ident, BuiltinFuncCount)
+        insertSymbol(BuiltinFuncRandi.ident, BuiltinFuncRandi)
+        insertSymbol(BuiltinFuncRandf.ident, BuiltinFuncRandf)
+        insertSymbol(BuiltinFuncAbsi.ident, BuiltinFuncAbsi)
+        insertSymbol(BuiltinFuncAbsf.ident, BuiltinFuncAbsf)
+        insertSymbol(BuiltinFuncFloor.ident, BuiltinFuncFloor)
+        insertSymbol(BuiltinFuncCeil.ident, BuiltinFuncCeil)
+        insertSymbol(BuiltinFuncRoot.ident, BuiltinFuncRoot)
+        insertSymbol(BuiltinFuncPow.ident, BuiltinFuncPow)
     }
 }
 
