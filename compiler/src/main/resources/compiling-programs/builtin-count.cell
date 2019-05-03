@@ -1,0 +1,17 @@
+world {
+    size = 100 [wrap], 200 [wrap]
+    tickrate = 1
+    cellsize = 5
+}
+
+neighbourhood pseudomoore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state ident (0, 0, 0) {
+    // Number of 'ident' neighbours in pseudomoore neighbourhood
+    let x = count(pseudomoore, ident);
+    become ident;
+}
