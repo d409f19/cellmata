@@ -380,8 +380,8 @@ object BuiltinFuncCount : FuncDecl(
     EMPTY_CONTEXT,
     "count",
     listOf(
-        FunctionArgument(EMPTY_CONTEXT, "stateValue", StateType),
-        FunctionArgument(EMPTY_CONTEXT, "neighbourhoodValue", LocalNeighbourhoodType)
+        FunctionArgument(EMPTY_CONTEXT, "stateParameter", StateType),
+        FunctionArgument(EMPTY_CONTEXT, "neighbourhoodParameter", LocalNeighbourhoodType)
     ),
     CodeBlock(EMPTY_CONTEXT, listOf()),
     IntegerType
@@ -391,8 +391,8 @@ object BuiltinFuncRandi : FuncDecl(
     EMPTY_CONTEXT,
     "randi",
     listOf(
-        FunctionArgument(EMPTY_CONTEXT, "intMin", IntegerType),
-        FunctionArgument(EMPTY_CONTEXT, "intMax", IntegerType)
+        FunctionArgument(EMPTY_CONTEXT, "intMinParameter", IntegerType),
+        FunctionArgument(EMPTY_CONTEXT, "intMaxParameter", IntegerType)
     ),
     CodeBlock(EMPTY_CONTEXT, listOf()),
     IntegerType
@@ -402,8 +402,8 @@ object BuiltinFuncRandf : FuncDecl(
     EMPTY_CONTEXT,
     "randf",
     listOf(
-        FunctionArgument(EMPTY_CONTEXT, "floatMin", FloatType),
-        FunctionArgument(EMPTY_CONTEXT, "floatMax", FloatType)
+        FunctionArgument(EMPTY_CONTEXT, "floatMinParameter", FloatType),
+        FunctionArgument(EMPTY_CONTEXT, "floatMaxParameter", FloatType)
     ),
     CodeBlock(EMPTY_CONTEXT, listOf()),
     FloatType
@@ -413,7 +413,7 @@ object BuiltinFuncAbsi : FuncDecl(
     EMPTY_CONTEXT,
     "absi",
     listOf(
-        FunctionArgument(EMPTY_CONTEXT, "valueInt", IntegerType)
+        FunctionArgument(EMPTY_CONTEXT, "intParameter", IntegerType)
     ),
     CodeBlock(EMPTY_CONTEXT, listOf()),
     IntegerType
@@ -423,7 +423,7 @@ object BuiltinFuncAbsf : FuncDecl(
     EMPTY_CONTEXT,
     "absf",
     listOf(
-        FunctionArgument(EMPTY_CONTEXT, "valueFloat", FloatType)
+        FunctionArgument(EMPTY_CONTEXT, "floatParameter", FloatType)
     ),
     CodeBlock(EMPTY_CONTEXT, listOf()),
     FloatType
@@ -433,7 +433,7 @@ object BuiltinFuncFloor : FuncDecl(
     EMPTY_CONTEXT,
     "floor",
     listOf(
-        FunctionArgument(EMPTY_CONTEXT, "valueFloat", FloatType)
+        FunctionArgument(EMPTY_CONTEXT, "floatParameter", FloatType)
     ),
     CodeBlock(EMPTY_CONTEXT, listOf()),
     IntegerType
@@ -443,7 +443,7 @@ object BuiltinFuncCeil : FuncDecl(
     EMPTY_CONTEXT,
     "ceil",
     listOf(
-        FunctionArgument(EMPTY_CONTEXT, "valueFloat", FloatType)
+        FunctionArgument(EMPTY_CONTEXT, "floatParameter", FloatType)
     ),
     CodeBlock(EMPTY_CONTEXT, listOf()),
     IntegerType
@@ -453,8 +453,8 @@ object BuiltinFuncRoot : FuncDecl(
     EMPTY_CONTEXT,
     "root",
     listOf(
-        FunctionArgument(EMPTY_CONTEXT, "valueFloat", FloatType),
-        FunctionArgument(EMPTY_CONTEXT, "rootFloat", FloatType)
+        FunctionArgument(EMPTY_CONTEXT, "floatValueParameter", FloatType),
+        FunctionArgument(EMPTY_CONTEXT, "floatRootParameter", FloatType)
     ),
     CodeBlock(EMPTY_CONTEXT, listOf()),
     FloatType
@@ -464,8 +464,8 @@ object BuiltinFuncPow : FuncDecl(
     EMPTY_CONTEXT,
     "pow",
     listOf(
-        FunctionArgument(EMPTY_CONTEXT, "valueFloat", FloatType),
-        FunctionArgument(EMPTY_CONTEXT, "exponentFloat", FloatType)
+        FunctionArgument(EMPTY_CONTEXT, "floatValueParameter", FloatType),
+        FunctionArgument(EMPTY_CONTEXT, "floatExponentParameter", FloatType)
     ),
     CodeBlock(EMPTY_CONTEXT, listOf()),
     FloatType
