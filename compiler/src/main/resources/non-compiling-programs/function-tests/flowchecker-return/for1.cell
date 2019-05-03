@@ -1,0 +1,8 @@
+function f1() int {
+
+    for (let i = 0; false; i = i + 1) {
+        return 0;
+    }
+
+    let reachable = true;
+}
