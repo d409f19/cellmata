@@ -457,32 +457,38 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: FuncCallExpr) {
         super.visit(node)
 
-        // Get function declaration for type-checking
-        val funcDecl = (symbolTableSession.getSymbol(node.ident) as FuncDecl)
+        // If node is not a function, register error and continue type-checking
+        if (symbolTableSession.getSymbol(node.ident) !is FuncDecl) {
+            ErrorLogger += TypeError(node.ctx, "\"${node.ident}\" cannot be called, as it is not a function")
+        } else { // If node is a function, continue type-checking arguments
 
-        // If actual and formal arguments are of equal size, type-check them
-        if (node.args.size == funcDecl.args.size) {
+            // Get function declaration for type-checking
+            val funcDecl = (symbolTableSession.getSymbol(node.ident) as FuncDecl)
 
-            for (i in node.args.indices) {
-                // If each argument are not typewise congruent, register error
-                if (node.args[i].getType() != funcDecl.args[i].getType()) {
+            // If actual and formal arguments are of equal size, type-check them
+            if (node.args.size == funcDecl.args.size) {
 
-                    val nodeArg = node.args[i]
-                    val funcDeclArg = funcDecl.args[i]
+                for (i in node.args.indices) {
+                    // If each argument are not typewise congruent, register error
+                    if (node.args[i].getType() != funcDecl.args[i].getType()) {
 
-                    ErrorLogger += TypeError(
-                        node.ctx,
-                        "Actual argument \"${nodeArg.ctx.text}\", of type ${nodeArg.getType()}, was not equal to " +
-                                "formal argument \"${funcDeclArg.ident}\", of type ${funcDeclArg.getType()}"
-                    )
+                        val nodeArg = node.args[i]
+                        val funcDeclArg = funcDecl.args[i]
+
+                        ErrorLogger += TypeError(
+                            node.ctx,
+                            "Actual argument \"${nodeArg.ctx.text}\", of type ${nodeArg.getType()}, was not equal to " +
+                                    "formal argument \"${funcDeclArg.ident}\", of type ${funcDeclArg.getType()}"
+                        )
+                    }
                 }
+            } else { // If formal and actual arguments differ in size, register error
+                ErrorLogger += CompileError(
+                    node.ctx,
+                    "Size of actual arguments: ${node.args.size} to function-call \"${node.ident}\" differ from " +
+                            "formal arguments' size ${funcDecl.args.size}"
+                )
             }
-        } else { // If formal and actual arguments differ in size, register error
-            ErrorLogger += CompileError(
-                node.ctx,
-                "Size of actual arguments: ${node.args.size} to function-call \"${node.ident}\" differ from " +
-                        "formal arguments' size ${funcDecl.args.size}"
-            )
         }
 
         // Get return type of function
