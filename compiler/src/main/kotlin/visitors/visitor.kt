@@ -424,4 +424,15 @@ open class ScopedASTVisitor(symbolTable: Table): BaseASTVisitor() {
         super.visit(node)
         symbolTableSession.closeScope()
     }
+
+    override fun visit(node: ForLoopStmt) {
+        symbolTableSession.openScope()
+        node.initPart?.let { visit(it) }
+        visit(node.condition)
+        symbolTableSession.openScope()
+        visit(node.body)
+        symbolTableSession.closeScope()
+        node.postIterationPart?.let { visit(it) }
+        symbolTableSession.closeScope()
+    }
 }

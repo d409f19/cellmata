@@ -16,7 +16,7 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
     private val symbolTableSession: CreatingSymbolTableSession = CreatingSymbolTableSession(symbolTable = symbolTable)
 
     /**
-     * @return The filed symbol table
+     * @return The filled symbol table
      */
     fun getSymbolTable(): Table {
         return symbolTableSession.getRootTable()
@@ -79,9 +79,20 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         super.visit(node)
     }
 
+    override fun visit(node: IfStmt) {
+        // conditional blocks open their own scopes
+        node.conditionals.forEach { visit(it) }
+        if (node.elseBlock != null) {
+            symbolTableSession.openScope()
+            visit(node.elseBlock)
+            symbolTableSession.closeScope()
+        }
+    }
+
     override fun visit(node: ConditionalBlock) {
+        visit(node.expr)
         symbolTableSession.openScope()
-        super.visit(node)
+        visit(node.block)
         symbolTableSession.closeScope()
     }
 

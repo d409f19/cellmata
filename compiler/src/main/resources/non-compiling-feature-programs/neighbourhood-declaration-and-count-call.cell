@@ -1,9 +1,3 @@
-/*
-    Error at (22, 12): "count" is undeclared.
-    let x = count(pseudomoore, ident);
-            ^
-*/
-
 world {
     size = 100 [wrap], 200 [wrap];
     tickrate = 1;
@@ -18,6 +12,6 @@ neighbourhood pseudomoore {
 
 state ident (0, 0, 0) {
     // Count number of 'ident' in 'pseudomoore'
-    let x = count(pseudomoore, ident);
+    let x = count(ident, pseudomoore);
     become ident;
 }
