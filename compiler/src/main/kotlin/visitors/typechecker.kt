@@ -36,7 +36,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             ErrorLogger += TypeError(node.left.ctx, "Expected boolean expression in left hand side of and-expression.")
         }
         if (node.right.getType() != BooleanType) {
-            ErrorLogger += TypeError(node.right.ctx, "Expected boolean expression in right hand side of and-expression.")
+            ErrorLogger += TypeError(
+                node.right.ctx,
+                "Expected boolean expression in right hand side of and-expression."
+            )
         }
 
         node.setType(BooleanType)
@@ -45,176 +48,204 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: InequalityExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == BooleanType && node.right.getType() == BooleanType -> BooleanType
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            node.left.getType() == StateType && node.right.getType() == StateType -> BooleanType
-            node.left.getType() == LocalNeighbourhoodType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
-            node.left.getType() == LocalNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
-            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
-            node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Could not compare the types of right and left hand side of inequality-expression.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == BooleanType && node.right.getType() == BooleanType -> BooleanType
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
+                node.left.getType() == StateType && node.right.getType() == StateType -> BooleanType
+                node.left.getType() == LocalNeighbourhoodType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
+                node.left.getType() == LocalNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
+                node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
+                node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
+                else -> {
+                    ErrorLogger += TypeError(
+                        node.ctx,
+                        "Could not compare the types of right and left hand side of inequality-expression."
+                    )
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: EqualityExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == BooleanType && node.right.getType() == BooleanType -> BooleanType
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            node.left.getType() == StateType && node.right.getType() == StateType -> BooleanType
-            node.left.getType() == LocalNeighbourhoodType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
-            node.left.getType() == LocalNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
-            node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
-            node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Could not compare the types of right and left hand side of equality-expression.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == BooleanType && node.right.getType() == BooleanType -> BooleanType
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
+                node.left.getType() == StateType && node.right.getType() == StateType -> BooleanType
+                node.left.getType() == LocalNeighbourhoodType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
+                node.left.getType() == LocalNeighbourhoodType && node.right.getType() is ArrayType && (node.right.getType() as ArrayType).subtype == StateType -> BooleanType
+                node.left.getType() is ArrayType && (node.left.getType() as ArrayType).subtype == StateType && node.right.getType() == LocalNeighbourhoodType -> BooleanType
+                node.left.getType() is ArrayType && node.right.getType() is ArrayType -> BooleanType
+                else -> {
+                    ErrorLogger += TypeError(
+                        node.ctx,
+                        "Could not compare the types of right and left hand side of equality-expression."
+                    )
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: GreaterThanExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: GreaterOrEqExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: LessThanExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: LessOrEqExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> BooleanType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> BooleanType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: AdditionExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: SubtractionExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: MultiplicationExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: DivisionExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: NegationExpr) {
         super.visit(node)
 
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Only float or integer can be negative.")
-                null
+        node.setType(
+            when (node.value.getType()) {
+                IntegerType -> IntegerType
+                FloatType -> FloatType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Only float or integer can be negative.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: NotExpr) {
@@ -237,11 +268,15 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
      * Finds the size of the largest subarray in each dimension.
      * Note: if there are empty array literals in the tree, this function may return fewer dimensions than expected.
      */
-    private fun searchSize(node: ArrayLiteralExpr, sizes: MutableList<Int> = mutableListOf(), depth: Int = 1): MutableList<Int> {
+    private fun searchSize(
+        node: ArrayLiteralExpr,
+        sizes: MutableList<Int> = mutableListOf(),
+        depth: Int = 1
+    ): MutableList<Int> {
         if (sizes.size < depth) {
             sizes.add(node.values.size)
-        } else  if (sizes[depth-1] < node.values.size) {
-            sizes[depth-1] = node.values.size
+        } else if (sizes[depth - 1] < node.values.size) {
+            sizes[depth - 1] = node.values.size
         }
 
         @Suppress("NAME_SHADOWING") var sizes = sizes
@@ -276,7 +311,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
          * Has declared type, but no values  -> Used declared type
          */
 
-        if(node.body == null) {
+        if (node.body == null) {
             return
         }
 
@@ -289,7 +324,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             val types = node.body.values.map { it.getType() }.toList()
             if (types.distinct().count() > 1) {
                 // ToDo int to float conversion
-                ErrorLogger += TypeError(node.ctx, "Cannot determine type of array because it is initialised with multiple types.")
+                ErrorLogger += TypeError(
+                    node.ctx,
+                    "Cannot determine type of array because it is initialised with multiple types."
+                )
                 node.setType(null)
                 return
             }
@@ -315,16 +353,21 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         }
 
         // ToDo implicit conversion, declaredType == float, and valuesType == integer -> type = float
-        node.setType(if (node.body.values.isNotEmpty()) {
+        node.setType(
+            if (node.body.values.isNotEmpty()) {
                 if (node.declaredType is ArrayType && !compareType(node.declaredType.subtype, valuesType)) {
-                    ErrorLogger += TypeError(node.ctx, "Cannot determine type of array since initialised values does not match the declared type.")
+                    ErrorLogger += TypeError(
+                        node.ctx,
+                        "Cannot determine type of array since initialised values does not match the declared type."
+                    )
                     node.setType(null)
                     return
                 }
                 node.declaredType
             } else {
                 node.declaredType
-            })
+            }
+        )
 
         val literalSizes = searchSize(node.body)
 
@@ -335,7 +378,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         val finalSizes = node.declaredSize.mapIndexed { i, declaredSize ->
             if (declaredSize == null && i >= literalSizes.size) {
                 null
-            } else if (declaredSize == null || (i < literalSizes.size-1 && literalSizes[i] > declaredSize)) {
+            } else if (declaredSize == null || (i < literalSizes.size - 1 && literalSizes[i] > declaredSize)) {
                 literalSizes[i]
             } else {
                 declaredSize
@@ -352,7 +395,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         // push down size
         pushDownSize(
             node.body,
-            finalSizes.map {it!!}.toList()
+            finalSizes.map { it!! }.toList()
         )
     }
 
@@ -373,27 +416,33 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: ModuloExpr) {
         super.visit(node)
 
-        node.setType(when {
-            node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
-            node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
-            node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                null
+        node.setType(
+            when {
+                node.left.getType() == IntegerType && node.right.getType() == IntegerType -> IntegerType
+                node.left.getType() == FloatType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == IntegerType && node.right.getType() == FloatType -> FloatType
+                node.left.getType() == FloatType && node.right.getType() == IntegerType -> FloatType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    null
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: ReturnStmt) {
         super.visit(node)
 
         if (expectedReturn != node.value.getType()) {
-            node.value.setType(when {
-                node.value.getType() == IntegerType -> FloatType
-                else -> {
-                    ErrorLogger += TypeError(node.ctx, "Wrong return type (${node.value.getType()}). Expected $expectedReturn")
-                    null
+            node.value.setType(
+                when {
+                    node.value.getType() == IntegerType -> FloatType
+                    else -> {
+                        ErrorLogger += TypeError(
+                            node.ctx,
+                            "Wrong return type (${node.value.getType()}). Expected $expectedReturn"
+                        )
+                        null
                     }
                 }
             )
@@ -407,6 +456,40 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
 
     override fun visit(node: FuncCallExpr) {
         super.visit(node)
+
+        // If node is not a function, register error and continue type-checking
+        if (symbolTableSession.getSymbol(node.ident) !is FuncDecl) {
+            ErrorLogger += TypeError(node.ctx, "\"${node.ident}\" cannot be called, as it is not a function")
+        } else { // If node is a function, continue type-checking arguments
+
+            // Get function declaration for type-checking
+            val funcDecl = (symbolTableSession.getSymbol(node.ident) as FuncDecl)
+
+            // If actual and formal arguments are of equal size, type-check them
+            if (node.args.size == funcDecl.args.size) {
+
+                for (i in node.args.indices) {
+                    // If each argument are not typewise congruent, register error
+                    if (node.args[i].getType() != funcDecl.args[i].getType()) {
+
+                        val nodeArg = node.args[i]
+                        val funcDeclArg = funcDecl.args[i]
+
+                        ErrorLogger += TypeError(
+                            node.ctx,
+                            "Actual argument \"${nodeArg.ctx.text}\", of type ${nodeArg.getType()}, was not equal to " +
+                                    "formal argument \"${funcDeclArg.ident}\", of type ${funcDeclArg.getType()}"
+                        )
+                    }
+                }
+            } else { // If formal and actual arguments differ in size, register error
+                ErrorLogger += CompileError(
+                    node.ctx,
+                    "Size of actual arguments: ${node.args.size} to function-call \"${node.ident}\" differ from " +
+                            "formal arguments' size ${funcDecl.args.size}"
+                )
+            }
+        }
 
         // Get return type of function
         node.setType(symbolTableSession.getSymbolType(node.ident))
