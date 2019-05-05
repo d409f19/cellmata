@@ -33,6 +33,8 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
 
         // Visit the other declarations
         node.body.filter { it !is ConstDecl }.forEach { visit(it) }
+
+        super.visit(node.world)
     }
 
     override fun visit(node: Identifier) {

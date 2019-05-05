@@ -11,6 +11,8 @@ sealed class Type(val name: String) {
     override fun toString(): String {
         return name
     }
+
+    val baseType: Type get() = if (this is ArrayType) subtype.baseType else this
 }
 
 object IntegerType : Type("int")
@@ -45,7 +47,7 @@ object NoSubtypeType : Type("no-subtype")
  * Convert a parse tree node to the type it represents
  */
 fun typeFromCtx(ctx: ParseTree): Type {
-    return when(ctx) {
+    return when (ctx) {
         is CellmataParser.TypeArrayContext -> ArrayType(subtype = typeFromCtx(ctx.array_decl().type_ident()))
         is CellmataParser.TypeBooleanContext -> BooleanType
         is CellmataParser.TypeIntegerContext -> IntegerType

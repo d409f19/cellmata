@@ -4,7 +4,9 @@ import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import dk.aau.cs.d409f19.cellumata.ast.*
+import jdk.nashorn.api.tree.ArrayLiteralTree
 import kotlin.AssertionError
+import kotlin.math.exp
 
 /**
  * Error for violation of the type rules
@@ -16,6 +18,7 @@ class TypeError(ctx: SourceContext, description: String) : CompileError(ctx, des
  */
 class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTable) {
     private var expectedReturn: Type? = null
+    private var isOuterArray = true
 
     override fun visit(node: NegationExpr) {
         super.visit(node)
@@ -54,20 +57,107 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     }
 
     /**
+     * Finds the type of an array based on its content. No types are changed converted, but errors are logged if the
+     * array's type (or if a sub-array's type) can't be determined.
+     * @see pushDownArrayType
+     */
+    private fun searchArrayType(expr: Expr): Type {
+        if (expr !is ArrayLiteralExpr) {
+            return expr.getType()
+
+        } else if (expr.values.isEmpty()) {
+            return ArrayType(NoSubtypeType)
+
+        } else {
+            // Determine subtype by comparing the types of each child expression
+            var subtype = searchArrayType(expr.values[0])
+            for (i in 1 until expr.values.size) {
+                val type = searchArrayType(expr.values[i])
+                when {
+                    // Previous expressions contained uncertainty, use this type instead
+                    subtype.baseType == NoSubtypeType || subtype.baseType == UndeterminedType -> {
+                        subtype = type
+                    }
+
+                    // Ignore this expression
+                    type == UndeterminedType -> {
+                    }
+
+                    // Ok
+                    isCompatibleType(type, subtype) -> {
+                    }
+
+                    // The subtype should be this type instead, since we can't use conversion
+                    isCompatibleType(subtype, type) -> {
+                        subtype = type
+                    }
+
+                    // Conversion is not possible. Error!
+                    else -> {
+                        ErrorLogger += TypeError(expr.ctx, "Could not determined subtype of array.")
+                        return ArrayType(UndeterminedType)
+                    }
+                }
+            }
+
+            return ArrayType(subtype)
+        }
+    }
+
+    /**
+     * Sets the type of an array and its sub-arrays. Also adds implicit conversion around child expressions if needed.
+     * @see searchArrayType
+     */
+    private fun pushDownArrayType(expr: Expr, type: Type) {
+        if (type is ArrayType && expr is ArrayLiteralExpr) {
+
+            expr.setType(type)
+
+            if (type.subtype == FloatType) {
+                // Insert implicit int-to-float conversion if needed
+                for (i in expr.values.indices) {
+                    if (expr.values[i].getType() == IntegerType) {
+                        expr.values[i] = IntToFloatConversion(expr.values[i])
+                    }
+                }
+
+            } else if (type.subtype == LocalNeighbourhoodType) {
+                // Insert implicit array<state>-to-neighbourhood conversion if needed
+                for (i in expr.values.indices) {
+                    if (expr.values[i] is ArrayLiteralExpr) {
+                        expr.values[i].setType(ArrayType(StateType))
+                        expr.values[i] = StateArrayToLocalNeighbourhoodConversion(expr.values[i])
+                    }
+                }
+
+            } else {
+                // push down subtype
+                expr.values.forEach { pushDownArrayType(it, type.subtype) }
+            }
+
+        } else if (type == UndeterminedType && expr is ArrayLiteralExpr) {
+            // There's a type error in the array or one of its siblings
+            expr.setType(UndeterminedType)
+
+        } else if (type != expr.getType()){
+            ErrorLogger += TypeError(expr.ctx, "Should never happen: Could not push down array type '$type' over expr '$expr'")
+        }
+    }
+
+    /**
      * Finds the size of the largest subarray in each dimension.
      * Note: if there are empty array literals in the tree, this function may return fewer dimensions than expected.
      */
-    private fun searchSize(node: ArrayLiteralExpr, sizes: MutableList<Int> = mutableListOf(), depth: Int = 1): MutableList<Int> {
-        if (sizes.size < depth) {
+    private fun searchSize(node: ArrayLiteralExpr, sizes: MutableList<Int> = mutableListOf(), depth: Int = 0): MutableList<Int> {
+        if (sizes.size <= depth) {
             sizes.add(node.values.size)
-        } else  if (sizes[depth-1] < node.values.size) {
-            sizes[depth-1] = node.values.size
+        } else if (sizes[depth] < node.values.size) {
+            sizes[depth] = node.values.size
         }
 
-        @Suppress("NAME_SHADOWING") var sizes = sizes
         node.values.forEach {
             if (it is ArrayLiteralExpr) {
-                sizes = searchSize(it, sizes, depth + 1)
+                searchSize(it, sizes, depth + 1)
             }
         }
 
@@ -77,18 +167,16 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     private fun pushDownSize(n: Expr, size: List<Int>) {
         if (n is ArrayLiteralExpr) {
             n.size = size[0]
-
-            if (n.values.size > 1) {
-                n.values.forEach {
-                    pushDownSize(it, size.subList(1, size.size))
-                }
+            n.values.forEach {
+                pushDownSize(it, size.subList(1, size.size))
             }
         }
     }
 
     /**
-     * Compares two types and returns whether they are equivalent types, accounting for NoSubtypeType and
-     * UndeterminedType. It handles nested checking for arrays.
+     * Compares two types and returns whether type1 is compatible with type2, i.e. they are equivalent types or
+     * type1 can be converted to type2. The function accounts for NoSubtypeType and UndeterminedType and
+     * handles nested checking for arrays.
      * @return Returns true if the types are equivalent
      */
     private fun isCompatibleType(type1: Type, type2: Type): Boolean {
@@ -101,158 +189,111 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             return isCompatibleType(type1.subtype, type2.subtype)
         }
 
+        if (type1 == IntegerType && type2 == FloatType) {
+            return true
+        }
+
+        if (type1 is ArrayType && type1.subtype == StateType && type2 == LocalNeighbourhoodType) {
+            return true
+        }
+
         return type1 == type2
     }
 
     override fun visit(node: SizedArrayExpr) {
+        if (!isOuterArray) {
+            ErrorLogger += TypeError(node.ctx, "Sized arrays cannot be declared inside other arrays.")
+            return
+        }
+
+        isOuterArray = false
         super.visit(node)
+        isOuterArray = true
 
-        /*
-         * SizedArrayExpr always have a declared type, so these scenarios has to be checked:
-         *
-         * Has no values -> Used declared type
-         * Has values -> Check value consistency, and check declared type matches values type
-         */
+        /* We need to do two things:
+        1. Find the type of the array and push it down to any child arrays
+        2. Determine the sizes of each dimension and push it down to any child arrays */
 
+        // type check
         if (node.body == null || node.body.values.isEmpty()) {
             // No values specified, nothing to check against
             return
 
         } else {
-            // Check consistency of types
-            val types = node.body.values.map { it.getType() }.toList()
-            if (types.distinct().count() > 1) {
-                // ToDo int to float conversion
-                ErrorLogger += TypeError(node.ctx, "Cannot determine type of array because it is initialised with multiple types.")
-                node.setType(UndeterminedType)
-                return
+            // Check if declared type matches the type of the body
+            val type = searchArrayType(node.body)
+            if (isCompatibleType(type, node.declaredType)) {
+                pushDownArrayType(node.body, node.declaredType)
+                node.setType(node.declaredType)
+
+            } else {
+                ErrorLogger += TypeError(node.ctx, "The type of the array's body does not adhere to the declared type.")
             }
         }
 
-        // ToDo implicit conversion, declaredType == float, and valuesType == integer -> type = float
-        node.setType(if (node.body.values.isNotEmpty()) {
-                if (node.declaredType is ArrayType && !isCompatibleType(node.declaredType.subtype, node.body.getType())) {
-                    ErrorLogger += TypeError(node.ctx, "Cannot determine type of array since initialised values does not match the declared type.")
-                    node.setType(UndeterminedType)
-                    return
-                }
-                node.declaredType
-            } else {
-                node.declaredType
-            })
-
+        // Sizes
         val literalSizes = searchSize(node.body)
-
-        // compare sizes
-        if (literalSizes.size > node.declaredSize.size) {
-            throw AssertionError("Type consistency check has failed, it should have already caught this")
+        // Check if declared size and actual size are consistent. If the base type is LocalNeighbourhoodType we allow
+        // the literal size to be one greater due to array<state>-to-neighbourhood conversion, hence the -1
+        if (if (node.declaredType.baseType == LocalNeighbourhoodType)
+                literalSizes.size - 1 > node.declaredSize.size
+                else literalSizes.size > node.declaredSize.size)
+        {
+            ErrorLogger += CompileError(node.ctx, "The array body has more dimensions than the amount declared.")
+            // We add some null dimensions to prevent more errors from happening
+            node.declaredSize = literalSizes.mapIndexed { i, _ ->
+                if (i < node.declaredSize.size) node.declaredSize[i] else null
+            }
         }
         val finalSizes = node.declaredSize.mapIndexed { i, declaredSize ->
             if (declaredSize == null && i >= literalSizes.size) {
-                null
-            } else if (declaredSize == null || (i < literalSizes.size-1 && literalSizes[i] > declaredSize)) {
+                ErrorLogger += CompileError(node.ctx, "Could not determine size of dimension $i of array.")
+                -1
+            } else if (declaredSize == null) {
+                literalSizes[i]
+            } else if (declaredSize < literalSizes[i]) {
+                ErrorLogger += CompileError(node.ctx, "Dimension $i of array's body is greater than the declared size of dimension $i.")
                 literalSizes[i]
             } else {
                 declaredSize
             }
         }.toList()
 
-        // check that all dimensions has a size
-        finalSizes.forEach {
-            if (it == null) {
-                throw AssertionError("A dimension has undetermined size")
-            }
-        }
-
-        // push down size
-        pushDownSize(
-            node.body,
-            finalSizes.map {it!!}.toList()
-        )
+        // Push down size
+        pushDownSize(node.body, finalSizes)
     }
 
     override fun visit(node: ArrayLiteralExpr) {
-        super.visit(node)
 
-        // Sizes
-        val foundSizes = searchSize(node)
-        pushDownSize(node, foundSizes)
+        if (isOuterArray) {
+            // This array literal is an outermost array and should determine the size and type of itself and
+            // its children based on the values of all the children
 
-        // Type
-        if (node.values.isEmpty()) {
-            // No values means this array could have any subtype
-            node.setType(ArrayType(NoSubtypeType))
+            // Visit children
+            if (node.values.isNotEmpty()) {
+                isOuterArray = false
+                super.visit(node)
+                isOuterArray = true
+            } else {
+                node.size = 0
+                ErrorLogger += TypeError(node.ctx, "Cannot determine the type an empty array literal.")
+                return
+            }
+
+            /* We need to do two things:
+            1. Find the type of the array and push it down to any child arrays
+            2. Determine the sizes of each dimension and push it down to any child arrays */
+
+            // Type
+            val type = searchArrayType(node)
+            pushDownArrayType(node, type)
+
+            // Sizes
+            val sizes = searchSize(node)
+            pushDownSize(node, sizes)
 
         } else {
-            /* Implicit conversion of subtypes:
-            First we need to determine the subtype. We do this by comparing each expression's type. If we find
-            multiple types we check if implicit conversion is possible and then take the broader type. If implicit
-            conversion is not possible, the subtype has errors. Next we insert the implicit conversion where needed.
-             */
-
-            // Determine subtype
-            var subtype = node.values[0].getType()
-            for (i in 1 until node.values.size) {
-                val type = node.values[i].getType()
-                when {
-                    // Previous expressions contained uncertainty, use this type instead
-                    subtype == UndeterminedType -> {
-                        subtype = type
-                    }
-
-                    type == UndeterminedType -> {} // ignore this expression
-
-                    isCompatibleType(subtype, type) -> {} // ok
-
-                    // The subtype should be float instead, and ints should be converted
-                    subtype == IntegerType && type == FloatType -> {
-                        subtype = FloatType
-                    }
-
-                    // The subtype should be neighbourhood, and array of states should be converted
-                    canConvertToNeighbourhood(subtype) && type == LocalNeighbourhoodType -> {
-                        // If any previous expression is an empty array, we can now conclude, that it is an array of states
-                        for (j in 0 until i) {
-                            val prevExprType = node.values[i].getType()
-                            if (prevExprType is ArrayType && prevExprType.subtype == NoSubtypeType) {
-                                node.values[i].setType(ArrayType(StateType))
-                            }
-                        }
-
-                        subtype = LocalNeighbourhoodType
-                    }
-
-                    // Conversion is not possible. Error!
-                    else -> {
-                        ErrorLogger += TypeError(node.ctx, "Could not determined subtype of array.")
-                        node.setType(ArrayType(UndeterminedType))
-                        return
-                    }
-                }
-            }
-
-            // Add implicit conversion where needed //TODO Push down implicit conversion
-            for (i in 0 until node.values.size) {
-                val type = node.values[i].getType()
-
-                if (type == UndeterminedType || type == subtype) {
-                    // Nothing we can do here
-
-                } else if (subtype == FloatType && type == IntegerType) {
-                    node.values[i] = IntToFloatConversion(node.values[i])
-
-                } else if (subtype == LocalNeighbourhoodType && canConvertToNeighbourhood(type)) {
-                    // If the expression is an empty array, we can now conclude, that it is an array of states
-                    if (type is ArrayType && type.subtype == NoSubtypeType) {
-                        node.values[i].setType(ArrayType(StateType))
-                    }
-                    node.values[i] = StateArrayToLocalNeighbourhoodConversion(node.values[i])
-
-                } else {
-                    // Should never happen
-                    throw TerminatedCompilationException("Should never happen: Could not do implicit conversion even though array subtype was determined. Subtype was '$subtype' and the expression had type '$type'.")
-                }
-            }
+            super.visit(node)
         }
     }
 

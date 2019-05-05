@@ -238,6 +238,7 @@ class ViewingSymbolTableSession(val symbolTable: Table) {
         return when(symbol) {
             is TypedNode -> symbol.getType()
             is StateDecl -> StateType
+            is NeighbourhoodDecl -> LocalNeighbourhoodType
             is ConstDecl -> symbol.type
             is FuncDecl -> symbol.returnType
             else -> null

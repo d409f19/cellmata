@@ -25,7 +25,6 @@ class SanityChecker : BaseASTVisitor() {
     var dimensions: Int = 0
 
     override fun visit(node: WorldNode) {
-        super.visit(node)
         dimensions = node.dimensions.size
     }
 
@@ -100,7 +99,9 @@ class SanityChecker : BaseASTVisitor() {
     // if there is 0 states it throws an error
     // if there is 1 state it gives a warning
     override fun visit(node: RootNode) {
-        super.visit(node)
+
+        visit(node.world)
+        node.body.forEach { visit(it) }
 
         if (numberOfStates == 0)
             ErrorLogger += SanityError(node.ctx, "A state is needed")
