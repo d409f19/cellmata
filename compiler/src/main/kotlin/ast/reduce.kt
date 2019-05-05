@@ -148,7 +148,7 @@ private fun reduceExpr(node: ParseTree): Expr {
             declaredSize = getArrayDeclaredSize(node.array_decl())
         )
         is CellmataParser.ArrayLiteralExprContext -> reduceExpr(node.value)
-        is CellmataParser.Array_value_literalContext -> ArrayLiteralExpr(SourceContext(node), node.expr().map(::reduceExpr))
+        is CellmataParser.Array_value_literalContext -> ArrayLiteralExpr(SourceContext(node), node.expr().map(::reduceExpr).toMutableList())
         is CellmataParser.LiteralExprContext -> reduceExpr(node.value)
         is CellmataParser.BoolLiteralContext -> BoolLiteral(
             ctx = SourceContext(node),

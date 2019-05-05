@@ -218,7 +218,7 @@ class PrettyPrinter : BaseASTVisitor() {
         stringBuilder.append("\treturn ")
 
         // Continue printing expression
-        visit(node.value)
+        visit(node.expr)
 
         // When done with printing expression, print semicolon and newline
         stringBuilder.appendln(";")

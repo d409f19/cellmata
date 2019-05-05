@@ -2,6 +2,7 @@ package dk.aau.cs.d409f19.cellumata.visitors
 
 import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
+import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import dk.aau.cs.d409f19.cellumata.ast.*
 import kotlin.AssertionError
 
@@ -85,6 +86,24 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         }
     }
 
+    /**
+     * Compares two types and returns whether they are equivalent types, accounting for NoSubtypeType and
+     * UndeterminedType. It handles nested checking for arrays.
+     * @return Returns true if the types are equivalent
+     */
+    private fun isCompatibleType(type1: Type, type2: Type): Boolean {
+        if ((type1 == UndeterminedType || type1 == NoSubtypeType)
+                || (type2 == UndeterminedType || type2 == NoSubtypeType)) {
+            return true
+        }
+
+        if (type1 is ArrayType && type2 is ArrayType) {
+            return isCompatibleType(type1.subtype, type2.subtype)
+        }
+
+        return type1 == type2
+    }
+
     override fun visit(node: SizedArrayExpr) {
         super.visit(node)
 
@@ -110,27 +129,9 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             }
         }
 
-        /**
-         * Compares two types, handles nested checking for arrays.
-         * Null is equal to any other type.
-         *
-         * @return Returns true if the type are the same, accounting for wildcard matching
-         */
-        fun compareType(type1: Type?, type2: Type?): Boolean {
-            if (type1 == null || type2 == null) {
-                return true
-            }
-
-            if (type1 is ArrayType && type2 is ArrayType) {
-                return compareType(type1.subtype, type2.subtype)
-            }
-
-            return type1 == type2
-        }
-
         // ToDo implicit conversion, declaredType == float, and valuesType == integer -> type = float
         node.setType(if (node.body.values.isNotEmpty()) {
-                if (node.declaredType is ArrayType && !compareType(node.declaredType.subtype, node.body.getType())) {
+                if (node.declaredType is ArrayType && !isCompatibleType(node.declaredType.subtype, node.body.getType())) {
                     ErrorLogger += TypeError(node.ctx, "Cannot determine type of array since initialised values does not match the declared type.")
                     node.setType(UndeterminedType)
                     return
@@ -173,10 +174,86 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: ArrayLiteralExpr) {
         super.visit(node)
 
-        node.setType(ArrayType(if (node.values.isEmpty()) UndeterminedType else node.values[0].getType()))
-
+        // Sizes
         val foundSizes = searchSize(node)
         pushDownSize(node, foundSizes)
+
+        // Type
+        if (node.values.isEmpty()) {
+            // No values means this array could have any subtype
+            node.setType(ArrayType(NoSubtypeType))
+
+        } else {
+            /* Implicit conversion of subtypes:
+            First we need to determine the subtype. We do this by comparing each expression's type. If we find
+            multiple types we check if implicit conversion is possible and then take the broader type. If implicit
+            conversion is not possible, the subtype has errors. Next we insert the implicit conversion where needed.
+             */
+
+            // Determine subtype
+            var subtype = node.values[0].getType()
+            for (i in 1 until node.values.size) {
+                val type = node.values[i].getType()
+                when {
+                    // Previous expressions contained uncertainty, use this type instead
+                    subtype == UndeterminedType -> {
+                        subtype = type
+                    }
+
+                    type == UndeterminedType -> {} // ignore this expression
+
+                    isCompatibleType(subtype, type) -> {} // ok
+
+                    // The subtype should be float instead, and ints should be converted
+                    subtype == IntegerType && type == FloatType -> {
+                        subtype = FloatType
+                    }
+
+                    // The subtype should be neighbourhood, and array of states should be converted
+                    canConvertToNeighbourhood(subtype) && type == LocalNeighbourhoodType -> {
+                        // If any previous expression is an empty array, we can now conclude, that it is an array of states
+                        for (j in 0 until i) {
+                            val prevExprType = node.values[i].getType()
+                            if (prevExprType is ArrayType && prevExprType.subtype == NoSubtypeType) {
+                                node.values[i].setType(ArrayType(StateType))
+                            }
+                        }
+
+                        subtype = LocalNeighbourhoodType
+                    }
+
+                    // Conversion is not possible. Error!
+                    else -> {
+                        ErrorLogger += TypeError(node.ctx, "Could not determined subtype of array.")
+                        node.setType(ArrayType(UndeterminedType))
+                        return
+                    }
+                }
+            }
+
+            // Add implicit conversion where needed //TODO Push down implicit conversion
+            for (i in 0 until node.values.size) {
+                val type = node.values[i].getType()
+
+                if (type == UndeterminedType) {
+                    // Nothing we can do here
+
+                } else if (subtype == FloatType && type == IntegerType) {
+                    node.values[i] = IntToFloatConversion(node.values[i])
+
+                } else if (subtype == LocalNeighbourhoodType && canConvertToNeighbourhood(type)) {
+                    // If the expression is an empty array, we can now conclude, that it is an array of states
+                    if (type is ArrayType && type.subtype == NoSubtypeType) {
+                        node.values[i].setType(ArrayType(StateType))
+                    }
+                    node.values[i] = StateArrayToLocalNeighbourhoodConversion(node.values[i])
+
+                } else {
+                    // Should never happen
+                    throw TerminatedCompilationException("Should never happen: Could not do implicit conversion even though array subtype was determined.")
+                }
+            }
+        }
     }
 
     override fun visit(node: Identifier) {
@@ -270,7 +347,11 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             // Maybe we can do implicit conversion?
             if (expectedReturn == FloatType && exprType == IntegerType) {
                 node.expr = IntToFloatConversion(node.expr)
-            } else if ((expectedReturn == ArrayType(StateType) && exprType == LocalNeighbourhoodType)) {
+            } else if ((expectedReturn == LocalNeighbourhoodType && canConvertToNeighbourhood(exprType))) {
+                // If the expression is an empty array, we can now conclude, that it is an array of states
+                if (exprType is ArrayType && exprType.subtype == NoSubtypeType) {
+                    node.expr.setType(ArrayType(StateType))
+                }
                 node.expr = StateArrayToLocalNeighbourhoodConversion(node.expr)
             } else {
                 ErrorLogger += TypeError(node.ctx, "Wrong return type (${node.expr.getType()}). Expected $expectedReturn")
@@ -300,4 +381,9 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
         node.setType(node.expr.getType())
     }
+
+    /**
+     * Returns true of the given type can be converted to LocalNeighbourhoodType
+     */
+    private fun canConvertToNeighbourhood(type: Type) = type == ArrayType(StateType) || type == ArrayType(NoSubtypeType)
 }

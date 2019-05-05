@@ -27,13 +27,19 @@ data class ArrayType(val subtype: Type) : Type("array<$subtype>") {
 /**
  * Default value for types before they're checked by the type checker
  */
-object UncheckedType : Type("UncheckedType")
+object UncheckedType : Type("unchecked")
 
 /**
  * This type indicate, that the type could not be determined. That is, an error has happened, and to avoid more errors
  * this should be treated as being any type - so type checking is never wrong when checking this type.
  */
-object UndeterminedType : Type("UndeterminedType")
+object UndeterminedType : Type("undetermined")
+
+/**
+ * Special type used by empty arrays for their subtype. It means, that the subtype must be determined based on
+ * surrounding context
+ */
+object NoSubtypeType : Type("no-subtype")
 
 /**
  * Convert a parse tree node to the type it represents

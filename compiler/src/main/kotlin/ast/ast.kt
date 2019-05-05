@@ -227,7 +227,7 @@ class SizedArrayExpr(
 
 class ArrayLiteralExpr(
     ctx: SourceContext,
-    val values: List<Expr>,
+    val values: MutableList<Expr>,
     var size: Int? = null
 ) : Expr(ctx)
 
