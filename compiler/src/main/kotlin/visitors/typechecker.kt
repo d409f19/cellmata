@@ -235,7 +235,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             for (i in 0 until node.values.size) {
                 val type = node.values[i].getType()
 
-                if (type == UndeterminedType) {
+                if (type == UndeterminedType || type == subtype) {
                     // Nothing we can do here
 
                 } else if (subtype == FloatType && type == IntegerType) {
@@ -250,7 +250,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
 
                 } else {
                     // Should never happen
-                    throw TerminatedCompilationException("Should never happen: Could not do implicit conversion even though array subtype was determined.")
+                    throw TerminatedCompilationException("Should never happen: Could not do implicit conversion even though array subtype was determined. Subtype was '$subtype' and the expression had type '$type'.")
                 }
             }
         }
