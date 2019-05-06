@@ -7,6 +7,7 @@ import dk.aau.cs.d409f19.cellumata.CompilerSettings
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.compile
+import dk.aau.cs.d409f19.cellumata.visitors.FlowChecker
 import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
 import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
 import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
@@ -38,6 +39,10 @@ fun compileTestProgramInsecure(program: String): CompilerData {
     val sanityChecker = SanityChecker()
     sanityChecker.visit(ast)
 
+    // Flow checking
+    val flowChecker = FlowChecker()
+    flowChecker.visit(ast)
+
     // Symbol table and scope
     val scopeChecker = ScopeCheckVisitor()
     scopeChecker.visit(ast)
@@ -45,6 +50,7 @@ fun compileTestProgramInsecure(program: String): CompilerData {
 
     // Type checking
     TypeChecker(symbolTable).visit(ast)
+
 
     return CompilerData(parser, ast, symbolTable, ErrorLogger.hasErrors())
 }
@@ -108,9 +114,9 @@ fun getWorldDeclString(
     // If two dimensional, declare second dimension, else empty string
     val twoDimDecl = if (twoDimensional!!) ", $dimTwoSize[$dimTwoType]" else ""
     return """world {
-            |  size = $dimOneSize[$dimOneType]$twoDimDecl
-            |  tickrate = $tickrate
-            |  cellsize = $cellsize
+            |  size = $dimOneSize[$dimOneType]$twoDimDecl;
+            |  tickrate = $tickrate;
+            |  cellsize = $cellsize;
             |}
             |
             | """.trimMargin()

@@ -1,7 +1,7 @@
 world {
-    size = 100 [wrap], 200 [wrap]
-    tickrate = 1
-    cellsize = 5
+    size = 100 [wrap], 200 [wrap];
+    tickrate = 1;
+    cellsize = 5;
 }
 
 // Naming 'pseudomoore' to avoid clash with possibl builtin neighbourhood

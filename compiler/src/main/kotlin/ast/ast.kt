@@ -73,7 +73,7 @@ enum class WorldType {
     UNDEFINED
 }
 
-data class WorldDimension(val size: Int, val type: WorldType, val edge: Identifier?)
+data class WorldDimension(val size: Int, val type: WorldType)
 
 /**
  * WorldNode represent the world definition.
@@ -81,8 +81,9 @@ data class WorldDimension(val size: Int, val type: WorldType, val edge: Identifi
 class WorldNode(
     ctx: SourceContext,
     var dimensions: List<WorldDimension>,
-    var tickrate: Int?,
-    var cellSize: Int?
+    val edge: Identifier?,
+    var tickrate: Int,
+    var cellSize: Int
 ) : AST(ctx)
 
 /*
@@ -96,7 +97,9 @@ sealed class Expr(
     private var type: Type = UncheckedType
 ) : AST(ctx), TypedNode {
     override fun getType(): Type = type
-    override fun setType(type: Type) { this.type = type }
+    override fun setType(type: Type) {
+        this.type = type
+    }
 }
 
 /**
@@ -281,7 +284,7 @@ class BoolLiteral(
 class FloatLiteral(
     ctx: SourceContext,
     var value: Float
-): Expr(ctx, FloatType)
+) : Expr(ctx, FloatType)
 
 // Type conversion
 /**
@@ -360,13 +363,114 @@ class FunctionArgument(
 /**
  * Represents a function declaration
  */
-class FuncDecl(
+open class FuncDecl(
     ctx: SourceContext,
     var ident: String,
     var args: List<FunctionArgument>,
     val body: CodeBlock,
     var returnType: Type = UncheckedType
 ) : Decl(ctx)
+
+
+/*
+ Builtin functions
+ */
+interface BuiltinFunc
+
+object BuiltinFuncCount : FuncDecl(
+    EMPTY_CONTEXT,
+    "count",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "stateParameter", StateType),
+        FunctionArgument(EMPTY_CONTEXT, "neighbourhoodParameter", LocalNeighbourhoodType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncRandi : FuncDecl(
+    EMPTY_CONTEXT,
+    "randi",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "intMinParameter", IntegerType),
+        FunctionArgument(EMPTY_CONTEXT, "intMaxParameter", IntegerType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncRandf : FuncDecl(
+    EMPTY_CONTEXT,
+    "randf",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatMinParameter", FloatType),
+        FunctionArgument(EMPTY_CONTEXT, "floatMaxParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    FloatType
+), BuiltinFunc
+
+object BuiltinFuncAbsi : FuncDecl(
+    EMPTY_CONTEXT,
+    "absi",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "intParameter", IntegerType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncAbsf : FuncDecl(
+    EMPTY_CONTEXT,
+    "absf",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    FloatType
+), BuiltinFunc
+
+object BuiltinFuncFloor : FuncDecl(
+    EMPTY_CONTEXT,
+    "floor",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncCeil : FuncDecl(
+    EMPTY_CONTEXT,
+    "ceil",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncRoot : FuncDecl(
+    EMPTY_CONTEXT,
+    "root",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatValueParameter", FloatType),
+        FunctionArgument(EMPTY_CONTEXT, "floatRootParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    FloatType
+), BuiltinFunc
+
+object BuiltinFuncPow : FuncDecl(
+    EMPTY_CONTEXT,
+    "pow",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatValueParameter", FloatType),
+        FunctionArgument(EMPTY_CONTEXT, "floatExponentParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    FloatType
+), BuiltinFunc
 
 /*
  * Statements
@@ -456,7 +560,7 @@ class ReturnStmt(
 class CodeBlock(
     ctx: SourceContext,
     val body: List<Stmt>
-): AST(ctx)
+) : AST(ctx)
 
 /*
  * Error nodes are used when something goes wrong in reduce.kt and is returned by the failing function.

@@ -20,19 +20,15 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
             .append("WorldNode\\nsize = ")
             .append(node.dimensions.map {
                 when(it.type) {
-                    WorldType.EDGE -> it.size.toString() + "[edge=" + it.edge + "]"
+                    WorldType.EDGE -> it.size.toString() + "[edge]"
                     WorldType.UNDEFINED -> it.size.toString() + "[undefined]"
                     WorldType.WRAPPING -> it.size.toString() + "[wrapping]"
                 }
             }.joinToString(", "))
 
-        if (node.cellSize != null) {
-            builder = builder.append("\\ncellsize=").append(node.cellSize!!)
-        }
-
-        if (node.tickrate != null) {
-            builder = builder.append("\\ntickrate=").append(node.tickrate!!)
-        }
+        if (node.edge != null) builder.append("\\nedge=").append(node.edge.spelling)
+        builder.append("\\ncellsize=").append(node.cellSize)
+        builder.append("\\ntickrate=").append(node.tickrate)
 
         printLabel(node, builder.toString())
 
@@ -43,9 +39,6 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
 
     override fun visit(node: WorldDimension) {
         val builder: StringBuilder = StringBuilder("WorldDimension\\ntype=${node.type}\\nsize=${node.size}")
-        if (node.edge != null) {
-            builder.append("\\nedge${node.edge}")
-        }
         printLabel(node, builder.toString())
         super.visit(node)
     }

@@ -23,14 +23,16 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: NegationExpr) {
         super.visit(node)
 
-        node.setType(when(node.value.getType()) {
-            IntegerType -> IntegerType
-            FloatType -> FloatType
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Only float or integer can be negative.")
-                UndeterminedType
+        node.setType(
+            when (node.value.getType()) {
+                IntegerType -> IntegerType
+                FloatType -> FloatType
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Only float or integer can be negative.")
+                    UndeterminedType
+                }
             }
-        })
+        )
     }
 
     override fun visit(node: NotExpr) {
@@ -409,8 +411,42 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: FuncCallExpr) {
         super.visit(node)
 
-        // Get return type of function
-        node.setType(symbolTableSession.getSymbolType(node.ident)!!)
+        // If node is not a function, register error and continue type-checking
+        if (symbolTableSession.getSymbol(node.ident) !is FuncDecl) {
+            ErrorLogger += TypeError(node.ctx, "\"${node.ident}\" cannot be called, as it is not a function")
+        } else { // If node is a function, continue type-checking return type and arguments
+
+            // Set type of this node to the return type of the function
+            node.setType(symbolTableSession.getSymbolType(node.ident)!!)
+
+            // Get function declaration for type-checking
+            val funcDecl = (symbolTableSession.getSymbol(node.ident) as FuncDecl)
+
+            // If actual and formal arguments are of equal size, type-check them
+            if (node.args.size == funcDecl.args.size) {
+
+                for (i in node.args.indices) {
+                    // If each argument are not typewise congruent, register error
+                    if (node.args[i].getType() != funcDecl.args[i].getType()) {
+
+                        val nodeArg = node.args[i]
+                        val funcDeclArg = funcDecl.args[i]
+
+                        ErrorLogger += TypeError(
+                            node.ctx,
+                            "Actual argument \"${nodeArg.ctx.text}\", of type ${nodeArg.getType()}, was not equal to " +
+                                    "formal argument \"${funcDeclArg.ident}\", of type ${funcDeclArg.getType()}"
+                        )
+                    }
+                }
+            } else { // If formal and actual arguments differ in size, register error
+                ErrorLogger += CompileError(
+                    node.ctx,
+                    "Size of actual arguments: ${node.args.size} to function-call \"${node.ident}\" differ from " +
+                            "formal arguments' size ${funcDecl.args.size}"
+                )
+            }
+        }
     }
 
     override fun visit(node: ConstDecl) {

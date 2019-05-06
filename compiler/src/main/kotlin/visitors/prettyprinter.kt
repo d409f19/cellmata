@@ -7,7 +7,7 @@ import dk.aau.cs.d409f19.cellumata.ast.WorldType.WRAPPING
 class PrettyPrinter : BaseASTVisitor() {
 
     // String builder for accumulating the pretty-printed program source
-    private var stringBuilder = StringBuilder()
+    private val stringBuilder = StringBuilder()
 
     /**
      * Print accumulated program from string builder
@@ -58,7 +58,7 @@ class PrettyPrinter : BaseASTVisitor() {
                 "${node.dimensions[n].size} ${if (node.dimensions[n].type == WRAPPING) {
                     "[wrap]$separator"
                 } else if (node.dimensions[n].type == EDGE) { // Note the non-null assertion, required for field access
-                    "[edge=${node.dimensions[n].edge!!.spelling}]$separator"
+                    "[edge]$separator"
                 } else {
                     "[${node.dimensions[n].type}]$separator"
                 }
@@ -66,16 +66,23 @@ class PrettyPrinter : BaseASTVisitor() {
             )
         }
 
-        // When done with printing dimension, add linebreak
-        stringBuilder.appendln()
+        // When done with printing dimension, add semicolon and linebreak
+        stringBuilder.appendln(";")
+
+        // Print edge option if not null
+        if (node.edge != null) {
+            stringBuilder.append("\tedge = ")
+            visit(node.edge)
+            stringBuilder.appendln(";")
+        }
 
         // Print tickrate and cellsize if not null
         if (node.tickrate != null) {
-            stringBuilder.appendln("\ttickrate = ${node.tickrate}")
+            stringBuilder.appendln("\ttickrate = ${node.tickrate};")
         }
 
         if (node.cellSize != null) {
-            stringBuilder.appendln("\tcellsize = ${node.cellSize}")
+            stringBuilder.appendln("\tcellsize = ${node.cellSize};")
         }
 
         // When done with all world declaration printing, print closing curly bracket and newline
