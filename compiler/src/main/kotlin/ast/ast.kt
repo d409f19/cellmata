@@ -250,7 +250,7 @@ class ModuloExpr(
  */
 class FuncCallExpr(
     ctx: SourceContext,
-    val args: List<Expr>,
+    val args: MutableList<Expr>,
     var ident: String
 ) : Expr(ctx)
 

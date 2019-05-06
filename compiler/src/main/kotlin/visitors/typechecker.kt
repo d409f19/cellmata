@@ -2,11 +2,7 @@ package dk.aau.cs.d409f19.cellumata.visitors
 
 import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
-import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import dk.aau.cs.d409f19.cellumata.ast.*
-import jdk.nashorn.api.tree.ArrayLiteralTree
-import kotlin.AssertionError
-import kotlin.math.exp
 
 /**
  * Error for violation of the type rules
@@ -426,19 +422,40 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             if (node.args.size == funcDecl.args.size) {
 
                 for (i in node.args.indices) {
-                    // If each argument are not typewise congruent, register error
-                    if (node.args[i].getType() != funcDecl.args[i].getType()) {
 
-                        val nodeArg = node.args[i]
-                        val funcDeclArg = funcDecl.args[i]
+                    val callArg = node.args[i]
+                    val funcDeclArg = funcDecl.args[i]
 
-                        ErrorLogger += TypeError(
-                            node.ctx,
-                            "Actual argument \"${nodeArg.ctx.text}\", of type ${nodeArg.getType()}, was not equal to " +
-                                    "formal argument \"${funcDeclArg.ident}\", of type ${funcDeclArg.getType()}"
-                        )
+                    val callArgType = callArg.getType()
+                    val funcDeclArgType = funcDeclArg.getType()
+
+                    // If each argument are not typewise congruent or can be implicitly converted, register error
+                    when {
+                        // Ok
+                        callArgType == funcDeclArgType -> {
+                        }
+
+                        // Int-to-float conversion
+                        callArgType == IntegerType && funcDeclArgType == FloatType -> {
+                            node.args[i] = IntToFloatConversion(node.args[i])
+                        }
+
+                        // State-array-to-neighbourhood conversion
+                        canConvertToNeighbourhood(callArgType) && funcDeclArgType == LocalNeighbourhoodType -> {
+                            node.args[i] = StateArrayToLocalNeighbourhoodConversion(node.args[i])
+                        }
+
+                        // No conversion is possible. Error!
+                        else -> {
+                            ErrorLogger += TypeError(
+                                node.ctx,
+                                "Actual argument \"${callArg.ctx.text}\", of type ${callArg.getType()}, was not equal to " +
+                                        "formal argument \"${funcDeclArg.ident}\", of type ${funcDeclArg.getType()}"
+                            )
+                        }
                     }
                 }
+
             } else { // If formal and actual arguments differ in size, register error
                 ErrorLogger += CompileError(
                     node.ctx,

@@ -136,7 +136,7 @@ private fun reduceExpr(node: ParseTree): Expr {
         )
         is CellmataParser.FuncExprContext -> FuncCallExpr(
             ctx = SourceContext(node),
-            args = node.value.expr().map(::reduceExpr),
+            args = node.value.expr().map(::reduceExpr).toMutableList(),
             ident = node.value.ident.text
         )
         is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = SourceContext(node))

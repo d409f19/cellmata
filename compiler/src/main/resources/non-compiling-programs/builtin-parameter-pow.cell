@@ -5,7 +5,6 @@ world {
 }
 
 state ident (0, 0, 0) {
-    // Should work, as ints would be implicitly converted to floats before call
-    let y = pow(1.5, 5);
+    let y = pow(0, {5});
     become ident;
 }
