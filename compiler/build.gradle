@@ -32,13 +32,21 @@ task run(type: JavaExec) {
 }
 
 import org.ajoberstar.grgit.*
-def repo = Grgit.open(buildscript.sourceFile.parent + "/..")
 
 jar {
     manifest {
+        def repo = Grgit.open(buildscript.sourceFile.parent + "/..")
+        def repoStatus = repo.status()
+        def filesChanged = repoStatus.unstaged.added.size() +
+                repoStatus.unstaged.modified.size() +
+                repoStatus.unstaged.removed.size() +
+                repoStatus.staged.added.size() +
+                repoStatus.staged.modified.size() +
+                repoStatus.staged.removed.size()
         attributes 'Main-Class': 'dk.aau.cs.d409f19.cellumata.MainKt',
             'Git-Commit': repo.head().id,
             'Git-Branch': repo.branch.getCurrent().getName(),
+            'Git-Dirty': filesChanged != 0,
             'Build-Time': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
     }
 
