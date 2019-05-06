@@ -1,5 +1,5 @@
 world {
-    size = 5 [edge=ident], 5 [wrap]
+    size = 5 [edge=s1], 5 [wrap]
     tickrate = 2000
     cellsize = 20
 }
@@ -9,11 +9,7 @@ neighbourhood n1 {
 }
 
 state s1 (255, 0, 0) {
-    if (n1[0] == s2) {
-        become s2;
-    } else {
-        become s1;
-    }
+    become s2;
 }
 
 state s2 (0, 255, 0) {
@@ -21,5 +17,5 @@ state s2 (0, 255, 0) {
 }
 
 state s3 (0, 0, 255) {
-    become s2;
+    become s1;
 }

@@ -231,7 +231,7 @@ class KotlinCodegen: ASTVisitor<String> {
 
         // Neighbourhood lookup function
         builder.appendln("""
-            fun ${getMappedLabel(node.ident)}(worldView: WorldView): List<Int> {
+            fun ${getMappedLabel(node.ident)}(worldView: IWorldView): List<Int> {
                 return listOf(
             """.trimIndent())
 
@@ -593,7 +593,9 @@ class KotlinCodegen: ASTVisitor<String> {
         builder.append(") {")
 
         builder.appendln(visit(node.body))
-        builder.appendln(visit(node.postIterationPart))
+        if (node.postIterationPart != null) {
+            builder.appendln(visit(node.postIterationPart))
+        }
 
         builder.append("}")
 
