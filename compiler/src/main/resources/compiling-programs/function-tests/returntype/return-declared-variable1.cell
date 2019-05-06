@@ -1,0 +1,17 @@
+world {
+    size = 100 [wrap], 200 [wrap]
+    tickrate = 1
+    cellsize = 5
+}
+
+state ident (0, 0, 0) {
+    become ident;
+}
+
+function f(int a) bool {
+    let c = a;
+    let d = c;
+    let e = 3;
+    let f = d < e;
+    return f;
+}

@@ -31,7 +31,7 @@ class SymbolTest {
      */
     fun assignStmtPassData(): List<String> {
         return IntRange(-50, 50).step(10).map { it.toString() }
-            .union(listOf("true", "false", "113240987.734723984", "1.0000000000000001"))
+            .union(listOf("true", "false", "113240987.734723984", "1.0000000000000001", "-1.0000000000000001"))
             .toList()
     }
 
@@ -97,7 +97,9 @@ class SymbolTest {
             Arguments.of("x", listOf("true", "true")),
             Arguments.of("x", listOf("4.2", "42.2")),
             Arguments.of("x", listOf("4", "2+2")),
-            Arguments.of("x", listOf("true", "5"))
+            Arguments.of("x", listOf("true", "5")),
+            Arguments.of("x", listOf("false", "-42.5")),
+            Arguments.of("x", listOf("-42.5", "42.5"))
         )
     }
 

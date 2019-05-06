@@ -8,6 +8,6 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f2(int a, int b) float {
+function f(int a, int b) float {
     return a + b;
 }
