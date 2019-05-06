@@ -8,6 +8,10 @@ state ident (0, 0, 0) {
     become ident;
 }
 
-function f4(int a, int b) bool {
-    return (a + b) == (b + a);
+function f(int a) bool {
+    let c = a;
+    let d = c;
+    let e = 3;
+    let f = d < e;
+    return f;
 }

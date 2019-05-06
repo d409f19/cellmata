@@ -1,0 +1,36 @@
+world {
+    size = 100 [wrap], 200 [wrap]
+    tickrate = 1
+    cellsize = 5
+}
+
+state ident (0, 0, 0) {
+    become ident;
+}
+
+function f() int {
+
+    for (let i = 0; false; i = i + 1) {
+        if (true) { // No warning, but should give one!
+            if (true) { // Warning: Code after statement never met, reason: break/continue statement
+                break;
+            } else {
+                break;
+            }
+
+            let b = false;
+        } else {
+            if (true) { // Warning: Code after statement never met, reason: break/continue statement
+                break;
+            } else {
+                break;
+            }
+
+            let b = false;
+        }
+
+        let reachable = false;
+    }
+
+    return 0;
+}

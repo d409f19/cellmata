@@ -91,6 +91,11 @@ fun compile(source: CharStream, settings: CompilerSettings): CompilerData {
     val sanityChecker = SanityChecker()
     sanityChecker.visit(ast)
 
+    // Flow checking
+    val flowChecker = FlowChecker()
+    flowChecker.visit(ast)
+    ErrorLogger.assertNoErrors()
+
     // Symbol table and scope
     val scopeChecker = ScopeCheckVisitor()
     scopeChecker.visit(ast)
