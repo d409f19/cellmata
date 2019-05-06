@@ -91,7 +91,6 @@ class FlowChecker : ASTVisitor<Flow> {
     }
 
     override fun visit(node: WorldDimension): Flow {
-        if (node.edge != null) visit(node.edge)
         return Flow()
     }
 

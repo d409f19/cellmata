@@ -1,7 +1,7 @@
 world {
-    size = 100 [wrap], 100 [wrap]
-    cellsize = 8
-    tickrate = 3
+    size = 100 [wrap], 100 [wrap];
+    cellsize = 8;
+    tickrate = 3;
 }
 
 state alive (0, 0, 0) {

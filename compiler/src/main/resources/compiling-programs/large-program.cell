@@ -1,7 +1,8 @@
 world {
-    size = 1000 [edge=alive1], 1000 [wrap]
-    tickrate = 100 // Ticktock
-    cellsize = 5 // Cellsize is the size of a cell
+    size = 1000 [edge], 1000 [wrap];
+    edge = alive1;
+    tickrate = 100; // Ticktock
+    cellsize = 5; // Cellsize is the size of a cell
 }
 
 const boolean = false;

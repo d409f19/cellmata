@@ -73,7 +73,7 @@ enum class WorldType {
     UNDEFINED
 }
 
-data class WorldDimension(val size: Int, val type: WorldType, val edge: Identifier?)
+data class WorldDimension(val size: Int, val type: WorldType)
 
 /**
  * WorldNode represent the world definition.
@@ -81,8 +81,9 @@ data class WorldDimension(val size: Int, val type: WorldType, val edge: Identifi
 class WorldNode(
     ctx: SourceContext,
     var dimensions: List<WorldDimension>,
-    var tickrate: Int?,
-    var cellSize: Int?
+    val edge: Identifier?,
+    var tickrate: Int,
+    var cellSize: Int
 ) : AST(ctx)
 
 /*
