@@ -392,6 +392,9 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             }
         }
 
+        // Update declared sizes so there are no unknowns
+        node.declaredSize = finalSizes
+
         // push down size
         pushDownSize(
             node.body,

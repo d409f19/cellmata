@@ -401,8 +401,11 @@ class KotlinCodegen: ASTVisitor<String> {
         return "(!${visit(node.value)})"
     }
 
-    private fun emitArray(sizes: List<Int>?, type: Type, values: ArrayLiteralExpr?): String {
-        assert(sizes != null && values != null)
+    private fun emitArray(sizes: List<Int>?, type: ArrayType, values: ArrayLiteralExpr?): String {
+        // Note: if both sizes and values are null, then we don't know the size of the array
+        assert(sizes != null || values != null)
+        // Note: sizes is empty, then we have recursed to deeply, and should instead have visited a another type of value
+        assert(sizes == null || sizes.isNotEmpty())
 
         val builder = StringBuilder()
         var indexCounter = 0
@@ -412,37 +415,48 @@ class KotlinCodegen: ASTVisitor<String> {
             sizes[0]
         }
 
+        // Note: Array initialization specifies elements from the beginning of the array,
+        // and any remaining elements will have the default value for the type
+
         while (indexCounter < limit) {
             builder.append(if (values != null && indexCounter < values.values.size) {
+                // Note: A explicit value has been specified for this element in the array
                 // Emit values from source code
-                when(values.getType()) {
-                    IntegerType -> visit(values.values[indexCounter])
-                    FloatType -> visit(values.values[indexCounter])
-                    BooleanType -> visit(values.values[indexCounter])
-                    StateType -> visit(values.values[indexCounter])
-                    LocalNeighbourhoodType -> visit(values.values[indexCounter])
-                    is ArrayType -> emitArray(
-                        if (values == null) sizes!!.subList(1, sizes.size) else null,
-                        type,
-                        values.values[indexCounter] as ArrayLiteralExpr
-                    )
+                val value = values.values[indexCounter]
+
+                when(value.getType()) {
+                    IntegerType -> visit(value)
+                    FloatType -> visit(value)
+                    BooleanType -> visit(value)
+                    StateType -> visit(value)
+                    LocalNeighbourhoodType -> visit(value)
+                    is ArrayType -> {
+                        val arrayLiteral = value as ArrayLiteralExpr
+                        emitArray(
+                            sizes?.subList(1, sizes.size),
+                            arrayLiteral.getType()!! as ArrayType,
+                            arrayLiteral
+                        )
+                    }
                     UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
-                    null -> TODO()
+                    null -> TODO() // Should never happens since a unspecified type should have been caught in the type checker
                 }
             } else {
+                // Note: values is either null, or we have emitted all specified values and the remainder of values is the default value for the type
                 // Emit default value
-                when (type) {
+                when (type.subtype) {
                     BooleanType -> "(false)"
                     IntegerType -> "(0)"
                     FloatType -> "(0.0F)"
                     StateType -> "(0)"
                     LocalNeighbourhoodType -> "(listOf())"
                     is ArrayType -> emitArray(
-                        if (values == null) sizes!!.subList(1, sizes.size) else null,
-                        type,
+                        sizes?.subList(1, sizes.size),
+                        type.subtype,
                         null
                     )
                     UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
+                    null -> TODO() // Should never happens since a unspecified type should have been caught in the type checker
                 }
             })
 
@@ -473,7 +487,7 @@ class KotlinCodegen: ASTVisitor<String> {
     }
 
     override fun visit(node: ArrayLiteralExpr): String {
-        return emitArray(null, node.getType()!!, node)
+        return emitArray(null, node.getType()!! as ArrayType, node)
     }
 
     override fun visit(node: StateIndexExpr): String {

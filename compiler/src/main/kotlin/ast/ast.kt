@@ -224,7 +224,7 @@ class ArrayLookupExpr(
 class SizedArrayExpr(
     ctx: SourceContext,
     val body: ArrayLiteralExpr?,
-    val declaredType: Type,
+    val declaredType: ArrayType,
     var declaredSize: List<Int?>
 ) : Expr(ctx)
 
