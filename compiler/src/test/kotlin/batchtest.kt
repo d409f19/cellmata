@@ -111,22 +111,26 @@ class BatchTest {
                     compileTestProgram(program)
                 }
             } catch (e: AssertionFailedError) {
-                // If compilation does not throw a TerminatedCompilationException,
-                // compile again and assert for errors in parser
-                val compileData = compileTestProgram(program)
+                try {
+                    // If compilation does not throw a TerminatedCompilationException,
+                    // compile again and assert for errors in parser
+                    val compileData = compileTestProgram(program)
 
-                // Assert that no errors are contained in ErrorLogger, as this would indicate a fault with asserting for no errors
-                assertFalse(
-                    ErrorLogger.hasErrors(),
-                    "Non-compiling program failed spectacularly! Errorlogger initially didn't throw an " +
-                            "TerminatedCompilationException, yet the ErrorLogger contains errors!"
-                )
+                    // Assert that no errors are contained in ErrorLogger, as this would indicate a fault with asserting for no errors
+                    assertFalse(
+                        ErrorLogger.hasErrors(),
+                        "Non-compiling program failed spectacularly! Errorlogger initially didn't throw an " +
+                                "TerminatedCompilationException, yet the ErrorLogger contains errors!"
+                    )
+                    // Assert that parsing errors are found
+                    assertTrue(
+                        compileData.parser.numberOfSyntaxErrors > 0,
+                        "Non-compiling program had neither any TerminatedCompilationException nor parsing-errors! Filename: $filename"
+                    )
+                } catch (e: Exception) {
+                    fail("Spectacular error in compiler. Printing stacktrace of: ${e.javaClass}", e)
+                }
 
-                // Assert that parsing errors are found
-                assertTrue(
-                    compileData.parser.numberOfSyntaxErrors > 0,
-                    "Non-compiling program had neither any TerminatedCompilationException nor parsing-errors! Filename: $filename"
-                )
             }
         }
     }
