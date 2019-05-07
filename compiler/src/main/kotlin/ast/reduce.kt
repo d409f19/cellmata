@@ -136,7 +136,7 @@ private fun reduceExpr(node: ParseTree): Expr {
         )
         is CellmataParser.FuncExprContext -> FuncCallExpr(
             ctx = SourceContext(node),
-            args = node.value.expr().map(::reduceExpr),
+            args = node.value.expr().map(::reduceExpr).toMutableList(),
             ident = node.value.ident.text
         )
         is CellmataParser.StateIndexExprContext -> StateIndexExpr(ctx = SourceContext(node))
@@ -148,7 +148,7 @@ private fun reduceExpr(node: ParseTree): Expr {
             declaredSize = getArrayDeclaredSize(node.array_decl())
         )
         is CellmataParser.ArrayLiteralExprContext -> reduceExpr(node.value)
-        is CellmataParser.Array_value_literalContext -> ArrayLiteralExpr(SourceContext(node), node.expr().map(::reduceExpr))
+        is CellmataParser.Array_value_literalContext -> ArrayLiteralExpr(SourceContext(node), node.expr().map(::reduceExpr).toMutableList())
         is CellmataParser.LiteralExprContext -> reduceExpr(node.value)
         is CellmataParser.BoolLiteralContext -> BoolLiteral(
             ctx = SourceContext(node),
@@ -211,7 +211,7 @@ private fun reduceStmt(node: ParseTree): Stmt {
         is CellmataParser.Continue_stmtContext -> ContinueStmt(ctx = SourceContext(node))
         is CellmataParser.Become_stmtContext -> BecomeStmt(ctx = SourceContext(node), state = reduceExpr(node.state))
         is CellmataParser.StmtContext -> reduceStmt(node.getChild(0))
-        is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = SourceContext(node), value = reduceExpr(node.expr()))
+        is CellmataParser.Return_stmtContext -> ReturnStmt(ctx = SourceContext(node), expr = reduceExpr(node.expr()))
         // Errors
         is ParserRuleContext -> { registerReduceError(node); ErrorStmt() }
         else -> throw TerminatedCompilationException("Statement ${node.javaClass} had no parsing context.")

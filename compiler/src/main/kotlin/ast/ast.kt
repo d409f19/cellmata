@@ -32,8 +32,8 @@ val EMPTY_CONTEXT = SourceContext(0, 0, "")
  * Nodes that hold a value or that can produce a value should implement TypedNode to expose the type of that value
  */
 interface TypedNode {
-    fun getType(): Type?
-    fun setType(type: Type?)
+    fun getType(): Type
+    fun setType(type: Type)
 }
 
 /**
@@ -94,10 +94,10 @@ class WorldNode(
  */
 sealed class Expr(
     ctx: SourceContext,
-    private var type: Type? = UncheckedType
+    private var type: Type = UncheckedType
 ) : AST(ctx), TypedNode {
-    override fun getType(): Type? = type
-    override fun setType(type: Type?) {
+    override fun getType(): Type = type
+    override fun setType(type: Type) {
         this.type = type
     }
 }
@@ -116,7 +116,7 @@ sealed class BinaryArithmeticExpr(ctx: SourceContext, left: Expr, right: Expr) :
 
 /**
  * A NumericComparisonExpr has exactly two child expressions which are both numeric expressions, but the
- * NumericComparisonExpr itself also returns a boolean.
+ * NumericComparisonExpr itself returns a boolean.
  * It is used to generalize behaviour of comparison expressions in various visitors.
  */
 sealed class NumericComparisonExpr(ctx: SourceContext, left: Expr, right: Expr) : BinaryExpr(ctx, left, right)
@@ -230,7 +230,7 @@ class SizedArrayExpr(
 
 class ArrayLiteralExpr(
     ctx: SourceContext,
-    val values: List<Expr>,
+    val values: MutableList<Expr>,
     var size: Int? = null
 ) : Expr(ctx)
 
@@ -250,7 +250,7 @@ class ModuloExpr(
  */
 class FuncCallExpr(
     ctx: SourceContext,
-    val args: List<Expr>,
+    val args: MutableList<Expr>,
     var ident: String
 ) : Expr(ctx)
 
@@ -352,10 +352,10 @@ class NeighbourhoodDecl(
 class FunctionArgument(
     ctx: SourceContext,
     val ident: String,
-    private var type: Type?
+    private var type: Type = UncheckedType
 ) : AST(ctx), TypedNode {
     override fun getType() = type
-    override fun setType(type: Type?) {
+    override fun setType(type: Type) {
         this.type = type
     }
 }
@@ -493,10 +493,10 @@ class AssignStmt(
     var ident: String,
     val expr: Expr,
     var isDeclaration: Boolean,
-    private var type: Type? = UncheckedType
+    private var type: Type = UncheckedType
 ) : Stmt(ctx), TypedNode {
     override fun getType() = type
-    override fun setType(type: Type?) {
+    override fun setType(type: Type) {
         this.type = type
     }
 }
@@ -551,7 +551,7 @@ class BecomeStmt(
  */
 class ReturnStmt(
     ctx: SourceContext,
-    val value: Expr
+    var expr: Expr
 ) : Stmt(ctx)
 
 /**

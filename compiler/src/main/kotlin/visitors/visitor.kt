@@ -140,8 +140,10 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     }
 
     override fun visit(node: RootNode) {
-        visit(node.world)
+        // We visit the world declaration last, as it might contain identifier which is not declared yet. For instance
+        // dimensions with edges refers to a state, but that state is declared after the world declaration.
         node.body.forEach { visit(it) }
+        visit(node.world)
     }
 
     override fun visit(node: Decl) {
@@ -376,7 +378,7 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     }
 
     override fun visit(node: ReturnStmt) {
-        visit(node.value)
+        visit(node.expr)
     }
 
     override fun visit(node: ForLoopStmt) {

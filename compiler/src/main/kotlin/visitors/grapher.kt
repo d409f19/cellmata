@@ -255,7 +255,7 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
 
     override fun visit(node: ReturnStmt) {
         printLabel(node, "ReturnStmt")
-        printNode(node, node.value)
+        printNode(node, node.expr)
         super.visit(node)
     }
 
