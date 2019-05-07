@@ -147,7 +147,16 @@ class KotlinCodegen: ASTVisitor<String> {
     }
 
     override fun visit(node: RootNode): String {
-        node.world.dimensions[0].type
+        // ToDo write implementation of builtins
+        addMapping("count", nextLabel())
+        addMapping("randi", nextLabel())
+        addMapping("randf", nextLabel())
+        addMapping("absi", nextLabel())
+        addMapping("absf", nextLabel())
+        addMapping("floor", nextLabel())
+        addMapping("ceil", nextLabel())
+        addMapping("root", nextLabel())
+        addMapping("pow", nextLabel())
 
         var stateCounter = 0
         node.body.filter { it is StateDecl }.map { it as StateDecl }.forEach {
