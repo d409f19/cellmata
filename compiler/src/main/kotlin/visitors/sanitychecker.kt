@@ -34,7 +34,7 @@ class SanityChecker : BaseASTVisitor() {
 
         if (node.cellSize <= 0) {
             ErrorLogger += SanityError(
-                node.ctx, "Cellsize must be an integer larger than 0, but was found to be" +
+                node.ctx, "Cellsize must be an integer larger than 0, but was: " +
                         " ${node.cellSize}"
             )
         }
