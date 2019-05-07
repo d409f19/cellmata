@@ -421,6 +421,18 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         }
     }
 
+    override fun visit(node: BecomeStmt) {
+        super.visit(node)
+
+        // If state which the become statement is to become is not of state type, throw error
+        if (node.state.getType() !is StateType) {
+            ErrorLogger += TypeError(
+                node.ctx,
+                "Expected statement's expressions to be of state-type. Found: ${node.state.getType()}"
+            )
+        }
+    }
+
     override fun visit(node: FuncDecl) {
         expectedReturn = node.returnType
         super.visit(node)
