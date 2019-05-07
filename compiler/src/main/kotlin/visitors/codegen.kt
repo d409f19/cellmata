@@ -609,7 +609,9 @@ class KotlinCodegen: ASTVisitor<String> {
     override fun visit(node: ForLoopStmt): String {
         val builder = StringBuilder()
 
-        builder.appendln(node.initPart)
+        if(node.initPart != null) {
+            builder.appendln(visit(node.initPart))
+        }
 
         builder.append("while (")
         builder.append(visit(node.condition))
