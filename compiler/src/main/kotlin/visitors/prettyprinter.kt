@@ -76,14 +76,8 @@ class PrettyPrinter : BaseASTVisitor() {
             stringBuilder.appendln(";")
         }
 
-        // Print tickrate and cellsize if not null
-        if (node.tickrate != null) {
-            stringBuilder.appendln("\ttickrate = ${node.tickrate};")
-        }
-
-        if (node.cellSize != null) {
-            stringBuilder.appendln("\tcellsize = ${node.cellSize};")
-        }
+        stringBuilder.appendln("\ttickrate = ${node.tickrate};")
+        stringBuilder.appendln("\tcellsize = ${node.cellSize};")
 
         // When done with all world declaration printing, print closing curly bracket and newline
         stringBuilder.appendln("}")
