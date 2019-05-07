@@ -449,4 +449,14 @@ class FlowChecker : ASTVisitor<Flow> {
         }
         return Flow(containsReturn, containsBreak)
     }
+
+    override fun visit(node: IntToFloatConversion): Flow {
+        visit(node.expr)
+        return Flow()
+    }
+
+    override fun visit(node: StateArrayToLocalNeighbourhoodConversion): Flow {
+        visit(node.expr)
+        return Flow()
+    }
 }
