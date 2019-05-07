@@ -35,7 +35,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         super.visit(node)
 
         if (node.value.getType() != BooleanType) {
-            ErrorLogger += TypeError(node.ctx, "Can only NOT boolean expressions.")
+            ErrorLogger += TypeError(node.ctx, "The NOT-operator only works on boolean expressions.")
         }
 
         node.setType(BooleanType)
@@ -55,50 +55,48 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     }
 
     /**
-     * Finds the type of an array based on its content. No types are changed converted, but errors are logged if the
+     * Finds the type of an array based on its content. No types are changed or converted, but errors are logged if the
      * array's type (or if a sub-array's type) can't be determined.
      * @see pushDownArrayType
      */
     private fun searchArrayType(expr: Expr): Type {
-        if (expr !is ArrayLiteralExpr) {
-            return expr.getType()
+        when {
+            expr !is ArrayLiteralExpr -> return expr.getType()
+            expr.values.isEmpty() -> return ArrayType(NoSubtypeType)
+            else -> {
+                // Determine subtype by comparing the types of each child expression
+                var subtype = searchArrayType(expr.values[0])
+                for (i in 1 until expr.values.size) {
+                    val type = searchArrayType(expr.values[i])
+                    when {
+                        // Previous expressions contained uncertainty, use this type instead
+                        subtype.baseType == NoSubtypeType || subtype.baseType == UndeterminedType -> {
+                            subtype = type
+                        }
 
-        } else if (expr.values.isEmpty()) {
-            return ArrayType(NoSubtypeType)
+                        // Ignore this expression
+                        type == UndeterminedType -> {
+                        }
 
-        } else {
-            // Determine subtype by comparing the types of each child expression
-            var subtype = searchArrayType(expr.values[0])
-            for (i in 1 until expr.values.size) {
-                val type = searchArrayType(expr.values[i])
-                when {
-                    // Previous expressions contained uncertainty, use this type instead
-                    subtype.baseType == NoSubtypeType || subtype.baseType == UndeterminedType -> {
-                        subtype = type
-                    }
+                        // Ok
+                        isCompatibleType(type, subtype) -> {
+                        }
 
-                    // Ignore this expression
-                    type == UndeterminedType -> {
-                    }
+                        // The subtype should be this type instead, since we can't use conversion
+                        isCompatibleType(subtype, type) -> {
+                            subtype = type
+                        }
 
-                    // Ok
-                    isCompatibleType(type, subtype) -> {
-                    }
-
-                    // The subtype should be this type instead, since we can't use conversion
-                    isCompatibleType(subtype, type) -> {
-                        subtype = type
-                    }
-
-                    // Conversion is not possible. Error!
-                    else -> {
-                        ErrorLogger += TypeError(expr.ctx, "Could not determined subtype of array.")
-                        return ArrayType(UndeterminedType)
+                        // Conversion is not possible. Error!
+                        else -> {
+                            ErrorLogger += TypeError(expr.ctx, "Could not determined subtype of array.")
+                            return ArrayType(UndeterminedType)
+                        }
                     }
                 }
-            }
 
-            return ArrayType(subtype)
+                return ArrayType(subtype)
+            }
         }
     }
 
@@ -111,26 +109,27 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
 
             expr.setType(type)
 
-            if (type.subtype == FloatType) {
+            when {
                 // Insert implicit int-to-float conversion if needed
-                for (i in expr.values.indices) {
-                    if (expr.values[i].getType() == IntegerType) {
-                        expr.values[i] = IntToFloatConversion(expr.values[i])
+                type.subtype == FloatType ->
+                    for (i in expr.values.indices) {
+                        if (expr.values[i].getType() == IntegerType) {
+                            expr.values[i] = IntToFloatConversion(expr.values[i])
+                        }
                     }
-                }
 
-            } else if (type.subtype == LocalNeighbourhoodType) {
                 // Insert implicit array<state>-to-neighbourhood conversion if needed
-                for (i in expr.values.indices) {
-                    if (expr.values[i] is ArrayLiteralExpr) {
-                        expr.values[i].setType(ArrayType(StateType))
-                        expr.values[i] = StateArrayToLocalNeighbourhoodConversion(expr.values[i])
+                type.subtype == LocalNeighbourhoodType ->
+                    for (i in expr.values.indices) {
+                        if (expr.values[i] is ArrayLiteralExpr) {
+                            expr.values[i].setType(ArrayType(StateType))
+                            expr.values[i] = StateArrayToLocalNeighbourhoodConversion(expr.values[i])
+                        }
                     }
-                }
 
-            } else {
                 // push down subtype
-                expr.values.forEach { pushDownArrayType(it, type.subtype) }
+                else ->
+                    expr.values.forEach { pushDownArrayType(it, type.subtype) }
             }
 
         } else if (type == UndeterminedType && expr is ArrayLiteralExpr) {
@@ -379,6 +378,8 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: ReturnStmt) {
         super.visit(node)
 
+        // Return statements are only allowed in functions
+        // if expectedReturn is null, sanity-checker failed
         expectedReturn!!
 
         val exprType = node.expr.getType()
