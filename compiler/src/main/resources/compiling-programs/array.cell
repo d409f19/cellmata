@@ -1,7 +1,8 @@
 world {
-    size = 10 [wrap], 999 [edge=foo]
-    tickrate = 120
-    cellsize = 5
+    size = 10 [wrap], 999 [edge];
+    edge = foo;
+    tickrate = 120;
+    cellsize = 5;
 }
 
 const arr0 = [3]bool;
