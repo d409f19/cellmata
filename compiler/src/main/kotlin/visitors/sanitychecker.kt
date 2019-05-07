@@ -41,7 +41,7 @@ class SanityChecker : BaseASTVisitor() {
 
         if (node.tickrate <= 0) {
             ErrorLogger += SanityError(
-                node.ctx, "Tickrate must be an integer larger than 0, but was found to be" +
+                node.ctx, "Tickrate must be an integer larger than 0, but was: " +
                         " ${node.tickrate}"
             )
         }
@@ -49,7 +49,7 @@ class SanityChecker : BaseASTVisitor() {
         node.dimensions.forEach {
             if (it.size <= 0) {
                 ErrorLogger += SanityError(
-                    node.ctx, "Size of dimension must be an integer larger than 0, but was found to be" +
+                    node.ctx, "Size of dimension must be an integer larger than 0, but was: " +
                             " ${it.size}"
                 )
             }
