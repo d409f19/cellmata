@@ -132,7 +132,7 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     }
 
     override fun visit(node: WorldDimension) {
-        if (node.edge != null) visit(node.edge)
+        // no-op
     }
 
     override fun visit(node: FunctionArgument) {

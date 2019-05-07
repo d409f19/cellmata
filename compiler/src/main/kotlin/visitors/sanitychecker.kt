@@ -23,10 +23,21 @@ class SanityChecker : BaseASTVisitor() {
 
     var inAFunction = false
     var dimensions: Int = 0
+    var worldHasEdge = false
 
     override fun visit(node: WorldNode) {
         super.visit(node)
         dimensions = node.dimensions.size
+        if (worldHasEdge && node.edge == null) {
+            ErrorLogger += SanityError(node.ctx, "A dimension is an [edge], but the edge state was not declared.")
+        }
+    }
+
+    override fun visit(node: WorldDimension) {
+        super.visit(node)
+        if (node.type == WorldType.EDGE) {
+            worldHasEdge = true
+        }
     }
 
     override fun visit(node: FuncDecl) {

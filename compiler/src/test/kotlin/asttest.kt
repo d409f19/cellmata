@@ -237,10 +237,9 @@ class ASTTest {
 
         /**
          * Test constant declaration float values. Assumes that default world declaration passes.
-         * TODO: Does not include negative values as they fail! When fixed, they should be implemented again.
          */
         @ParameterizedTest
-        @ValueSource(strings = ["3.14159", "1000.99", "123456.789"])
+        @ValueSource(strings = ["3.14159", "1000.99", "123456.789", "-42.0000123401234", "-42.00001234012340"])
         fun constDeclFloatTest(value: String) {
             // Get AST for boilerplate program with only world declaration and constant declaration
             val compilerData = compileTestProgramInsecure(getWorldDeclString() + "\n\n" + getConstDeclString(value = value))

@@ -36,7 +36,7 @@ import org.ajoberstar.grgit.*
 jar {
     manifest {
         def repo = Grgit.open(buildscript.sourceFile.parent + "/..")
-        def repoStatus = repo.status
+        def repoStatus = repo.status()
         def filesChanged = repoStatus.unstaged.added.size() +
                 repoStatus.unstaged.modified.size() +
                 repoStatus.unstaged.removed.size() +
