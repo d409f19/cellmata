@@ -105,15 +105,20 @@ class KotlinCodegen: ASTVisitor<String> {
             builder.append(")")
         }
         builder.append("), ")
-        builder.append(if (world.cellSize == null) 2 else world.cellSize)
+        builder.append(world.cellSize)
         builder.append(", ")
-        builder.append(if (world.tickrate == null) 500 else world.tickrate)
+        builder.append(world.tickrate)
         builder.append("), ProgramImpl(), ")
 
         builder.append("MultiWorldType(")
 
-        val edge = world.dimensions[0].edge!! // ToDo make edge a seperate property in world configuration
-        builder.append(stateIDs[edge.spelling])
+        val edge = world.edge
+        val edgeType = if(edge != null) {
+            stateIDs[edge.spelling]
+        } else {
+            0
+        }
+        builder.append(edgeType)
         builder.append(", listOf(")
 
         world.dimensions.forEachIndexed { i, it ->
