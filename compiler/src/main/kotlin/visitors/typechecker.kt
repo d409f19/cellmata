@@ -136,8 +136,11 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             // There's a type error in the array or one of its siblings
             expr.setType(UndeterminedType)
 
-        } else if (type != expr.getType()){
-            ErrorLogger += TypeError(expr.ctx, "Should never happen: Could not push down array type '$type' over expr '$expr'")
+        } else if (type != expr.getType()) {
+            ErrorLogger += TypeError(
+                expr.ctx,
+                "Should never happen: Could not push down array type '$type' over expr '$expr'"
+            )
         }
     }
 
@@ -145,7 +148,12 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
      * Finds the size of the largest subarray in each dimension.
      * Note: if there are empty array literals in the tree, this function may return fewer dimensions than expected.
      */
-    private fun searchSize(node: ArrayLiteralExpr, sizes: MutableList<Int> = mutableListOf(), depth: Int = 0): MutableList<Int> {
+    private fun searchSize(
+        node: ArrayLiteralExpr,
+        sizes: MutableList<Int> = mutableListOf(),
+        depth: Int = 0
+    ): MutableList<Int> {
+
         if (sizes.size <= depth) {
             sizes.add(node.values.size)
         } else if (sizes[depth] < node.values.size) {
@@ -178,7 +186,8 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
      */
     private fun isCompatibleType(type1: Type, type2: Type): Boolean {
         if ((type1 == UndeterminedType || type1 == NoSubtypeType)
-                || (type2 == UndeterminedType || type2 == NoSubtypeType)) {
+            || (type2 == UndeterminedType || type2 == NoSubtypeType)
+        ) {
             return true
         }
 
@@ -234,8 +243,8 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         // the literal size to be one greater due to array<state>-to-neighbourhood conversion, hence the -1
         if (if (node.declaredType.baseType == LocalNeighbourhoodType)
                 literalSizes.size - 1 > node.declaredSize.size
-                else literalSizes.size > node.declaredSize.size)
-        {
+            else literalSizes.size > node.declaredSize.size
+        ) {
             ErrorLogger += CompileError(node.ctx, "The array body has more dimensions than the amount declared.")
             // We add some null dimensions to prevent more errors from happening
             node.declaredSize = literalSizes.mapIndexed { i, _ ->
@@ -249,7 +258,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             } else if (declaredSize == null) {
                 literalSizes[i]
             } else if (declaredSize < literalSizes[i]) {
-                ErrorLogger += CompileError(node.ctx, "Dimension $i of array's body is greater than the declared size of dimension $i.")
+                ErrorLogger += CompileError(
+                    node.ctx,
+                    "Dimension $i of array's body is greater than the declared size of dimension $i."
+                )
                 literalSizes[i]
             } else {
                 declaredSize
@@ -305,31 +317,33 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         val lt = node.left.getType()
         val rt = node.right.getType()
 
-        node.setType(when {
-            // Could not determine type of a child node, so we can't determine the type of this node
-            lt == UndeterminedType || rt == UndeterminedType -> UndeterminedType
+        node.setType(
+            when {
+                // Could not determine type of a child node, so we can't determine the type of this node
+                lt == UndeterminedType || rt == UndeterminedType -> UndeterminedType
 
-            // Both are ints, or both are floats
-            (lt == IntegerType || lt == FloatType) && lt == rt -> lt
+                // Both are ints, or both are floats
+                (lt == IntegerType || lt == FloatType) && lt == rt -> lt
 
-            // int -> float conversion for left child
-            lt == IntegerType && rt == FloatType -> {
-                node.left = IntToFloatConversion(node.left)
-                FloatType
+                // int -> float conversion for left child
+                lt == IntegerType && rt == FloatType -> {
+                    node.left = IntToFloatConversion(node.left)
+                    FloatType
+                }
+
+                // int -> float conversion for right child
+                lt == FloatType && rt == IntegerType -> {
+                    node.right = IntToFloatConversion(node.right)
+                    FloatType
+                }
+
+                // Something is wrong, raise an error
+                else -> {
+                    ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+                    UndeterminedType
+                }
             }
-
-            // int -> float conversion for right child
-            lt == FloatType && rt == IntegerType -> {
-                node.right = IntToFloatConversion(node.right)
-                FloatType
-            }
-
-            // Something is wrong, raise an error
-            else -> {
-                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
-                UndeterminedType
-            }
-        })
+        )
     }
 
     override fun visit(node: BinaryBooleanExpr) {
@@ -339,7 +353,8 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         val rt = node.right.getType()
 
         if (lt != UndeterminedType && rt != UndeterminedType
-                && lt != BooleanType && rt != BooleanType) {
+            && lt != BooleanType && rt != BooleanType
+        ) {
 
             ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be boolean.")
         }
@@ -353,23 +368,24 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         val lt = node.left.getType()
         val rt = node.right.getType()
 
-        if (lt == UndeterminedType || rt == UndeterminedType) {
+        when {
             // Could not determine type of a child node, so we can't conclude more type errors
-        }
-        else if ((lt == IntegerType || lt == FloatType) && lt == rt) {
+            lt == UndeterminedType || rt == UndeterminedType -> {
+            }
+
             // Both are ints, or both are floats. Perfect!
-        }
-        else if (lt == IntegerType && rt == FloatType) {
+            (lt == IntegerType || lt == FloatType) && lt == rt -> {
+            }
+
             // int -> float conversion for left child
-            node.left = IntToFloatConversion(node.left)
-        }
-        else if (lt == FloatType && rt == IntegerType) {
+            lt == IntegerType && rt == FloatType -> node.left = IntToFloatConversion(node.left)
+
             // int -> float conversion for right child
-            node.right = IntToFloatConversion(node.right)
-        }
-        else {
+            lt == FloatType && rt == IntegerType -> node.right = IntToFloatConversion(node.right)
+
             // Something is wrong, raise an error
-            ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
+            else ->
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be either float or integer.")
         }
 
         node.setType(BooleanType)
@@ -394,7 +410,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
                 }
                 node.expr = StateArrayToLocalNeighbourhoodConversion(node.expr)
             } else {
-                ErrorLogger += TypeError(node.ctx, "Wrong return type (${node.expr.getType()}). Expected $expectedReturn")
+                ErrorLogger += TypeError(
+                    node.ctx,
+                    "Wrong return type (${node.expr.getType()}). Expected $expectedReturn"
+                )
             }
         }
     }
