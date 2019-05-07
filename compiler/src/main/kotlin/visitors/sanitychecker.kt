@@ -31,6 +31,29 @@ class SanityChecker : BaseASTVisitor() {
         if (worldHasEdge && node.edge == null) {
             ErrorLogger += SanityError(node.ctx, "A dimension is an [edge], but the edge state was not declared.")
         }
+
+        if (node.cellSize <= 0) {
+            ErrorLogger += SanityError(
+                node.ctx, "Cellsize must be an integer larger than 0, but was found to be" +
+                        " ${node.cellSize}"
+            )
+        }
+
+        if (node.tickrate <= 0) {
+            ErrorLogger += SanityError(
+                node.ctx, "Tickrate must be an integer larger than 0, but was found to be" +
+                        " ${node.tickrate}"
+            )
+        }
+
+        node.dimensions.forEach {
+            if (it.size <= 0) {
+                ErrorLogger += SanityError(
+                    node.ctx, "Size of dimension must be an integer larger than 0, but was found to be" +
+                            " ${it.size}"
+                )
+            }
+        }
     }
 
     override fun visit(node: WorldDimension) {
