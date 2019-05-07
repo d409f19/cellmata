@@ -26,6 +26,7 @@ enum class CompileTarget {
 enum class GraphPhases {
     REDUCE,
     SANITY,
+    FLOW,
     SCOPE,
     TYPE
 }
@@ -59,7 +60,7 @@ class Arguments(parser: ArgParser) {
         .default(listOf())
         .addValidator {
         this.value.forEach {
-            if(!listOf("reduce", "sanity", "scope", "type").contains(it)) {
+            if(!listOf("reduce", "sanity","flow", "scope", "type").contains(it)) {
                 throw SystemExitException("Invalid phase specified for graphing", 1)
             }
         }
@@ -157,6 +158,8 @@ fun compile(source: CharStream, settings: CompilerSettings): CompilerData {
     val flowChecker = FlowChecker()
     flowChecker.visit(ast)
     ErrorLogger.assertNoErrors()
+
+    graphAst(settings, "flow-checker", GraphPhases.FLOW, ast)
 
     // Symbol table and scope
     val scopeChecker = ScopeCheckVisitor()
