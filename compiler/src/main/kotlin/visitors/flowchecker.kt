@@ -370,7 +370,7 @@ class FlowChecker : ASTVisitor<Flow> {
 
     //if a ReturnStmt is met, return true
     override fun visit(node: ReturnStmt): Flow {
-        visit(node.value)
+        visit(node.expr)
         return Flow(containsReturn = true)
     }
 

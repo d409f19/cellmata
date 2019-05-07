@@ -5,6 +5,6 @@ world {
 }
 
 state ident (0, 0, 0) {
-    let y = pow(0, {5});
+    let x = 5 + 4.4;
     become ident;
 }

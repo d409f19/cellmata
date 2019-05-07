@@ -11,6 +11,8 @@ sealed class Type(val name: String) {
     override fun toString(): String {
         return name
     }
+
+    val baseType: Type get() = if (this is ArrayType) subtype.baseType else this
 }
 
 object IntegerType : Type("int")
@@ -18,7 +20,7 @@ object FloatType : Type("float")
 object BooleanType : Type("bool")
 object StateType : Type("state")
 object LocalNeighbourhoodType : Type("neighbourhood") // An evaluated neighbourhood
-data class ArrayType(val subtype: Type?) : Type("array<$subtype>") {
+data class ArrayType(val subtype: Type) : Type("array<$subtype>") {
     override fun toString(): String {
         return "array<$subtype>"
     }
@@ -27,13 +29,25 @@ data class ArrayType(val subtype: Type?) : Type("array<$subtype>") {
 /**
  * Default value for types before they're checked by the type checker
  */
-object UncheckedType : Type("UncheckedType")
+object UncheckedType : Type("unchecked")
+
+/**
+ * This type indicate, that the type could not be determined. That is, an error has happened, and to avoid more errors
+ * this should be treated as being any type - so type checking is never wrong when checking this type.
+ */
+object UndeterminedType : Type("undetermined")
+
+/**
+ * Special type used by empty arrays for their subtype. It means, that the subtype must be determined based on
+ * surrounding context
+ */
+object NoSubtypeType : Type("no-subtype")
 
 /**
  * Convert a parse tree node to the type it represents
  */
 fun typeFromCtx(ctx: ParseTree): Type {
-    return when(ctx) {
+    return when (ctx) {
         is CellmataParser.TypeArrayContext -> ArrayType(subtype = typeFromCtx(ctx.array_decl().type_ident()))
         is CellmataParser.TypeBooleanContext -> BooleanType
         is CellmataParser.TypeIntegerContext -> IntegerType

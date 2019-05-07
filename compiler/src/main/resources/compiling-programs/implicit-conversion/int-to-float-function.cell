@@ -5,6 +5,10 @@ world {
 }
 
 state ident (0, 0, 0) {
-    let y = pow(0, {5});
+    let x = fun(6);
     become ident;
+}
+
+function fun(float v) float {
+    return v;
 }

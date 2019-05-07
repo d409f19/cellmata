@@ -50,16 +50,17 @@ class BatchTest {
 
         /**
          * Batch-compiles all programs under the compiling dir and fails on failed compilation
-         * TODO: better output on failed compiles
          */
         @ParameterizedTest
         @MethodSource("getCompilingPrograms")
         fun batchPass(filename: String, program: String) {
-            compileTestProgram(program)
-            // If any errors found, print them and throw exception
-            if (ErrorLogger.hasErrors()) {
+            try {
+                compileTestProgram(program)
+            } catch (e: TerminatedCompilationException) {
                 ErrorLogger.printAllErrors()
-                throw TerminatedCompilationException("Errors occurred in program compilation! Filename: $filename")
+                fail { "CompileErrors occurred while compiling '$filename'" }
+            } catch (e: Exception) {
+                fail("Compiler crashed compiling '$filename'!", e)
             }
         }
     }

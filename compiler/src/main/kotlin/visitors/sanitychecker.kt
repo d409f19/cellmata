@@ -26,8 +26,8 @@ class SanityChecker : BaseASTVisitor() {
     var worldHasEdge = false
 
     override fun visit(node: WorldNode) {
-        super.visit(node)
         dimensions = node.dimensions.size
+        node.dimensions.forEach { visit(it) }
         if (worldHasEdge && node.edge == null) {
             ErrorLogger += SanityError(node.ctx, "A dimension is an [edge], but the edge state was not declared.")
         }
@@ -134,7 +134,9 @@ class SanityChecker : BaseASTVisitor() {
     // if there is 0 states it throws an error
     // if there is 1 state it gives a warning
     override fun visit(node: RootNode) {
-        super.visit(node)
+
+        visit(node.world)
+        node.body.forEach { visit(it) }
 
         if (numberOfStates == 0)
             ErrorLogger += SanityError(node.ctx, "A state is needed")
