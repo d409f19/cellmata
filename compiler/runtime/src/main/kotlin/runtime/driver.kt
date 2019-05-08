@@ -76,8 +76,7 @@ open class Driver(private val worldConfig: WorldConfiguration, private val progr
             } else {
                 var x = subDims[0] - 1
                 while (x >= 0) {
-                    @Suppress("UNCHECKED_CAST")
-                    iterate(subDims.subList(1, subDims.size), pos + listOf(x))
+                    iterate(subDims.subList(1, subDims.size), pos + x)
                     x--
                 }
             }
@@ -97,27 +96,11 @@ class World(private val dims: List<Int>) {
     var world = generateWorld(dims)
 
     private fun generateWorld(dims: List<Int>): MutableList<Any> {
-        var x = dims[0]
         if (dims.size == 1) {
-            return generateSequence {
-                x--
-                if (x >= 0) {
-                    0
-                } else {
-                    null
-                }
-            }.toMutableList()
+            return Array(dims[0]) { 0 }.toMutableList()
         } else {
             val subDims = dims.subList(1, dims.size)
-
-            return generateSequence {
-                x--
-                if (x >= 0) {
-                    generateWorld(subDims)
-                } else {
-                    null
-                }
-            }.toMutableList()
+            return Array(dims[0]) { generateWorld(subDims) }.toMutableList()
         }
     }
 

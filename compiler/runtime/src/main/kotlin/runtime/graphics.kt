@@ -35,7 +35,7 @@ class GraphicalDriver(private val worldConfig: WorldConfiguration, program: IPro
                 update()
                 drawWorld(g)
             }
-        }, 0, tickrate)
+        }, 0, (1000F / tickrate).toLong())
     }
 
     fun drawWorld(g: Graphics2D) {

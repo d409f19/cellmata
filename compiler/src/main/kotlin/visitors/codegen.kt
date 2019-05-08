@@ -105,15 +105,15 @@ class KotlinCodegen: ASTVisitor<String> {
             builder.append(")")
         }
         builder.append("), ")
-        builder.append(if (world.cellSize == null) 2 else world.cellSize)
+        builder.append(world.cellSize)
         builder.append(", ")
-        builder.append(if (world.tickrate == null) 500 else world.tickrate)
+        builder.append(world.tickrate)
         builder.append("), ProgramImpl(), ")
 
         builder.append("MultiWorldType(")
 
-        val edge = world.dimensions[0].edge!! // ToDo make edge a seperate property in world configuration
-        builder.append(stateIDs[edge.spelling])
+        val edge = world.edge
+        builder.append(edge?.let { stateIDs[it.spelling] } ?: 0)
         builder.append(", listOf(")
 
         world.dimensions.forEachIndexed { i, it ->
@@ -141,8 +141,10 @@ class KotlinCodegen: ASTVisitor<String> {
             BooleanType -> "Bool"
             StateType -> "Int"
             LocalNeighbourhoodType -> "List<Int>"
-            is ArrayType -> "MutableList<${toKotlinType(type.subtype!!)}>"
+            is ArrayType -> "MutableList<${toKotlinType(type.subtype)}>"
             UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
+            UndeterminedType -> TODO()
+            NoSubtypeType -> TODO()
         }
     }
 
@@ -159,7 +161,7 @@ class KotlinCodegen: ASTVisitor<String> {
         addMapping("pow", nextLabel())
 
         var stateCounter = 0
-        node.body.filter { it is StateDecl }.map { it as StateDecl }.forEach {
+        node.body.filterIsInstance<StateDecl>().forEach {
             // ToDo multi-states
             stateIDs = stateIDs.plus(pair = Pair(it.ident, stateCounter))
             addMapping(it.ident, stateCounter.toString())
@@ -199,7 +201,7 @@ class KotlinCodegen: ASTVisitor<String> {
         builder.append("\n\n")
         builder.appendln(emitMain(
             node.world,
-            node.body.filter { it is StateDecl }.map { it as StateDecl }.toList()
+            node.body.filterIsInstance<StateDecl>().toList()
         ))
 
         return builder.toString()
@@ -448,7 +450,8 @@ class KotlinCodegen: ASTVisitor<String> {
                         )
                     }
                     UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
-                    null -> TODO() // Should never happens since a unspecified type should have been caught in the type checker
+                    UndeterminedType -> TODO()
+                    NoSubtypeType -> TODO()
                 }
             } else {
                 // Note: values is either null, or we have emitted all specified values and the remainder of values is the default value for the type
@@ -465,7 +468,8 @@ class KotlinCodegen: ASTVisitor<String> {
                         null
                     )
                     UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
-                    null -> TODO() // Should never happens since a unspecified type should have been caught in the type checker
+                    UndeterminedType -> TODO()
+                    NoSubtypeType -> TODO()
                 }
             })
 
@@ -541,7 +545,7 @@ class KotlinCodegen: ASTVisitor<String> {
 
         node.conditionals.forEachIndexed { i, it ->
             if(i > 0) {
-                builder.append(' ')
+                builder.append(" else ")
             }
             builder.append(visit(it))
         }
@@ -560,7 +564,7 @@ class KotlinCodegen: ASTVisitor<String> {
     }
 
     override fun visit(node: ReturnStmt): String {
-        return "return ${visit(node.value)}"
+        return "return ${visit(node.expr)}"
     }
 
     override fun visit(node: AST): String {
