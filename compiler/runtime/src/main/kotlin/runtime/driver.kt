@@ -1,9 +1,19 @@
 package dk.aau.cs.d409f18.cellumata.codegen.kotlin.runtime
 
+/**
+ * Implements a cellular automator.
+ */
 interface IProgram {
+    /**
+     * Given a world view return the new state of the center cell
+     */
     fun updateCell(worldView: IWorldView): Int
 }
 
+/**
+ * Provides local view of the world.
+ * Any lookup is relative to the current cell.
+ */
 interface IWorldView {
     fun getCell(vararg relPos: Int): Int
 }
@@ -17,6 +27,8 @@ infix fun Int.wrap(divisor: Int) = (this % divisor).let { if (it < 0) it + divis
 
 class MultiWorldView(private val world: World, private val dims: List<Int>, private val pos: List<Int>, private val edge: Int, private val dimTypes: List<DimensionType>): IWorldView {
     override fun getCell(vararg relPos: Int): Int {
+        // Check if any dimension is a edge type, and if it is check if the coordinate is over the edge
+        // If the coordinate is over the edge on any edge type dimension, it will default to the edge type.
         val overEdge = relPos.mapIndexed { index, p ->
             if (dimTypes[index] != DimensionType.EDGE) {
                 (pos[index] + p) >= dims[index] || (pos[index] + p) < 0
@@ -32,16 +44,25 @@ class MultiWorldView(private val world: World, private val dims: List<Int>, priv
     }
 }
 
+/**
+ * Defines the interface for world edge logic, like edge states, and wrapping
+ */
 interface IWorldType {
     fun getWorldView(world: World, dims: List<Int>, pos: List<Int>): IWorldView
 }
 
+/**
+ * Implements a world view capable of having edge states and wrapping dimensions
+ */
 class MultiWorldType(private val edge: Int, private val dimTypes: List<DimensionType>): IWorldType {
     override fun getWorldView(world: World, dims: List<Int>, pos: List<Int>): IWorldView {
         return MultiWorldView(world, dims, pos, edge, dimTypes)
     }
 }
 
+/**
+ * Run a cellular automator over every cell in a world.
+ */
 open class Driver(private val worldConfig: WorldConfiguration, private val program: IProgram, private val worldType: IWorldType) {
     var worldCurrent = World(worldConfig.dims)
     var worldNext = World(worldConfig.dims)
@@ -82,6 +103,11 @@ open class Driver(private val worldConfig: WorldConfiguration, private val progr
 }
 
 class World(private val dims: List<Int>) {
+    /**
+     * World is implemented as an N dimensional MutableList.
+     * Because the N isn't know when the code is written, an exact type can't be specified.
+     * There for Any is used to allow for both MutableList and Int.
+     */
     var world = generateWorld(dims)
 
     private fun generateWorld(dims: List<Int>): MutableList<Any> {

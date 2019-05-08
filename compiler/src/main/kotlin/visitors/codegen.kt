@@ -18,10 +18,22 @@ class KotlinCodegen_FoundUncheckedType : KotlinCodegenError()
 class KotlinCodegen_FoundUndefinedWorldType : KotlinCodegenError()
 
 class KotlinCodegen : ASTVisitor<String> {
+    /**
+     * String used for indentation in emitted code
+     */
     private val INDENT = "    "
+    /**
+     * Maps states names to an unique integer identifier
+     */
     private var stateIDs: Map<String, Int> = mutableMapOf()
+    /**
+     * Used to keep track of the next available label
+     */
     private var labelCounter = 0
 
+    /**
+     * Acts like symbol table in that it keeps track of mapping labels to states, and tracking scopes.
+     */
     private var mapping: Stack<Map<String, String>> = Stack()
 
     init {
@@ -56,6 +68,10 @@ class KotlinCodegen : ASTVisitor<String> {
         mapping.pop()
     }
 
+    /**
+     * Emit state dispatcher.
+     * The generated function calls the state function with the logic for the current cell's state.
+     */
     private fun emitDispatcher(): String {
         val builder = StringBuilder()
         builder.appendln(
@@ -80,6 +96,9 @@ class KotlinCodegen : ASTVisitor<String> {
         return builder.toString()
     }
 
+    /**
+     * Emit the main function starting the generated program
+     */
     private fun emitMain(world: WorldNode, states: List<StateDecl>): String {
         val builder = StringBuilder()
 
@@ -90,6 +109,7 @@ class KotlinCodegen : ASTVisitor<String> {
         """.trimIndent()
         )
 
+        // Emit list containing the size of each dimension
         world.dimensions.forEachIndexed { i, it ->
             if (i > 0) {
                 builder.append(", ")
@@ -98,6 +118,7 @@ class KotlinCodegen : ASTVisitor<String> {
         }
 
         builder.append("), listOf(")
+        // Emit list of colors of each state
         states.forEachIndexed { i, it ->
             if (i > 0) {
                 builder.append(", ")
@@ -111,14 +132,19 @@ class KotlinCodegen : ASTVisitor<String> {
             builder.append(")")
         }
         builder.append("), ")
+        // Emit cell size
         builder.append(world.cellSize)
         builder.append(", ")
+        // Emit tickrate
         builder.append(world.tickrate)
+        // Emit instantiation of generated cell program
         builder.append("), ProgramImpl(), ")
-
+        // Emit instatiation of the WorldView factory
         builder.append("MultiWorldType(")
 
+        // Emit the edge state
         builder.append(world.edge?.let { stateIDs[it.spelling] } ?: 0)
+        // Emit the type (EDGE, WRAPPING) for each dimension
         builder.append(", listOf(")
 
         world.dimensions.forEachIndexed { i, it ->
@@ -143,6 +169,9 @@ class KotlinCodegen : ASTVisitor<String> {
         return builder.toString()
     }
 
+    /**
+     * Emit Kotlin equivalent type identifiers
+     */
     private fun toKotlinType(type: Type): String {
         return when (type) {
             IntegerType -> "Int"
@@ -169,6 +198,7 @@ class KotlinCodegen : ASTVisitor<String> {
         addMapping("root", nextLabel())
         addMapping("pow", nextLabel())
 
+        // For each state create an associated integer indentifier, and label mapping that will be used in the final program
         var stateCounter = 0
         node.body.filterIsInstance<StateDecl>().forEach {
             // ToDo multi-states
@@ -180,6 +210,7 @@ class KotlinCodegen : ASTVisitor<String> {
 
         openScope()
 
+        // For each const, neighbourhood, and function create a mapping to a label
         node.body.filter { it !is StateDecl }.forEach {
             when (it) {
                 is ConstDecl -> addMapping(it.ident, nextLabel())
@@ -200,7 +231,10 @@ class KotlinCodegen : ASTVisitor<String> {
             """.trimIndent()
         )
 
+        // Emit state dispatcher
         builder.appendln(emitDispatcher().prependIndent(INDENT))
+
+        // Emit the cell program
         node.body.forEach { builder.appendln(visit(it).prependIndent(INDENT) + ";") }
 
         builder.append(
@@ -212,6 +246,8 @@ class KotlinCodegen : ASTVisitor<String> {
         closeScope()
 
         builder.append("\n\n")
+
+        // Emit the main function such the program has a starting point
         builder.appendln(
             emitMain(
                 node.world,
