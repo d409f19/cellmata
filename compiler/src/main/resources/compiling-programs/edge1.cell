@@ -1,0 +1,12 @@
+world {
+    size = 100 [edge], 200 [wrap];
+    edge = f;
+}
+
+state ident (0, 0, 0) {
+    become ident;
+}
+
+function f() state {
+    return ident;
+}
