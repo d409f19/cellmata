@@ -86,10 +86,10 @@ class BatchTest {
             // For each dir of failing programs
             failingDirs.forEach {
                 // Walk top-down
-                File(it).walk().forEach {
+                File(it).walk().forEach { program ->
                     // If it is a file and has extension 'cell'
-                    if (it.isFile && it.extension == "cell") {
-                        list.add(Arguments.of(it.name, it.readText()))
+                    if (program.isFile && program.extension == "cell") {
+                        list.add(Arguments.of(program.name, program.readText()))
                     }
                 }
             }
