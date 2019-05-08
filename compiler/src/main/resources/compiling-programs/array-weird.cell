@@ -1,0 +1,10 @@
+world {
+    size = 100 [wrap], 200 [wrap];
+    tickrate = 1;
+    cellsize = 5;
+}
+
+state ident (0, 0, 0) {
+    let x = [5][][2]float{{{0 + 27, 1.2}, {}, {1}}, {{}}, {{0.0}}};
+    become ident;
+}

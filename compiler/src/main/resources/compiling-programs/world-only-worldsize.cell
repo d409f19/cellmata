@@ -1,0 +1,7 @@
+world {
+    size = 100 [wrap], 200 [wrap];
+}
+
+state ident (0, 0, 0) {
+    become ident;
+}

@@ -20,19 +20,15 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
             .append("WorldNode\\nsize = ")
             .append(node.dimensions.map {
                 when(it.type) {
-                    WorldType.EDGE -> it.size.toString() + "[edge=" + it.edge + "]"
+                    WorldType.EDGE -> it.size.toString() + "[edge]"
                     WorldType.UNDEFINED -> it.size.toString() + "[undefined]"
                     WorldType.WRAPPING -> it.size.toString() + "[wrapping]"
                 }
             }.joinToString(", "))
 
-        if (node.cellSize != null) {
-            builder = builder.append("\\ncellsize=").append(node.cellSize!!)
-        }
-
-        if (node.tickrate != null) {
-            builder = builder.append("\\ntickrate=").append(node.tickrate!!)
-        }
+        if (node.edge != null) builder.append("\\nedge=").append(node.edge.spelling)
+        builder.append("\\ncellsize=").append(node.cellSize)
+        builder.append("\\ntickrate=").append(node.tickrate)
 
         printLabel(node, builder.toString())
 
@@ -43,9 +39,6 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
 
     override fun visit(node: WorldDimension) {
         val builder: StringBuilder = StringBuilder("WorldDimension\\ntype=${node.type}\\nsize=${node.size}")
-        if (node.edge != null) {
-            builder.append("\\nedge${node.edge}")
-        }
         printLabel(node, builder.toString())
         super.visit(node)
     }
@@ -201,9 +194,18 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: ArrayBodyExpr) {
-        printLabel(node, "ArrayBodyExpr")
-        node.values.map { printNode(node, it) }
+    override fun visit(node: SizedArrayExpr) {
+        printLabel(node, "SizedArrayExpr\\ntype=${node.declaredType}\\nsize=${node.declaredSize.map { it.toString() }.joinToString(", ")}")
+        if (node.body != null) {
+            printNode(node, node.body)
+            visit(node.body)
+        }
+        super.visit(node)
+    }
+
+    override fun visit(node: ArrayLiteralExpr) {
+        printLabel(node, "ArrayLiteralExpr\\nsize=${node.size}")
+        node.values.forEach { printNode(node, it); visit(it) }
         super.visit(node)
     }
 
@@ -253,7 +255,7 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
 
     override fun visit(node: ReturnStmt) {
         printLabel(node, "ReturnStmt")
-        printNode(node, node.value)
+        printNode(node, node.expr)
         super.visit(node)
     }
 
@@ -288,9 +290,9 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
     }
 
     override fun visit(node: ForLoopStmt) {
-        printNode(node, node.initPart)
+        node.initPart?.let { printNode(node, it) }
         printNode(node, node.condition)
-        printNode(node, node.postIterationPart)
+        node.postIterationPart?.let { printNode(node, it) }
         printNode(node, node.body)
         printLabel(node.body, "body")
         super.visit(node)

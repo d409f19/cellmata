@@ -1,0 +1,19 @@
+world {
+    size = 100 [wrap], 200 [wrap];
+    tickrate = 1;
+    cellsize = 5;
+}
+
+state ident (0, 0, 0) {
+    let x = 5;
+    let even = 0;
+    
+    for (; x >= 0;) {
+        // If current number is even, increment counter
+        if (x % 2 == 0) {
+            even = even + 1;
+        }
+    }
+
+    become ident;
+}

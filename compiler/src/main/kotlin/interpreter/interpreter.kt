@@ -28,8 +28,8 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
         val grid = Array(width) { Array(height) { listOfStates.random() } }
 
         // Rendering
-        val cellSize = node.world.cellSize!!
-        val tickrate = node.world.tickrate!!
+        val cellSize = node.world.cellSize
+        val tickrate = node.world.tickrate
         val frame = JFrame("Cellmata")
         val panel = frame.add(JPanel())
         panel.preferredSize = Dimension(width * cellSize, height * cellSize)
@@ -59,7 +59,7 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
                     }
                 }
             }
-        }, 0, tickrate.toLong())
+        }, 0, (1000f / tickrate).toLong())
 
         return Unit
     }
@@ -94,10 +94,11 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
             is ArrayLookupExpr -> visit(node)
-            is ArrayBodyExpr -> visit(node)
             is Identifier -> visit(node)
             is FuncCallExpr -> visit(node)
             is StateIndexExpr -> visit(node)
+            is SizedArrayExpr -> visit(node)
+            is ArrayLiteralExpr -> visit(node)
             is IntLiteral -> visit(node)
             is FloatLiteral -> visit(node)
             is BoolLiteral -> visit(node)
@@ -183,7 +184,11 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun visit(node: ArrayBodyExpr): Any {
+    override fun visit(node: SizedArrayExpr): Any {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun visit(node: ArrayLiteralExpr): Any {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

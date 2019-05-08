@@ -31,7 +31,7 @@ class SymbolTest {
      */
     fun assignStmtPassData(): List<String> {
         return IntRange(-50, 50).step(10).map { it.toString() }
-            .union(listOf("true", "false", "113240987.734723984", "1.0000000000000001"))
+            .union(listOf("true", "false", "113240987.734723984", "1.0000000000000001", "-1.0000000000000001"))
             .toList()
     }
 
@@ -43,11 +43,13 @@ class SymbolTest {
     fun assignStmtLiteralPassTest(value: String) {
 
         val compilerData =
-            compileProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let x = $value;"))
+            compileTestProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let x = $value;"))
+
+        // Ensure that symbol table actually exists
+        assertNotNull(compilerData.symbolTable)
 
         // Get SymbolTable for first subscope, which is first StateDecl
-        val stateSymbolTable = compilerData.symbolTable.tables[0]
-
+        val stateSymbolTable = compilerData.symbolTable!!.tables[0]
 
         // Assert identifier of variable is contained in first symbol scope
         assertTrue(stateSymbolTable.symbols.containsKey("x"))
@@ -63,7 +65,7 @@ class SymbolTest {
 
     /**
      * Returns the list of reserved words for testing data. Note that this cannot be passed to test by:
-     * @ValueSource("strings = RESERVED_WORDS") as JUnit5 complains that the source is not compile-time static
+     * '@ValueSource("strings = RESERVED_WORDS")' as JUnit5 complains that the source is not compile-time static
      */
     fun parserReservedSymbolsData(): List<String> {
         return RESERVED_WORDS
@@ -95,7 +97,9 @@ class SymbolTest {
             Arguments.of("x", listOf("true", "true")),
             Arguments.of("x", listOf("4.2", "42.2")),
             Arguments.of("x", listOf("4", "2+2")),
-            Arguments.of("x", listOf("true", "5"))
+            Arguments.of("x", listOf("true", "5")),
+            Arguments.of("x", listOf("false", "-42.5")),
+            Arguments.of("x", listOf("-42.5", "42.5"))
         )
     }
 
@@ -118,7 +122,7 @@ class SymbolTest {
         }
 
         // Compile boilerplate program with state having the constructed body
-        compileProgram(getWorldDeclString() + getStateDeclString(body = stringBuilder.toString()))
+        compileTestProgramParserASTInsecure(getWorldDeclString() + getStateDeclString(body = stringBuilder.toString()))
 
         // For each error recorded, assert that error is of SymbolRedefinitionError-type and with given identifier
         ErrorLogger.allErrors().forEach {
@@ -136,6 +140,8 @@ class SymbolTest {
             } catch (e: AssertionFailedError) {
                 fail("AssertionFailedError: $it was not a SymbolRedefinitionError")
             }
+
         }
+
     }
 }

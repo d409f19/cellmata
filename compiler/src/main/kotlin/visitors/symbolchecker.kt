@@ -1,14 +1,13 @@
 package dk.aau.cs.d409f19.cellumata.visitors
 
-import dk.aau.cs.d409f19.cellumata.ErrorFromContext
+import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
-import org.antlr.v4.runtime.ParserRuleContext
 
 /**
  * Logged when a undefined symbol is encountered. This exception indicates there is a use-before-declaration scenario.
  */
-class UndeclaredNameException(ctx: SourceContext, val ident: String) : ErrorFromContext(ctx, "\"$ident\" is undeclared.")
+class UndeclaredNameException(ctx: SourceContext, val ident: String) : CompileError(ctx, "\"$ident\" is undeclared.")
 
 /**
  * Walks through the abstract syntax tree, extracts symbols, and checks for use-before-declaration.
@@ -17,7 +16,7 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
     private val symbolTableSession: CreatingSymbolTableSession = CreatingSymbolTableSession(symbolTable = symbolTable)
 
     /**
-     * @return The filed symbol table
+     * @return The filled symbol table
      */
     fun getSymbolTable(): Table {
         return symbolTableSession.getRootTable()
@@ -34,6 +33,8 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
 
         // Visit the other declarations
         node.body.filter { it !is ConstDecl }.forEach { visit(it) }
+
+        super.visit(node.world)
     }
 
     override fun visit(node: Identifier) {
@@ -41,7 +42,7 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         // Check if the name is in the symbol table
         val symb = symbolTableSession.getSymbol(node.spelling)
         if (symb == null) {
-            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.spelling))
+            ErrorLogger += UndeclaredNameException(node.ctx, node.spelling)
         }
         super.visit(node)
     }
@@ -73,22 +74,33 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
             // assignment
             val symb = symbolTableSession.getSymbol(node.ident)
             if (symb == null) {
-                ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
+                ErrorLogger += UndeclaredNameException(node.ctx, node.ident)
             }
         }
 
         super.visit(node)
     }
 
+    override fun visit(node: IfStmt) {
+        // conditional blocks open their own scopes
+        node.conditionals.forEach { visit(it) }
+        if (node.elseBlock != null) {
+            symbolTableSession.openScope()
+            visit(node.elseBlock)
+            symbolTableSession.closeScope()
+        }
+    }
+
     override fun visit(node: ConditionalBlock) {
+        visit(node.expr)
         symbolTableSession.openScope()
-        super.visit(node)
+        visit(node.block)
         symbolTableSession.closeScope()
     }
 
     override fun visit(node: FuncCallExpr) {
         if (symbolTableSession.getSymbol(node.ident) == null) {
-            ErrorLogger.registerError(UndeclaredNameException(node.ctx, node.ident))
+            ErrorLogger += UndeclaredNameException(node.ctx, node.ident)
         }
         super.visit(node)
     }
@@ -100,12 +112,12 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         // This way any loop-control-variables (those in the init-part) are not remade every iteration, but they are
         // removed when the loop finishes.
         symbolTableSession.openScope()
-        visit(node.initPart)
+        node.initPart?.let { visit(it) }
         visit(node.condition)
         symbolTableSession.openScope()
         visit(node.body)
         symbolTableSession.closeScope()
-        visit(node.postIterationPart)
+        node.postIterationPart?.let { visit(it) }
         symbolTableSession.closeScope()
     }
 }

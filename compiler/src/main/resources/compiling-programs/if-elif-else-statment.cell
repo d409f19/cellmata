@@ -1,0 +1,18 @@
+world {
+    size = 100 [wrap], 200 [wrap];
+    tickrate = 1;
+    cellsize = 5;
+}
+
+state ident (0, 0, 0) {
+    
+    let x = 0;
+    
+    if (x == 0) {
+        become ident;
+    } elif (x % 2 == 1) {
+        become ident;
+    } else {
+        become ident;
+    }
+}

@@ -7,13 +7,18 @@ import org.antlr.v4.runtime.Token
  * The SourceContext data class contains the position of the context in the source code from which an AST node was created.
  * @param lineNumber The line number in the source program. In the range 1..n
  * @param charPositionInLine The position of the first character of the AST node in source program. In the range 0..n-1
+ * @param text The context as the a string from the original source code
  */
-data class SourceContext(val lineNumber: Int, val charPositionInLine: Int) {
-    constructor(ctx: ParserRuleContext) : this(ctx.start.line, ctx.start.charPositionInLine)
-    constructor(token: Token) : this(token.line, token.charPositionInLine)
+data class SourceContext(
+    val lineNumber: Int,
+    val charPositionInLine: Int,
+    val text: String
+) {
+    constructor(ctx: ParserRuleContext) : this(ctx.start.line, ctx.start.charPositionInLine, ctx.text)
+    constructor(token: Token) : this(token.line, token.charPositionInLine, token.text)
 
     override fun toString(): String {
-        return "(line=$lineNumber, char=$charPositionInLine)"
+        return "($lineNumber:$charPositionInLine)"
     }
 }
 
@@ -21,14 +26,14 @@ data class SourceContext(val lineNumber: Int, val charPositionInLine: Int) {
  * A special instance of SourceContext. It is used for nodes that are not from the source program, e.g. it could be
  * from the standard environment like a built-in function.
  */
-val EMPTY_CONTEXT = SourceContext(0, 0)
+val EMPTY_CONTEXT = SourceContext(0, 0, "")
 
 /**
  * Nodes that hold a value or that can produce a value should implement TypedNode to expose the type of that value
  */
 interface TypedNode {
-    fun getType(): Type?
-    fun setType(type: Type?)
+    fun getType(): Type
+    fun setType(type: Type)
 }
 
 /**
@@ -68,7 +73,7 @@ enum class WorldType {
     UNDEFINED
 }
 
-data class WorldDimension(val size: Int, val type: WorldType, val edge: Identifier?)
+data class WorldDimension(val size: Int, val type: WorldType)
 
 /**
  * WorldNode represent the world definition.
@@ -76,8 +81,9 @@ data class WorldDimension(val size: Int, val type: WorldType, val edge: Identifi
 class WorldNode(
     ctx: SourceContext,
     var dimensions: List<WorldDimension>,
-    var tickrate: Int?,
-    var cellSize: Int?
+    val edge: Identifier?,
+    var tickrate: Int,
+    var cellSize: Int
 ) : AST(ctx)
 
 /*
@@ -88,10 +94,12 @@ class WorldNode(
  */
 sealed class Expr(
     ctx: SourceContext,
-    private var type: Type? = UncheckedType
+    private var type: Type = UncheckedType
 ) : AST(ctx), TypedNode {
-    override fun getType(): Type? = type
-    override fun setType(type: Type?) { this.type = type }
+    override fun getType(): Type = type
+    override fun setType(type: Type) {
+        this.type = type
+    }
 }
 
 /**
@@ -108,7 +116,7 @@ sealed class BinaryArithmeticExpr(ctx: SourceContext, left: Expr, right: Expr) :
 
 /**
  * A NumericComparisonExpr has exactly two child expressions which are both numeric expressions, but the
- * NumericComparisonExpr itself also returns a boolean.
+ * NumericComparisonExpr itself returns a boolean.
  * It is used to generalize behaviour of comparison expressions in various visitors.
  */
 sealed class NumericComparisonExpr(ctx: SourceContext, left: Expr, right: Expr) : BinaryExpr(ctx, left, right)
@@ -210,13 +218,20 @@ class ArrayLookupExpr(
 
 /**
  * @param ctx the context from witch this node was created from
- * @param values Elements of the array.
+ * @param body Elements of the array.
  * @param declaredType Type listed before the body/values of the array.
  */
-class ArrayBodyExpr(
+class SizedArrayExpr(
     ctx: SourceContext,
-    val values: List<Expr>,
-    val declaredType: Type
+    val body: ArrayLiteralExpr?,
+    val declaredType: Type,
+    var declaredSize: List<Int?>
+) : Expr(ctx)
+
+class ArrayLiteralExpr(
+    ctx: SourceContext,
+    val values: MutableList<Expr>,
+    var size: Int? = null
 ) : Expr(ctx)
 
 class Identifier(
@@ -235,7 +250,7 @@ class ModuloExpr(
  */
 class FuncCallExpr(
     ctx: SourceContext,
-    val args: List<Expr>,
+    val args: MutableList<Expr>,
     var ident: String
 ) : Expr(ctx)
 
@@ -269,7 +284,7 @@ class BoolLiteral(
 class FloatLiteral(
     ctx: SourceContext,
     var value: Float
-): Expr(ctx, FloatType)
+) : Expr(ctx, FloatType)
 
 // Type conversion
 /**
@@ -337,10 +352,10 @@ class NeighbourhoodDecl(
 class FunctionArgument(
     ctx: SourceContext,
     val ident: String,
-    private var type: Type?
+    private var type: Type = UncheckedType
 ) : AST(ctx), TypedNode {
     override fun getType() = type
-    override fun setType(type: Type?) {
+    override fun setType(type: Type) {
         this.type = type
     }
 }
@@ -348,13 +363,114 @@ class FunctionArgument(
 /**
  * Represents a function declaration
  */
-class FuncDecl(
+open class FuncDecl(
     ctx: SourceContext,
     var ident: String,
     var args: List<FunctionArgument>,
     val body: CodeBlock,
     var returnType: Type = UncheckedType
 ) : Decl(ctx)
+
+
+/*
+ Builtin functions
+ */
+interface BuiltinFunc
+
+object BuiltinFuncCount : FuncDecl(
+    EMPTY_CONTEXT,
+    "count",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "stateParameter", StateType),
+        FunctionArgument(EMPTY_CONTEXT, "neighbourhoodParameter", LocalNeighbourhoodType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncRandi : FuncDecl(
+    EMPTY_CONTEXT,
+    "randi",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "intMinParameter", IntegerType),
+        FunctionArgument(EMPTY_CONTEXT, "intMaxParameter", IntegerType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncRandf : FuncDecl(
+    EMPTY_CONTEXT,
+    "randf",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatMinParameter", FloatType),
+        FunctionArgument(EMPTY_CONTEXT, "floatMaxParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    FloatType
+), BuiltinFunc
+
+object BuiltinFuncAbsi : FuncDecl(
+    EMPTY_CONTEXT,
+    "absi",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "intParameter", IntegerType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncAbsf : FuncDecl(
+    EMPTY_CONTEXT,
+    "absf",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    FloatType
+), BuiltinFunc
+
+object BuiltinFuncFloor : FuncDecl(
+    EMPTY_CONTEXT,
+    "floor",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncCeil : FuncDecl(
+    EMPTY_CONTEXT,
+    "ceil",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    IntegerType
+), BuiltinFunc
+
+object BuiltinFuncRoot : FuncDecl(
+    EMPTY_CONTEXT,
+    "root",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatValueParameter", FloatType),
+        FunctionArgument(EMPTY_CONTEXT, "floatRootParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    FloatType
+), BuiltinFunc
+
+object BuiltinFuncPow : FuncDecl(
+    EMPTY_CONTEXT,
+    "pow",
+    listOf(
+        FunctionArgument(EMPTY_CONTEXT, "floatValueParameter", FloatType),
+        FunctionArgument(EMPTY_CONTEXT, "floatExponentParameter", FloatType)
+    ),
+    CodeBlock(EMPTY_CONTEXT, listOf()),
+    FloatType
+), BuiltinFunc
 
 /*
  * Statements
@@ -377,10 +493,10 @@ class AssignStmt(
     var ident: String,
     val expr: Expr,
     var isDeclaration: Boolean,
-    private var type: Type? = UncheckedType
+    private var type: Type = UncheckedType
 ) : Stmt(ctx), TypedNode {
     override fun getType() = type
-    override fun setType(type: Type?) {
+    override fun setType(type: Type) {
         this.type = type
     }
 }
@@ -406,9 +522,9 @@ class IfStmt(
 
 class ForLoopStmt(
     ctx: SourceContext,
-    val initPart: AssignStmt,
+    val initPart: AssignStmt?,
     val condition: Expr,
-    val postIterationPart: AssignStmt,
+    val postIterationPart: AssignStmt?,
     val body: CodeBlock
 ) : Stmt(ctx)
 
@@ -435,7 +551,7 @@ class BecomeStmt(
  */
 class ReturnStmt(
     ctx: SourceContext,
-    val value: Expr
+    var expr: Expr
 ) : Stmt(ctx)
 
 /**
@@ -444,7 +560,7 @@ class ReturnStmt(
 class CodeBlock(
     ctx: SourceContext,
     val body: List<Stmt>
-): AST(ctx)
+) : AST(ctx)
 
 /*
  * Error nodes are used when something goes wrong in reduce.kt and is returned by the failing function.

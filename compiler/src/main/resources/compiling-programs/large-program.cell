@@ -1,13 +1,19 @@
 world {
-    size = 1000 [edge=alive1], 1000 [wrap]
-    tickrate = 100 // Ticktock
-    cellsize = 5 // Cellsize is the size of a cell
+    size = 1000 [edge], 1000 [wrap];
+    edge = alive1;
+    tickrate = 100; // Ticktock
+    cellsize = 5; // Cellsize is the size of a cell
 }
 
 const boolean = false;
 const integer = 42;
 const floating = 42.420;
 const goodProgram = true; // May be accurate
+
+neighbourhood foobar {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),         (1, 0)
+}
 
 /* An explanation of the following states would be redundant
    but it's worthwhile trying out multi-line comments
@@ -35,15 +41,40 @@ state alive4 (0, 0, 0) {
 
 state alive5 (0, 0, 0) {
     let a = -foo(42);
+    let x = 0;
+    for (x = 5; x >= a; x = x + 1) {
+        if (x != 0) {
+            x = -5;
+            break; 
+        } else {
+            x = 42 + 3 / 176 * 22;
+            continue;
+        }
+    }
     become alive6;
 }
 
 state alive6 (0, 0, 0) {
     let a = -foo(42);
+    let b = bar(a, true);
+
+    if (b != -16) {
+        become alive5;
+    }
     become alive1;
 }
 
 // This is a silly function
 function foo(int x) int {
     return x + 42;
+}
+
+function bar(int x, bool y) int {
+    if (y) {
+        return x + 42;
+    } elif (!y) {
+        return x;
+    } else {
+        return x + 4;
+    }
 }

@@ -1,0 +1,20 @@
+world {
+    size = 100 [wrap], 200 [wrap];
+    tickrate = 1;
+    cellsize = 5;
+}
+
+state ident (0, 0, 0) {
+    let x = 0;
+    let even = 0;
+    
+    for (x = 5; x > 0; x = x -1) {
+        // If current number is uneven, continue
+        if (x % 2 == 1) {
+            continue;
+        }
+        even = even + 1;
+    }
+
+    become ident;
+}
