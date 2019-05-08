@@ -16,6 +16,19 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     private var expectedReturn: Type? = null
     private var isOuterArray = true
 
+    override fun visit(node: WorldNode) {
+        node.dimensions.forEach { visit(it) }
+        if (node.edge != null) {
+            visit(node.edge)
+            if (node.edge.getType() !is StateType) {
+                ErrorLogger += TypeError(
+                    node.ctx,
+                    "Expected edge's expressions to be of state-type. Found: ${node.edge.getType()}"
+                )
+            }
+        }
+    }
+
     override fun visit(node: NegationExpr) {
         super.visit(node)
 
