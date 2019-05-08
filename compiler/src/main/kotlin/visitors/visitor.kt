@@ -129,6 +129,9 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
 
     override fun visit(node: WorldNode) {
         node.dimensions.forEach { visit(it) }
+        if (node.edge != null) {
+            visit(node.edge)
+        }
     }
 
     override fun visit(node: WorldDimension) {
