@@ -13,6 +13,8 @@ enum class DimensionType {
     EDGE
 }
 
+infix fun Int.wrap(divisor: Int) = (this % divisor).let { if (it < 0) it + divisor else it }
+
 class MultiWorldView(private val world: World, private val dims: List<Int>, private val pos: List<Int>, private val edge: Int, private val dimTypes: List<DimensionType>): IWorldView {
     override fun getCell(vararg relPos: Int): Int {
         val overEdge = relPos.mapIndexed { index, p ->
@@ -25,16 +27,7 @@ class MultiWorldView(private val world: World, private val dims: List<Int>, priv
         return if (overEdge) {
             edge
         } else {
-            world.getCell(*relPos.mapIndexed { index, p ->
-                val x = (pos[index] + p).rem(dims[index])
-                // We need a bit of logic to convert remainder operator to modulus operator,
-                // otherwise we are gonna have problems with negative numbers
-                if (x < 0) {
-                    x + dims[index]
-                } else {
-                    x
-                }
-            }.toIntArray())
+            world.getCell(*relPos.mapIndexed { index, p -> p wrap dims[index] }.toIntArray())
         }
     }
 }
@@ -62,22 +55,18 @@ open class Driver(private val worldConfig: WorldConfiguration, private val progr
     open fun update() {
         fun iterate(subDims: List<Int>, pos: List<Int> = listOf()) {
             if (subDims.size == 1) {
-                var x = subDims[0] - 1
-                while (x >= 0) {
-                    val currentPos = pos + listOf(x)
+                for (x in 0 until subDims[0]) {
+                    val currentPos = pos + x
                     worldNext.setCell(
                         *currentPos.toIntArray(),
                         state = program.updateCell(
                             worldView = worldType.getWorldView(worldCurrent, worldConfig.dims, currentPos)
                         )
                     )
-                    x--
                 }
             } else {
-                var x = subDims[0] - 1
-                while (x >= 0) {
+                for (x in 0 until subDims[0]) {
                     iterate(subDims.subList(1, subDims.size), pos + x)
-                    x--
                 }
             }
         }

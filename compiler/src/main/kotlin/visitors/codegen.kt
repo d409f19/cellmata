@@ -3,21 +3,21 @@ package dk.aau.cs.d409f19.cellumata.visitors
 import dk.aau.cs.d409f19.cellumata.ast.*
 import java.util.*
 
-sealed class KotlinCodegenError: Error()
+sealed class KotlinCodegenError : Error()
 
-class KotlinCodegen_ErrorDecl: KotlinCodegenError()
+class KotlinCodegen_ErrorDecl : KotlinCodegenError()
 
-class KotlinCodegen_ErrorExpr: KotlinCodegenError()
+class KotlinCodegen_ErrorExpr : KotlinCodegenError()
 
-class KotlinCodegen_ErrorStmt: KotlinCodegenError()
+class KotlinCodegen_ErrorStmt : KotlinCodegenError()
 
-class KotlinCodegen_InvalidIdentLookup: KotlinCodegenError()
+class KotlinCodegen_InvalidIdentLookup : KotlinCodegenError()
 
-class KotlinCodegen_FoundUncheckedType: KotlinCodegenError()
+class KotlinCodegen_FoundUncheckedType : KotlinCodegenError()
 
-class KotlinCodegen_FoundUndefinedWorldType: KotlinCodegenError()
+class KotlinCodegen_FoundUndefinedWorldType : KotlinCodegenError()
 
-class KotlinCodegen: ASTVisitor<String> {
+class KotlinCodegen : ASTVisitor<String> {
     private val INDENT = "    "
     private var stateIDs: Map<String, Int> = mutableMapOf()
     private var labelCounter = 0
@@ -58,20 +58,24 @@ class KotlinCodegen: ASTVisitor<String> {
 
     private fun emitDispatcher(): String {
         val builder = StringBuilder()
-        builder.appendln("""
+        builder.appendln(
+            """
             override fun updateCell(worldView: IWorldView): Int {
             ${INDENT}return when(worldView.getCell(0, 0)) {
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         stateIDs.forEach { (_, id) ->
             builder.appendln("$INDENT$INDENT$id -> state_$id(worldView)")
         }
 
-        builder.append("""
+        builder.append(
+            """
             $INDENT${INDENT}else -> throw Error()
             $INDENT}
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         return builder.toString()
     }
@@ -79,10 +83,12 @@ class KotlinCodegen: ASTVisitor<String> {
     private fun emitMain(world: WorldNode, states: List<StateDecl>): String {
         val builder = StringBuilder()
 
-        builder.append("""
+        builder.append(
+            """
             fun main() {
                 GraphicalDriver(WorldConfiguration(listOf(
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         world.dimensions.forEachIndexed { i, it ->
             if (i > 0) {
@@ -112,30 +118,33 @@ class KotlinCodegen: ASTVisitor<String> {
 
         builder.append("MultiWorldType(")
 
-        val edge = world.edge
-        builder.append(edge?.let { stateIDs[it.spelling] } ?: 0)
+        builder.append(world.edge?.let { stateIDs[it.spelling] } ?: 0)
         builder.append(", listOf(")
 
         world.dimensions.forEachIndexed { i, it ->
-            if(i > 0) {
+            if (i > 0) {
                 builder.append(", ")
             }
-            builder.append(when(it.type) {
-                WorldType.WRAPPING -> "DimensionType.WRAPPING"
-                WorldType.EDGE -> "DimensionType.EDGE"
-                WorldType.UNDEFINED -> throw KotlinCodegen_FoundUndefinedWorldType()
-            })
+            builder.append(
+                when (it.type) {
+                    WorldType.WRAPPING -> "DimensionType.WRAPPING"
+                    WorldType.EDGE -> "DimensionType.EDGE"
+                    WorldType.UNDEFINED -> throw KotlinCodegen_FoundUndefinedWorldType()
+                }
+            )
         }
 
-        builder.append("""))).run()
+        builder.append(
+            """))).run()
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         return builder.toString()
     }
 
     private fun toKotlinType(type: Type): String {
-        return when(type) {
+        return when (type) {
             IntegerType -> "Int"
             FloatType -> "Float"
             BooleanType -> "Bool"
@@ -172,7 +181,7 @@ class KotlinCodegen: ASTVisitor<String> {
         openScope()
 
         node.body.filter { it !is StateDecl }.forEach {
-            when(it) {
+            when (it) {
                 is ConstDecl -> addMapping(it.ident, nextLabel())
                 is NeighbourhoodDecl -> addMapping(it.ident, nextLabel())
                 is FuncDecl -> addMapping(it.ident, nextLabel())
@@ -181,34 +190,40 @@ class KotlinCodegen: ASTVisitor<String> {
         }
 
         val builder = StringBuilder()
-        builder.appendln("""
+        builder.appendln(
+            """
             package dk.aau.cs.d409f18.cellumata.codegen.kotlin.impl
 
             import dk.aau.cs.d409f18.cellumata.codegen.kotlin.runtime.*
 
             class ProgramImpl: IProgram {
-            """.trimIndent())
+            """.trimIndent()
+        )
 
         builder.appendln(emitDispatcher().prependIndent(INDENT))
         node.body.forEach { builder.appendln(visit(it).prependIndent(INDENT) + ";") }
 
-        builder.append("""
+        builder.append(
+            """
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         closeScope()
 
         builder.append("\n\n")
-        builder.appendln(emitMain(
-            node.world,
-            node.body.filterIsInstance<StateDecl>().toList()
-        ))
+        builder.appendln(
+            emitMain(
+                node.world,
+                node.body.filterIsInstance<StateDecl>().toList()
+            )
+        )
 
         return builder.toString()
     }
 
     override fun visit(node: Decl): String {
-        return when(node) {
+        return when (node) {
             is ConstDecl -> visit(node)
             is StateDecl -> visit(node)
             is NeighbourhoodDecl -> visit(node)
@@ -226,9 +241,11 @@ class KotlinCodegen: ASTVisitor<String> {
 
         val builder = StringBuilder()
 
-        builder.appendln("""
+        builder.appendln(
+            """
             fun state_${stateIDs[node.ident]}(worldView: IWorldView): Int {
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         builder.append(visit(node.body).prependIndent(INDENT))
 
@@ -241,10 +258,12 @@ class KotlinCodegen: ASTVisitor<String> {
         val builder = StringBuilder()
 
         // Neighbourhood lookup function
-        builder.appendln("""
+        builder.appendln(
+            """
             fun ${getMappedLabel(node.ident)}(worldView: IWorldView): List<Int> {
                 return listOf(
-            """.trimIndent())
+            """.trimIndent()
+        )
 
         node.coords.forEachIndexed { i, it ->
             builder.append("${INDENT}worldView.getCell(")
@@ -255,17 +274,19 @@ class KotlinCodegen: ASTVisitor<String> {
                 builder.append(that)
             }
             builder.append(")")
-            if (i < node.coords.size-1) {
+            if (i < node.coords.size - 1) {
                 builder.append(",")
             } else {
                 builder.appendln()
             }
         }
 
-        builder.append("""
+        builder.append(
+            """
             $INDENT)
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         return builder.toString()
     }
@@ -284,7 +305,7 @@ class KotlinCodegen: ASTVisitor<String> {
         openScope()
         builder.append("fun ${getMappedLabel(node.ident)}(")
         node.args.forEachIndexed { i, it ->
-            if(i > 0) {
+            if (i > 0) {
                 builder.append(", ")
             }
             builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.getType()!!)}")
@@ -301,7 +322,7 @@ class KotlinCodegen: ASTVisitor<String> {
     }
 
     override fun visit(node: Expr): String {
-        return when(node) {
+        return when (node) {
             is BinaryExpr -> visit(node)
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
@@ -321,7 +342,7 @@ class KotlinCodegen: ASTVisitor<String> {
     }
 
     override fun visit(node: BinaryExpr): String {
-        return when(node) {
+        return when (node) {
             is BinaryArithmeticExpr -> visit(node)
             is NumericComparisonExpr -> visit(node)
             is BinaryBooleanExpr -> visit(node)
@@ -329,7 +350,7 @@ class KotlinCodegen: ASTVisitor<String> {
     }
 
     override fun visit(node: BinaryArithmeticExpr): String {
-        return when(node) {
+        return when (node) {
             is AdditionExpr -> visit(node)
             is SubtractionExpr -> visit(node)
             is MultiplicationExpr -> visit(node)
@@ -339,14 +360,14 @@ class KotlinCodegen: ASTVisitor<String> {
     }
 
     override fun visit(node: BinaryBooleanExpr): String {
-        return when(node) {
+        return when (node) {
             is OrExpr -> visit(node)
             is AndExpr -> visit(node)
         }
     }
 
     override fun visit(node: NumericComparisonExpr): String {
-        return when(node) {
+        return when (node) {
             is InequalityExpr -> visit(node)
             is EqualityExpr -> visit(node)
             is GreaterThanExpr -> visit(node)
@@ -419,7 +440,6 @@ class KotlinCodegen: ASTVisitor<String> {
         assert(sizes == null || sizes.isNotEmpty())
 
         val builder = StringBuilder()
-        var indexCounter = 0
         val limit: Int = if (sizes == null) {
             values!!.size!!
         } else {
@@ -429,51 +449,51 @@ class KotlinCodegen: ASTVisitor<String> {
         // Note: Array initialization specifies elements from the beginning of the array,
         // and any remaining elements will have the default value for the type
 
-        while (indexCounter < limit) {
-            builder.append(if (values != null && indexCounter < values.values.size) {
-                // Note: A explicit value has been specified for this element in the array
-                // Emit values from source code
-                val value = values.values[indexCounter]
+        for (indexCounter in 0 until limit) {
+            builder.append(
+                if (values != null && indexCounter < values.values.size) {
+                    // Note: A explicit value has been specified for this element in the array
+                    // Emit values from source code
+                    val value = values.values[indexCounter]
 
-                when(value.getType()) {
-                    IntegerType -> visit(value)
-                    FloatType -> visit(value)
-                    BooleanType -> visit(value)
-                    StateType -> visit(value)
-                    LocalNeighbourhoodType -> visit(value)
-                    is ArrayType -> {
-                        val arrayLiteral = value as ArrayLiteralExpr
-                        emitArray(
-                            sizes?.subList(1, sizes.size),
-                            arrayLiteral.getType()!! as ArrayType,
-                            arrayLiteral
-                        )
+                    when (value.getType()) {
+                        IntegerType -> visit(value)
+                        FloatType -> visit(value)
+                        BooleanType -> visit(value)
+                        StateType -> visit(value)
+                        LocalNeighbourhoodType -> visit(value)
+                        is ArrayType -> {
+                            val arrayLiteral = value as ArrayLiteralExpr
+                            emitArray(
+                                sizes?.subList(1, sizes.size),
+                                arrayLiteral.getType()!! as ArrayType,
+                                arrayLiteral
+                            )
+                        }
+                        UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
+                        UndeterminedType -> TODO()
+                        NoSubtypeType -> TODO()
                     }
-                    UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
-                    UndeterminedType -> TODO()
-                    NoSubtypeType -> TODO()
+                } else {
+                    // Note: values is either null, or we have emitted all specified values and the remainder of values is the default value for the type
+                    // Emit default value
+                    when (type.subtype) {
+                        BooleanType -> "(false)"
+                        IntegerType -> "(0)"
+                        FloatType -> "(0.0F)"
+                        StateType -> "(0)"
+                        LocalNeighbourhoodType -> "(listOf())"
+                        is ArrayType -> emitArray(
+                            sizes?.subList(1, sizes.size),
+                            type.subtype,
+                            null
+                        )
+                        UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
+                        UndeterminedType -> TODO()
+                        NoSubtypeType -> TODO()
+                    }
                 }
-            } else {
-                // Note: values is either null, or we have emitted all specified values and the remainder of values is the default value for the type
-                // Emit default value
-                when (type.subtype) {
-                    BooleanType -> "(false)"
-                    IntegerType -> "(0)"
-                    FloatType -> "(0.0F)"
-                    StateType -> "(0)"
-                    LocalNeighbourhoodType -> "(listOf())"
-                    is ArrayType -> emitArray(
-                        sizes?.subList(1, sizes.size),
-                        type.subtype,
-                        null
-                    )
-                    UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
-                    UndeterminedType -> TODO()
-                    NoSubtypeType -> TODO()
-                }
-            })
-
-            indexCounter++
+            )
         }
 
         return builder.toString()
@@ -520,7 +540,7 @@ class KotlinCodegen: ASTVisitor<String> {
     }
 
     override fun visit(node: Stmt): String {
-        return when(node) {
+        return when (node) {
             is AssignStmt -> visit(node)
             is IfStmt -> visit(node)
             is ForLoopStmt -> visit(node)
@@ -544,7 +564,7 @@ class KotlinCodegen: ASTVisitor<String> {
         val builder = StringBuilder()
 
         node.conditionals.forEachIndexed { i, it ->
-            if(i > 0) {
+            if (i > 0) {
                 builder.append(" else ")
             }
             builder.append(visit(it))
@@ -613,7 +633,7 @@ class KotlinCodegen: ASTVisitor<String> {
     override fun visit(node: ForLoopStmt): String {
         val builder = StringBuilder()
 
-        if(node.initPart != null) {
+        if (node.initPart != null) {
             builder.appendln(visit(node.initPart))
         }
 
