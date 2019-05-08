@@ -123,7 +123,7 @@ fun compile(source: CharStream, settings: CompilerSettings): CompilerData {
     }
 
     if (settings.interpret) {
-        Interpreter(ast as RootNode, symbolTable).start()
+        Interpreter(ast as RootNode).start()
     }
 
     return CompilerData(parser, ast, symbolTable, ErrorLogger.hasErrors())

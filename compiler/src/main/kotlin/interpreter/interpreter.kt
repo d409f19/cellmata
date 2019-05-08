@@ -5,19 +5,42 @@ import dk.aau.cs.d409f19.cellumata.visitors.ASTVisitor
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics2D
+import java.lang.RuntimeException
 import java.util.*
 import javax.swing.JFrame
 import javax.swing.JPanel
 
-class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> {
+open class InterpretRuntimeException(msg: String) : RuntimeException(msg)
 
-    private val symbolTableSession = ViewingSymbolTableSession(symbolTable)
+class StateValue(val decl: StateDecl, val index: Int)
+
+class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
+
+    private val stack = MemoryStack()
 
     fun start() {
         visit(rootNode)
     }
 
+    private fun prefillMemory(root: RootNode) {
+        stack.push()
+        // TODO Built-in functions
+        // Add components except neighbourhoods. Constants are added last as they need computation
+        root.body
+            .filter { it !is ConstDecl && it !is NeighbourhoodDecl}
+            .forEach {
+                when (it) {
+                    is StateDecl -> stack.declare(it.ident, StateValue(it, 0))
+                    is FuncDecl -> stack.declare(it.ident, it)
+                    else -> AssertionError()
+                }
+            }
+        root.body.filterIsInstance<ConstDecl>().forEach { stack.declare(it.ident, visit(it.expr)) }
+    }
+
     override fun visit(node: RootNode): Any {
+
+        prefillMemory(node)
 
         val xDim = node.world.dimensions[0]
         val width = xDim.size
@@ -25,7 +48,7 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
         val height = yDim.size
 
         val listOfStates = node.body.filterIsInstance<StateDecl>()
-        val grid = Array(width) { Array(height) { listOfStates.random() } }
+        val grid = Array(width) { Array(height) { StateValue(listOfStates.random(), 0) } }
 
         // Rendering
         val cellSize = node.world.cellSize
@@ -33,7 +56,7 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
         val frame = JFrame("Cellmata")
         val panel = frame.add(JPanel())
         panel.preferredSize = Dimension(width * cellSize, height * cellSize)
-        frame.isResizable = true
+        frame.isResizable = false
         frame.setLocationRelativeTo(null)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.pack()
@@ -50,11 +73,14 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
 
                         // Find new state by executing the state's logic. If the logic does not return a StateDecl
                         // then use the old state
-                        val newState = (visit(state.body).takeIf { it is StateDecl } ?: state) as StateDecl
+                        stack.push()
+                        stack.declare("#", state.index)
+                        val newState = (visit(state.decl.body).takeIf { it is StateValue } ?: state) as StateValue
+                        stack.pop()
                         grid[x][y] = newState
 
                         // Draw
-                        g.color = Color(newState.red, newState.green, newState.blue)
+                        g.color = Color(newState.decl.red, newState.decl.green, newState.decl.blue)
                         g.fillRect(x * cellSize, y * cellSize, cellSize, cellSize)
                     }
                 }
@@ -193,7 +219,7 @@ class Interpreter(val rootNode: RootNode, symbolTable: Table) : ASTVisitor<Any> 
     }
 
     override fun visit(node: Identifier): Any {
-        return symbolTableSession.getSymbol(node.spelling) ?: AssertionError("\"${node.spelling}\" at ${node.ctx} is not declared but made it to interpreter.")
+        return stack[node.spelling]
     }
 
     override fun visit(node: ModuloExpr): Any {
