@@ -1,13 +1,12 @@
 world {
     size = 100 [wrap], 200 [wrap];
     tickrate = 1;
-    cellsize = 5;
 }
 
 state ident (0, 0, 0) {
-    become f;
+    let x = f + f;
 }
 
-function f() state {
-    return ident;
+function f (int x) int {
+    return x;
 }
