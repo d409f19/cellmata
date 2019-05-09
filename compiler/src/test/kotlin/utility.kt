@@ -17,7 +17,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 /**
  * Compile a Cellmata program given as string parameter
  */
-fun compileTestProgram(program: String, settings: CompilerSettings = CompilerSettings()): CompilerData {
+fun compileTestProgram(program: String, settings: CompilerSettings): CompilerData {
     return compile(CharStreams.fromString(program), settings)
 }
 
