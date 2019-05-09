@@ -1,5 +1,6 @@
 package dk.aau.cs.d409f19
 
+import dk.aau.cs.d409f19.cellumata.CompilerSettings
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.TerminatedCompilationException
 import org.junit.jupiter.api.*
@@ -55,7 +56,7 @@ class BatchTest {
         @MethodSource("getCompilingPrograms")
         fun batchPass(filename: String, program: String) {
             try {
-                compileTestProgram(program)
+                compileTestProgram(program, settings = CompilerSettings())
             } catch (e: TerminatedCompilationException) {
                 ErrorLogger.printAllErrors()
                 fail { "CompileErrors occurred while compiling '$filename'" }
@@ -108,25 +109,29 @@ class BatchTest {
                 assertThrows<TerminatedCompilationException>(
                     "Non-compiling program did not throw a TerminatedCompilationException! Filename: $filename"
                 ) {
-                    compileTestProgram(program)
+                    compileTestProgram(program, settings = CompilerSettings())
                 }
             } catch (e: AssertionFailedError) {
-                // If compilation does not throw a TerminatedCompilationException,
-                // compile again and assert for errors in parser
-                val compileData = compileTestProgram(program)
+                try {
+                    // If compilation does not throw a TerminatedCompilationException,
+                    // compile again and assert for errors in parser
+                    val compileData = compileTestProgram(program, settings = CompilerSettings())
 
-                // Assert that no errors are contained in ErrorLogger, as this would indicate a fault with asserting for no errors
-                assertFalse(
-                    ErrorLogger.hasErrors(),
-                    "Non-compiling program failed spectacularly! Errorlogger initially didn't throw an " +
-                            "TerminatedCompilationException, yet the ErrorLogger contains errors!"
-                )
+                    // Assert that no errors are contained in ErrorLogger, as this would indicate a fault with asserting for no errors
+                    assertFalse(
+                        ErrorLogger.hasErrors(),
+                        "Non-compiling program failed spectacularly! Errorlogger initially didn't throw an " +
+                                "TerminatedCompilationException, yet the ErrorLogger contains errors!"
+                    )
+                    // Assert that parsing errors are found
+                    assertTrue(
+                        compileData.parser.numberOfSyntaxErrors > 0,
+                        "Non-compiling program had neither any TerminatedCompilationException nor parsing-errors! Filename: $filename"
+                    )
+                } catch (e: Exception) {
+                    fail("Spectacular error in compiler. Printing stacktrace of: ${e.javaClass}", e)
+                }
 
-                // Assert that parsing errors are found
-                assertTrue(
-                    compileData.parser.numberOfSyntaxErrors > 0,
-                    "Non-compiling program had neither any TerminatedCompilationException nor parsing-errors! Filename: $filename"
-                )
             }
         }
     }

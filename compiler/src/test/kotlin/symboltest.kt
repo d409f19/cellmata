@@ -1,5 +1,6 @@
 package dk.aau.cs.d409f19
 
+import dk.aau.cs.d409f19.cellumata.CompilerSettings
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
 import org.junit.jupiter.api.Assertions.*
@@ -42,7 +43,7 @@ class SymbolTest {
     fun assignStmtLiteralPassTest(value: String) {
 
         val compilerData =
-            compileTestProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let x = $value;"))
+            compileTestProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let x = $value;"), settings = CompilerSettings())
 
         // Ensure that symbol table actually exists
         assertNotNull(compilerData.symbolTable)
