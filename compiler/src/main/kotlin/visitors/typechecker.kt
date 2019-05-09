@@ -327,6 +327,50 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         node.setType(symbolTableSession.getSymbolType(node.spelling)!!)
     }
 
+    override fun visit(node: EqualityComparisonExpr) {
+        super.visit(node)
+
+        val lt = node.left.getType()
+        val rt = node.right.getType()
+
+        when {
+            // Could not determine type of a child node, so we can't raise any errors
+            lt == UndeterminedType || rt == UndeterminedType -> {
+            }
+
+            // Both are the same, awesome
+            lt == rt -> {
+            }
+
+            // int-to-float conversion for left child
+            rt == FloatType && lt == IntegerType -> {
+                node.left = IntToFloatConversion(node.left)
+            }
+
+            // int-to-float conversion for right child
+            lt == FloatType && rt == IntegerType -> {
+                node.right = IntToFloatConversion(node.right)
+            }
+
+            // state-array-to-neighbourhood conversion for left child
+            rt == LocalNeighbourhoodType && lt is ArrayType && lt.subtype == StateType -> {
+                node.right = StateArrayToLocalNeighbourhoodConversion(node.right)
+            }
+
+            // state-array-to-neighbourhood conversion for right child
+            lt == LocalNeighbourhoodType && rt is ArrayType && rt.subtype == StateType -> {
+                node.right = StateArrayToLocalNeighbourhoodConversion(node.right)
+            }
+
+            // Something is wrong, raise an error
+            else -> {
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be the same type.")
+            }
+        }
+
+        node.setType(BooleanType)
+    }
+
     override fun visit(node: BinaryArithmeticExpr) {
         super.visit(node)
 
