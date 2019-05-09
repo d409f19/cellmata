@@ -23,19 +23,19 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     private fun prefillMemory(root: RootNode) {
-        stack.push()
+        stack.pushStack()
         // TODO Built-in functions
         // Add components except neighbourhoods. Constants are added last as they need computation
         root.body
             .filter { it !is ConstDecl && it !is NeighbourhoodDecl}
             .forEach {
                 when (it) {
-                    is StateDecl -> stack.declare(it.ident, StateValue(it, 0))
-                    is FuncDecl -> stack.declare(it.ident, it)
+                    is StateDecl -> stack.declareGlobal(it.ident, StateValue(it, 0))
+                    is FuncDecl -> stack.declareGlobal(it.ident, it)
                     else -> AssertionError()
                 }
             }
-        root.body.filterIsInstance<ConstDecl>().forEach { stack.declare(it.ident, visit(it.expr)) }
+        root.body.filterIsInstance<ConstDecl>().forEach { stack.declareGlobal(it.ident, visit(it.expr)) }
     }
 
     override fun visit(node: RootNode): Any {
@@ -73,10 +73,10 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
 
                         // Find new state by executing the state's logic. If the logic does not return a StateDecl
                         // then use the old state
-                        stack.push()
+                        stack.openScope()
                         stack.declare("#", state.index)
                         val newState = (visit(state.decl.body).takeIf { it is StateValue } ?: state) as StateValue
-                        stack.pop()
+                        stack.closeScope()
                         grid[x][y] = newState
 
                         // Draw
@@ -135,6 +135,10 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: BinaryExpr): Any {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun visit(node: EqualityComparisonExpr): Any {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
