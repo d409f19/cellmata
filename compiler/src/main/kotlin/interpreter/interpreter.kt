@@ -11,12 +11,16 @@ import javax.swing.JFrame
 import javax.swing.JPanel
 
 open class InterpretRuntimeException(msg: String) : RuntimeException(msg)
+class InterpreterVisitException(node: Any) : InterpretRuntimeException("${node.javaClass} should not be visited.")
 
 class StateValue(val decl: StateDecl, val index: Int)
+object BreakValue
+object ContinueValue
 
 class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
 
     private val stack = MemoryStack()
+    private var defaultStateValue: StateValue? = null
 
     fun start() {
         visit(rootNode)
@@ -48,6 +52,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         val height = yDim.size
 
         val listOfStates = node.body.filterIsInstance<StateDecl>()
+        defaultStateValue = StateValue(listOfStates[0], 0)
         val grid = Array(width) { Array(height) { StateValue(listOfStates.random(), 0) } }
 
         // Rendering
@@ -90,28 +95,39 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         return Unit
     }
 
+    override fun visit(node: AST): Any {
+        return when (node) {
+            is Expr -> visit(node)
+            is Stmt -> visit(node)
+            is ConditionalBlock -> visit(node)
+            is CodeBlock -> visit(node)
+            is ErrorAST -> AssertionError("ErrorAST (${node.ctx.lineNumber}, ${node.ctx.charPositionInLine}) made it to the interpreter.")
+            else -> throw InterpreterVisitException(node)
+        }
+    }
+
     override fun visit(node: Decl): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: ConstDecl): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: StateDecl): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: NeighbourhoodDecl): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: Coordinate): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: FuncDecl): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: Expr): Any {
@@ -135,115 +151,337 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: BinaryExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (node) {
+            is EqualityComparisonExpr -> visit(node)
+            is BinaryArithmeticExpr -> visit(node)
+            is BinaryBooleanExpr -> visit(node)
+            is NumericComparisonExpr -> visit(node)
+        }
     }
 
     override fun visit(node: EqualityComparisonExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (node) {
+            is InequalityExpr -> visit(node)
+            is EqualityExpr -> visit(node)
+        }
     }
 
     override fun visit(node: BinaryArithmeticExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (node) {
+            is AdditionExpr -> visit(node)
+            is SubtractionExpr -> visit(node)
+            is MultiplicationExpr -> visit(node)
+            is DivisionExpr -> visit(node)
+            is ModuloExpr -> visit(node)
+        }
     }
 
     override fun visit(node: BinaryBooleanExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (node) {
+            is OrExpr -> visit(node)
+            is AndExpr -> visit(node)
+        }
     }
 
     override fun visit(node: NumericComparisonExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (node) {
+            is GreaterThanExpr -> visit(node)
+            is GreaterOrEqExpr -> visit(node)
+            is LessThanExpr -> visit(node)
+            is LessOrEqExpr -> visit(node)
+        }
     }
 
     override fun visit(node: OrExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return (visit(node.left) as Boolean) || (visit(node.right) as Boolean)
     }
 
     override fun visit(node: AndExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return (visit(node.left) as Boolean) && (visit(node.right) as Boolean)
     }
 
     override fun visit(node: InequalityExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return visit(node.left) != visit(node.right)
     }
 
     override fun visit(node: EqualityExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return visit(node.left) == visit(node.right)
     }
 
     override fun visit(node: GreaterThanExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return with (node) {
+            when {
+                left.getType() == FloatType && right.getType() == FloatType -> {
+                    (visit(left) as Float) > (visit(right) as Float)
+                }
+                left.getType() == FloatType && right.getType() == IntegerType -> {
+                    (visit(left) as Float) > (visit(right) as Int)
+                }
+                left.getType() == IntegerType && right.getType() == FloatType -> {
+                    (visit(left) as Int) > (visit(right) as Float)
+                }
+                left.getType() == IntegerType && right.getType() == IntegerType -> {
+                    (visit(left) as Int) > (visit(right) as Int)
+                }
+                else -> throw AssertionError("GreaterThanExpr type error.")
+            }
+        }
     }
 
     override fun visit(node: GreaterOrEqExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return with (node) {
+            when {
+                left.getType() == FloatType && right.getType() == FloatType -> {
+                    (visit(left) as Float) >= (visit(right) as Float)
+                }
+                left.getType() == FloatType && right.getType() == IntegerType -> {
+                    (visit(left) as Float) >= (visit(right) as Int)
+                }
+                left.getType() == IntegerType && right.getType() == FloatType -> {
+                    (visit(left) as Int) >= (visit(right) as Float)
+                }
+                left.getType() == IntegerType && right.getType() == IntegerType -> {
+                    (visit(left) as Int) >= (visit(right) as Int)
+                }
+                else -> throw AssertionError("GreaterOrEqExpr type error.")
+            }
+        }
     }
 
     override fun visit(node: LessThanExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return with (node) {
+            when {
+                left.getType() == FloatType && right.getType() == FloatType -> {
+                    (visit(left) as Float) < (visit(right) as Float)
+                }
+                left.getType() == FloatType && right.getType() == IntegerType -> {
+                    (visit(left) as Float) < (visit(right) as Int)
+                }
+                left.getType() == IntegerType && right.getType() == FloatType -> {
+                    (visit(left) as Int) < (visit(right) as Float)
+                }
+                left.getType() == IntegerType && right.getType() == IntegerType -> {
+                    (visit(left) as Int) < (visit(right) as Int)
+                }
+                else -> throw AssertionError("LessThanExpr type error.")
+            }
+        }
     }
 
     override fun visit(node: LessOrEqExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return with (node) {
+            when {
+                left.getType() == FloatType && right.getType() == FloatType -> {
+                    (visit(left) as Float) <= (visit(right) as Float)
+                }
+                left.getType() == FloatType && right.getType() == IntegerType -> {
+                    (visit(left) as Float) <= (visit(right) as Int)
+                }
+                left.getType() == IntegerType && right.getType() == FloatType -> {
+                    (visit(left) as Int) <= (visit(right) as Float)
+                }
+                left.getType() == IntegerType && right.getType() == IntegerType -> {
+                    (visit(left) as Int) <= (visit(right) as Int)
+                }
+                else -> throw AssertionError("LessOrEqExpr type error.")
+            }
+        }
     }
 
     override fun visit(node: AdditionExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return with (node) {
+            when {
+                left.getType() == FloatType && right.getType() == FloatType -> {
+                    (visit(left) as Float) + (visit(right) as Float)
+                }
+                left.getType() == FloatType && right.getType() == IntegerType -> {
+                    (visit(left) as Float) + (visit(right) as Int)
+                }
+                left.getType() == IntegerType && right.getType() == FloatType -> {
+                    (visit(left) as Int) + (visit(right) as Float)
+                }
+                left.getType() == IntegerType && right.getType() == IntegerType -> {
+                    (visit(left) as Int) + (visit(right) as Int)
+                }
+                else -> throw AssertionError("AdditionExpr type error.")
+            }
+        }
     }
 
     override fun visit(node: SubtractionExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return with (node) {
+            when {
+                left.getType() == FloatType && right.getType() == FloatType -> {
+                    (visit(left) as Float) - (visit(right) as Float)
+                }
+                left.getType() == FloatType && right.getType() == IntegerType -> {
+                    (visit(left) as Float) - (visit(right) as Int)
+                }
+                left.getType() == IntegerType && right.getType() == FloatType -> {
+                    (visit(left) as Int) - (visit(right) as Float)
+                }
+                left.getType() == IntegerType && right.getType() == IntegerType -> {
+                    (visit(left) as Int) - (visit(right) as Int)
+                }
+                else -> throw AssertionError("SubtractionExpr type error.")
+            }
+        }
     }
 
     override fun visit(node: MultiplicationExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return with (node) {
+            when {
+                left.getType() == FloatType && right.getType() == FloatType -> {
+                    (visit(left) as Float) * (visit(right) as Float)
+                }
+                left.getType() == FloatType && right.getType() == IntegerType -> {
+                    (visit(left) as Float) * (visit(right) as Int)
+                }
+                left.getType() == IntegerType && right.getType() == FloatType -> {
+                    (visit(left) as Int) * (visit(right) as Float)
+                }
+                left.getType() == IntegerType && right.getType() == IntegerType -> {
+                    (visit(left) as Int) * (visit(right) as Int)
+                }
+                else -> throw AssertionError("MultiplicationExpr type error.")
+            }
+        }
     }
 
     override fun visit(node: DivisionExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return with (node) {
+            when {
+                left.getType() == FloatType && right.getType() == FloatType -> {
+                    (visit(left) as Float) / (visit(right) as Float)
+                }
+                left.getType() == FloatType && right.getType() == IntegerType -> {
+                    (visit(left) as Float) / (visit(right) as Int)
+                }
+                left.getType() == IntegerType && right.getType() == FloatType -> {
+                    (visit(left) as Int) / (visit(right) as Float)
+                }
+                left.getType() == IntegerType && right.getType() == IntegerType -> {
+                    (visit(left) as Int) / (visit(right) as Int)
+                }
+                else -> throw AssertionError("DivisionExpr type error.")
+            }
+        }
+    }
+
+    override fun visit(node: ModuloExpr): Any {
+        return with (node) {
+            when {
+                left.getType() == FloatType && right.getType() == FloatType -> {
+                    (visit(left) as Float) % (visit(right) as Float)
+                }
+                left.getType() == FloatType && right.getType() == IntegerType -> {
+                    (visit(left) as Float) % (visit(right) as Int)
+                }
+                left.getType() == IntegerType && right.getType() == FloatType -> {
+                    (visit(left) as Int) % (visit(right) as Float)
+                }
+                left.getType() == IntegerType && right.getType() == IntegerType -> {
+                    (visit(left) as Int) % (visit(right) as Int)
+                }
+                else -> throw AssertionError("ModuloExpr type error.")
+            }
+        }
     }
 
     override fun visit(node: NegationExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return with (node) {
+            when {
+                value.getType() == FloatType -> -(visit(value) as Float)
+                value.getType() == IntegerType -> -(visit(value) as Int)
+                else -> throw AssertionError("NegationExpr type error.")
+            }
+        }
     }
 
     override fun visit(node: NotExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return !(visit(node.value) as Boolean)
     }
 
     override fun visit(node: ArrayLookupExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val arr = visit(node.arr)
+        val index = visit(node.index) as Int
+        return when (arr) {
+            // Multi-state
+            is StateValue -> StateValue(arr.decl, index)
+            // Neighbourhood
+            is List<*> -> arr[index]!!
+            // Array
+            is MutableList<*> -> arr[index]!!
+            else -> throw AssertionError("Trying to lookup in ${arr.javaClass}")
+        }
     }
 
     override fun visit(node: SizedArrayExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (node.body != null) {
+            return visit(node.body)
+        } else {
+            val type = node.getType()
+            if (type is ArrayType && type.subtype !is ArrayType) {
+                return Array(node.declaredSize[0]!!) { getDefaultArrayValue(type.subtype) }
+            } else {
+                TODO("not implemented") // We need to construct default values that are arrays
+            }
+        }
     }
 
     override fun visit(node: ArrayLiteralExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return Array(node.size!!) { i ->
+            when {
+                i < node.values.size -> visit(node.values[i])
+                node.getType() !is ArrayType -> getDefaultArrayValue(node.getType())
+                else -> TODO("not implemented") // Default values that are arrays. They need a size from somewhere.
+            }
+        }
+    }
+
+    fun getDefaultArrayValue(type: Type): Any {
+        return when (type) {
+            IntegerType -> 0
+            FloatType -> 0.0
+            BooleanType -> false
+            StateType -> defaultStateValue!!
+            LocalNeighbourhoodType -> emptyList<StateValue>()
+            else -> throw AssertionError("'$type' has no default array value.")
+        }
     }
 
     override fun visit(node: Identifier): Any {
         return stack[node.spelling]
     }
 
-    override fun visit(node: ModuloExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun visit(node: FuncCallExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val funcDecl = stack[node.ident] as FuncDecl
+        val actualArguments = node.args.map { visit(it) }
+        stack.pushStack()
+        stack.openScope()
+        for ((i, formalArg) in funcDecl.args.withIndex()) {
+            stack[formalArg.ident] = actualArguments[i]
+        }
+        val result = visit(funcDecl.body)
+        stack.closeScope()
+        stack.closeScope()
+        return result
     }
 
     override fun visit(node: StateIndexExpr): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return stack["#"]
     }
 
     override fun visit(node: IntLiteral): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return node.value
     }
 
     override fun visit(node: BoolLiteral): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return node.value
+    }
+
+    override fun visit(node: FloatLiteral): Any {
+        return node.value
     }
 
     override fun visit(node: Stmt): Any {
@@ -260,11 +498,28 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: AssignStmt): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (node.isDeclaration) {
+            stack.declare(node.ident, visit(node.expr))
+        } else {
+            stack[node.ident] = visit(node.expr)
+        }
+        return Unit
     }
 
     override fun visit(node: IfStmt): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        for (conditionalBlock in node.conditionals) {
+            if (visit(conditionalBlock.expr) as Boolean) {
+                val value = visit(conditionalBlock.block)
+                if (value != Unit) {
+                    return value
+                }
+                return Unit
+            }
+        }
+        if (node.elseBlock != null) {
+            return visit(node.elseBlock)
+        }
+        return Unit
     }
 
     override fun visit(node: BecomeStmt): Any {
@@ -272,55 +527,65 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: ReturnStmt): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun visit(node: AST): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun visit(node: FloatLiteral): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return visit(node.expr)
     }
 
     override fun visit(node: ConditionalBlock): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: FunctionArgument): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: WorldNode): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: WorldDimension): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw InterpreterVisitException(node)
     }
 
     override fun visit(node: ForLoopStmt): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        stack.openScope()
+        var result: Any = Unit
+
+        if (node.initPart != null) visit(node.initPart)
+        while (visit(node.condition) as Boolean) {
+            val value = visit(node.body)
+            if (value == BreakValue) break
+            if (value == ContinueValue) continue
+            if (value != Unit) {
+                result = value
+                break
+            }
+            if (node.postIterationPart != null) visit(node.postIterationPart)
+        }
+
+        stack.closeScope()
+        return result
     }
 
     override fun visit(node: BreakStmt): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return BreakValue
     }
 
     override fun visit(node: ContinueStmt): Any {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ContinueValue
     }
 
     override fun visit(node: CodeBlock): Any {
+        stack.openScope()
         // Execute each statement in order, until one returns something else than Unit. Return that value.
+        var result: Any = Unit
         for (statement in node.body) {
             val value = visit(statement)
             if (value != Unit) {
-                return value
+                result = value
+                break
             }
         }
-
-        // No return/become value found, so this block returns Unit
-        return Unit
+        stack.closeScope()
+        return result
     }
 }

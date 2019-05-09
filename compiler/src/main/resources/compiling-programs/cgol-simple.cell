@@ -1,0 +1,34 @@
+world {
+    size = 80 [wrap], 80 [wrap];
+    tickrate = 2;
+    cellsize = 10;
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Dead (255, 255, 255) {
+    if (mycount(Moore, Alive) == 3) {
+        become Alive;
+    }
+}
+
+state Alive (0, 0, 0) {
+    let aliveNeighbours = mycount(Moore, Alive);
+    if (aliveNeighbours < 2 || 3 < aliveNeighbours) {
+        become Dead;
+    }
+}
+
+function mycount(neighbourhood nei, state z) int {
+    let counter = 0;
+    for (let i = 0; i < 8; i = i + 1) {
+        if (nei[i] == z) {
+            counter = counter + 1;
+        }
+    }
+    return counter;
+}
