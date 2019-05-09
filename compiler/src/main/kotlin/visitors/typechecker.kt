@@ -16,6 +16,19 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     private var expectedReturn: Type? = null
     private var isOuterArray = true
 
+    override fun visit(node: WorldNode) {
+        node.dimensions.forEach { visit(it) }
+        if (node.edge != null) {
+            visit(node.edge)
+            if (node.edge.getType() !is StateType) {
+                ErrorLogger += TypeError(
+                    node.ctx,
+                    "Expected edge's expressions to be of state-type. Found: ${node.edge.getType()}"
+                )
+            }
+        }
+    }
+
     override fun visit(node: NegationExpr) {
         super.visit(node)
 
@@ -418,6 +431,18 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
                     "Wrong return type (${node.expr.getType()}). Expected $expectedReturn"
                 )
             }
+        }
+    }
+
+    override fun visit(node: BecomeStmt) {
+        super.visit(node)
+
+        // If state which the become statement is to become is not of state type, throw error
+        if (node.state.getType() !is StateType) {
+            ErrorLogger += TypeError(
+                node.ctx,
+                "Expected statement's expressions to be of state-type. Found: ${node.state.getType()}"
+            )
         }
     }
 

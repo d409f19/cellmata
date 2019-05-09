@@ -10,6 +10,7 @@ import dk.aau.cs.d409f19.cellumata.ast.*
  * The error thrown when a become, continue, break or return statement is in a place where it should not be
  */
 class SanityError(ctx: SourceContext, description: String) : CompileError(ctx, description)
+class SanityWarning(ctx: SourceContext, description: String) : CompileWarning(ctx, description)
 
 /**
  * The error for incorrect number of dimensions for coordinates
@@ -30,6 +31,8 @@ class SanityChecker : BaseASTVisitor() {
         node.dimensions.forEach { visit(it) }
         if (worldHasEdge && node.edge == null) {
             ErrorLogger += SanityError(node.ctx, "A dimension is an [edge], but the edge state was not declared.")
+        } else if (!worldHasEdge && node.edge != null) {
+            ErrorLogger += SanityWarning(node.ctx, "No dimension is an [edge], but an edge was declared.")
         }
 
         if (node.cellSize <= 0) {
