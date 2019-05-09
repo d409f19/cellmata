@@ -61,7 +61,7 @@ class MultiWorldType(private val edge: Int, private val dimTypes: List<Dimension
 }
 
 /**
- * Run a cellular automator over every cell in a world.
+ * Runs a cellular automaton by computing the next world configuration using the cell logic from the generated program.
  */
 open class Driver(private val worldConfig: WorldConfiguration, private val program: IProgram, private val worldType: IWorldType) {
     var worldCurrent = World(worldConfig.dims)
@@ -106,7 +106,7 @@ class World(private val dims: List<Int>) {
     /**
      * World is implemented as an N dimensional MutableList.
      * Because the N isn't know when the code is written, an exact type can't be specified.
-     * There for Any is used to allow for both MutableList and Int.
+     * Therefore Any is used to allow for both MutableList and Int.
      */
     var world = generateWorld(dims)
 

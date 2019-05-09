@@ -39,10 +39,8 @@ class GraphicalDriver(private val worldConfig: WorldConfiguration, program: IPro
     }
 
     fun drawWorld(g: Graphics2D) {
-        var x = 0
-        while(x < worldConfig.dims[0]) {
-            var y = 0
-            while(y < worldConfig.dims[1]) {
+        for (x in 0 until worldConfig.dims[0]) {
+            for (y in 0 until worldConfig.dims[1]) {
                 val state = worldCurrent.getCell(x, y)
                 val color = worldConfig.colors[state]
                 g.color = Color(color.red, color.green, color.blue)
@@ -52,9 +50,7 @@ class GraphicalDriver(private val worldConfig: WorldConfiguration, program: IPro
                     worldConfig.cellSize,
                     worldConfig.cellSize
                 )
-                y++
             }
-            x++
         }
     }
 }
