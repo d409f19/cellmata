@@ -354,7 +354,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
 
             // state-array-to-neighbourhood conversion for left child
             rt == LocalNeighbourhoodType && lt is ArrayType && lt.subtype == StateType -> {
-                node.right = StateArrayToLocalNeighbourhoodConversion(node.right)
+                node.left = StateArrayToLocalNeighbourhoodConversion(node.left)
             }
 
             // state-array-to-neighbourhood conversion for right child
