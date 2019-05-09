@@ -24,6 +24,8 @@ interface ASTVisitor<R> {
 
     fun visit(node: BinaryExpr): R
 
+    fun visit(node: EqualityComparisonExpr): R
+
     fun visit(node: BinaryArithmeticExpr): R
 
     fun visit(node: BinaryBooleanExpr): R
@@ -200,9 +202,17 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     
     override fun visit(node: BinaryExpr) {
         when (node) {
+            is EqualityComparisonExpr -> visit(node)
             is BinaryArithmeticExpr -> visit(node)
             is BinaryBooleanExpr -> visit(node)
             is NumericComparisonExpr -> visit(node)
+        }
+    }
+
+    override fun visit(node: EqualityComparisonExpr) {
+        when (node) {
+            is InequalityExpr -> visit(node)
+            is EqualityExpr -> visit(node)
         }
     }
 
@@ -225,8 +235,6 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
 
     override fun visit(node: NumericComparisonExpr) {
         when (node) {
-            is InequalityExpr -> visit(node)
-            is EqualityExpr -> visit(node)
             is GreaterThanExpr -> visit(node)
             is GreaterOrEqExpr -> visit(node)
             is LessThanExpr -> visit(node)

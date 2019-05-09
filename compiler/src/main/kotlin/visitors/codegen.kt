@@ -379,9 +379,17 @@ class KotlinCodegen : ASTVisitor<String> {
 
     override fun visit(node: BinaryExpr): String {
         return when (node) {
+            is EqualityComparisonExpr -> visit(node)
             is BinaryArithmeticExpr -> visit(node)
             is NumericComparisonExpr -> visit(node)
             is BinaryBooleanExpr -> visit(node)
+        }
+    }
+
+    override fun visit(node: EqualityComparisonExpr): String {
+        return when (node) {
+            is InequalityExpr -> visit(node)
+            is EqualityExpr -> visit(node)
         }
     }
 
@@ -404,8 +412,6 @@ class KotlinCodegen : ASTVisitor<String> {
 
     override fun visit(node: NumericComparisonExpr): String {
         return when (node) {
-            is InequalityExpr -> visit(node)
-            is EqualityExpr -> visit(node)
             is GreaterThanExpr -> visit(node)
             is GreaterOrEqExpr -> visit(node)
             is LessThanExpr -> visit(node)
