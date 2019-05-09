@@ -1,0 +1,16 @@
+world {
+    size = 100 [wrap], 200 [wrap];
+    tickrate = 1;
+    cellsize = 5;
+}
+
+neighbourhood n {
+    (0, 1)
+}
+
+state ident (0, 0, 0) {
+    let x = 4 == 0.0;
+    let y = 3.14 == 42;
+    let z = n == {ident};
+    let q = {ident} == n;
+}

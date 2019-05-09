@@ -16,6 +16,19 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     private var expectedReturn: Type? = null
     private var isOuterArray = true
 
+    override fun visit(node: WorldNode) {
+        node.dimensions.forEach { visit(it) }
+        if (node.edge != null) {
+            visit(node.edge)
+            if (node.edge.getType() !is StateType) {
+                ErrorLogger += TypeError(
+                    node.ctx,
+                    "Expected edge's expressions to be of state-type. Found: ${node.edge.getType()}"
+                )
+            }
+        }
+    }
+
     override fun visit(node: NegationExpr) {
         super.visit(node)
 
@@ -314,6 +327,50 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         node.setType(symbolTableSession.getSymbolType(node.spelling)!!)
     }
 
+    override fun visit(node: EqualityComparisonExpr) {
+        super.visit(node)
+
+        val lt = node.left.getType()
+        val rt = node.right.getType()
+
+        when {
+            // Could not determine type of a child node, so we can't raise any errors
+            lt == UndeterminedType || rt == UndeterminedType -> {
+            }
+
+            // Both are the same, awesome
+            lt == rt -> {
+            }
+
+            // int-to-float conversion for left child
+            rt == FloatType && lt == IntegerType -> {
+                node.left = IntToFloatConversion(node.left)
+            }
+
+            // int-to-float conversion for right child
+            lt == FloatType && rt == IntegerType -> {
+                node.right = IntToFloatConversion(node.right)
+            }
+
+            // state-array-to-neighbourhood conversion for left child
+            rt == LocalNeighbourhoodType && lt is ArrayType && lt.subtype == StateType -> {
+                node.left = StateArrayToLocalNeighbourhoodConversion(node.left)
+            }
+
+            // state-array-to-neighbourhood conversion for right child
+            lt == LocalNeighbourhoodType && rt is ArrayType && rt.subtype == StateType -> {
+                node.right = StateArrayToLocalNeighbourhoodConversion(node.right)
+            }
+
+            // Something is wrong, raise an error
+            else -> {
+                ErrorLogger += TypeError(node.ctx, "Right and left hand side of must be the same type.")
+            }
+        }
+
+        node.setType(BooleanType)
+    }
+
     override fun visit(node: BinaryArithmeticExpr) {
         super.visit(node)
 
@@ -418,6 +475,18 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
                     "Wrong return type (${node.expr.getType()}). Expected $expectedReturn"
                 )
             }
+        }
+    }
+
+    override fun visit(node: BecomeStmt) {
+        super.visit(node)
+
+        // If state which the become statement is to become is not of state type, throw error
+        if (node.state.getType() !is StateType) {
+            ErrorLogger += TypeError(
+                node.ctx,
+                "Expected statement's expressions to be of state-type. Found: ${node.state.getType()}"
+            )
         }
     }
 

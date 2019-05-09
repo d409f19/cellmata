@@ -5,6 +5,5 @@ world {
 }
 
 state ident (0, 0, 0) {
-    let z = 4 == 4;
-    become ident;
+    become 5;
 }

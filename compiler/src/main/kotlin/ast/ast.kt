@@ -108,6 +108,13 @@ sealed class Expr(
 sealed class BinaryExpr(ctx: SourceContext, var left: Expr, var right: Expr) : Expr(ctx)
 
 /**
+ * An EqualityComparisonExpr has exactly two child expressions which can be any type. The EqualityComparisonExpr
+ * will return a boolean itself based on the children's equality.
+ * It is used to generalize behaviour of equality expressions in various visitors.
+ */
+sealed class EqualityComparisonExpr(ctx: SourceContext, left: Expr, right: Expr) : BinaryExpr(ctx, left, right)
+
+/**
  * A BinaryArithmeticExpr has exactly two child expressions which are both numeric expressions, and the
  * BinaryArithmeticExpr itself also returns a number.
  * It is used to generalize behaviour of binary arithmetic expressions in various visitors.
@@ -144,13 +151,13 @@ class InequalityExpr(
     ctx: SourceContext,
     left: Expr,
     right: Expr
-) : NumericComparisonExpr(ctx, left, right)
+) : EqualityComparisonExpr(ctx, left, right)
 
 class EqualityExpr(
     ctx: SourceContext,
     left: Expr,
     right: Expr
-) : NumericComparisonExpr(ctx, left, right)
+) : EqualityComparisonExpr(ctx, left, right)
 
 class GreaterThanExpr(
     ctx: SourceContext,
@@ -224,7 +231,7 @@ class ArrayLookupExpr(
 class SizedArrayExpr(
     ctx: SourceContext,
     val body: ArrayLiteralExpr?,
-    val declaredType: Type,
+    val declaredType: ArrayType,
     var declaredSize: List<Int?>
 ) : Expr(ctx)
 
