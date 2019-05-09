@@ -216,7 +216,7 @@ class KotlinCodegen : ASTVisitor<String> {
                 is ConstDecl -> addMapping(it.ident, nextLabel())
                 is NeighbourhoodDecl -> addMapping(it.ident, nextLabel())
                 is FuncDecl -> addMapping(it.ident, nextLabel())
-                is ErrorDecl -> throw KotlinCodegen_ErrorDecl()
+                else -> throw KotlinCodegen_ErrorDecl()
             }
         }
 
@@ -344,7 +344,7 @@ class KotlinCodegen : ASTVisitor<String> {
             if (i > 0) {
                 builder.append(", ")
             }
-            builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.getType()!!)}")
+            builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.getType())}")
         }
         builder.appendln("): ${toKotlinType(node.returnType)} {")
         builder.append(visit(node.body).prependIndent(INDENT))
@@ -508,7 +508,7 @@ class KotlinCodegen : ASTVisitor<String> {
                             val arrayLiteral = value as ArrayLiteralExpr
                             emitArray(
                                 sizes?.subList(1, sizes.size),
-                                arrayLiteral.getType()!! as ArrayType,
+                                arrayLiteral.getType() as ArrayType,
                                 arrayLiteral
                             )
                         }
@@ -562,7 +562,7 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: ArrayLiteralExpr): String {
-        return emitArray(null, node.getType()!! as ArrayType, node)
+        return emitArray(null, node.getType() as ArrayType, node)
     }
 
     override fun visit(node: StateIndexExpr): String {
