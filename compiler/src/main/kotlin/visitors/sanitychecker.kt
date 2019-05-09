@@ -92,8 +92,9 @@ class SanityChecker : BaseASTVisitor() {
     override fun visit(node: StateDecl) {
         inAState = true
         super.visit(node)
-        // counts the number of times a state node is visited
-        numberOfStates += 1 // TODO Should count more if there is multi-states
+        // counts the number of states
+        if (node.multiStateCount > 0) numberOfStates += node.multiStateCount
+        else ErrorLogger += SanityError(node.ctx, "Multi-states must declare at least 1 state.")
         inAState = false
     }
 
