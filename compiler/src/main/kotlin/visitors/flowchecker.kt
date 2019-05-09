@@ -19,9 +19,18 @@ class FlowChecker : ASTVisitor<Flow> {
 
     override fun visit(node: BinaryExpr): Flow {
         when (node) {
+            is EqualityComparisonExpr -> visit(node)
             is BinaryArithmeticExpr -> visit(node)
             is BinaryBooleanExpr -> visit(node)
             is NumericComparisonExpr -> visit(node)
+        }
+        return Flow()
+    }
+
+    override fun visit(node: EqualityComparisonExpr): Flow {
+        when (node) {
+            is InequalityExpr -> visit(node)
+            is EqualityExpr -> visit(node)
         }
         return Flow()
     }
@@ -47,8 +56,6 @@ class FlowChecker : ASTVisitor<Flow> {
 
     override fun visit(node: NumericComparisonExpr): Flow {
         when (node) {
-            is InequalityExpr -> visit(node)
-            is EqualityExpr -> visit(node)
             is GreaterThanExpr -> visit(node)
             is GreaterOrEqExpr -> visit(node)
             is LessThanExpr -> visit(node)
@@ -441,5 +448,15 @@ class FlowChecker : ASTVisitor<Flow> {
             }
         }
         return Flow(containsReturn, containsBreak)
+    }
+
+    override fun visit(node: IntToFloatConversion): Flow {
+        visit(node.expr)
+        return Flow()
+    }
+
+    override fun visit(node: StateArrayToLocalNeighbourhoodConversion): Flow {
+        visit(node.expr)
+        return Flow()
     }
 }

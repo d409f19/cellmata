@@ -44,7 +44,7 @@ class SymbolTest {
     fun assignStmtLiteralPassTest(value: String) {
 
         val compilerData =
-            compileTestProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let x = $value;"), settings = CompilerSettings())
+            compileTestProgramKotlin(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let x = $value;"))
 
         // Ensure that symbol table actually exists
         assertNotNull(compilerData.symbolTable)
