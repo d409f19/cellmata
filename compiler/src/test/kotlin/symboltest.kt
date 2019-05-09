@@ -27,7 +27,6 @@ class SymbolTest {
 
     /**
      * Returns list of values for testing right-hand-side of assignment statement.
-     * TODO: Does not include negative values as they fail! When fixed, they should be implemented again.
      */
     fun assignStmtPassData(): List<String> {
         return IntRange(-50, 50).step(10).map { it.toString() }
