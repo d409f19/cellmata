@@ -60,7 +60,7 @@ interface ASTVisitor<R> {
 
     fun visit(node: NotExpr): R
 
-    fun visit(node: ArrayLookupExpr): R
+    fun visit(node: LookupExpr): R
 
     fun visit(node: SizedArrayExpr): R
 
@@ -187,7 +187,7 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
             is BinaryExpr -> visit(node)
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
-            is ArrayLookupExpr -> visit(node)
+            is LookupExpr -> visit(node)
             is SizedArrayExpr -> visit(node)
             is Identifier -> visit(node)
             is FuncCallExpr -> visit(node)
@@ -310,7 +310,7 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
         visit(node.value)
     }
 
-    override fun visit(node: ArrayLookupExpr) {
+    override fun visit(node: LookupExpr) {
         visit(node.arr)
         visit(node.index)
     }

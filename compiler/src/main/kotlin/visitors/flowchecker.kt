@@ -161,7 +161,7 @@ class FlowChecker : ASTVisitor<Flow> {
             is BinaryExpr -> visit(node)
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
-            is ArrayLookupExpr -> visit(node)
+            is LookupExpr -> visit(node)
             is SizedArrayExpr -> visit(node)
             is Identifier -> visit(node)
             is FuncCallExpr -> visit(node)
@@ -255,7 +255,7 @@ class FlowChecker : ASTVisitor<Flow> {
         return visit(node.value)
     }
 
-    override fun visit(node: ArrayLookupExpr): Flow {
+    override fun visit(node: LookupExpr): Flow {
         visit(node.arr)
         visit(node.index)
         return Flow()

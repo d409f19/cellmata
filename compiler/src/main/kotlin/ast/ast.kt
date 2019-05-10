@@ -217,7 +217,7 @@ class NotExpr(
     val value: Expr
 ) : Expr(ctx)
 
-class ArrayLookupExpr(
+class LookupExpr(
     ctx: SourceContext,
     val arr: Expr,
     val index: Expr

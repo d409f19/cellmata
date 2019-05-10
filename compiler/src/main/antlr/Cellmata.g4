@@ -101,7 +101,7 @@ expr : '#' # stateIndexExpr
     | PAREN_START value=expr PAREN_END # parenExpr
     | value=array_value_sized # arraySizedValueExpr
     | value=array_value_literal # arrayLiteralExpr
-    | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
+    | target=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # lookupExpr
     | OP_NOT value=expr # notExpr
     | OP_MINUS value=expr # negationExpr
     | left=expr OP_MODULO right=expr # moduloExpr

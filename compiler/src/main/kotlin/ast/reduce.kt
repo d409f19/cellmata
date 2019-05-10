@@ -124,9 +124,9 @@ private fun reduceExpr(node: ParseTree): Expr {
             ctx = SourceContext(node),
             value = reduceExpr(node.value)
         )
-        is CellmataParser.ArrayLookupExprContext -> ArrayLookupExpr(
+        is CellmataParser.LookupExprContext -> LookupExpr(
             ctx = SourceContext(node),
-            arr = reduceExpr(node.value),
+            arr = reduceExpr(node.target),
             index = reduceExpr(node.index)
         )
         is CellmataParser.ParenExprContext -> reduceExpr(node.expr())

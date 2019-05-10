@@ -54,7 +54,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         node.setType(BooleanType)
     }
 
-    override fun visit(node: ArrayLookupExpr) {
+    override fun visit(node: LookupExpr) {
         super.visit(node)
 
         val arrayType = node.arr.getType()

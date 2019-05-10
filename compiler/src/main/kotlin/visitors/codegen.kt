@@ -362,7 +362,7 @@ class KotlinCodegen : ASTVisitor<String> {
             is BinaryExpr -> visit(node)
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
-            is ArrayLookupExpr -> visit(node)
+            is LookupExpr -> visit(node)
             is SizedArrayExpr -> visit(node)
             is ArrayLiteralExpr -> visit(node)
             is Identifier -> visit(node)
@@ -541,7 +541,7 @@ class KotlinCodegen : ASTVisitor<String> {
         return builder.toString()
     }
 
-    override fun visit(node: ArrayLookupExpr): String {
+    override fun visit(node: LookupExpr): String {
         return "(${visit(node.arr)}[${visit(node.index)}])"
     }
 
