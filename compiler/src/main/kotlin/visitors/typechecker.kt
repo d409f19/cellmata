@@ -71,8 +71,21 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             }
 
             StateType -> {
-                node.lookupType = LookupExprType.MULTI_STATE
-                node.setType(StateType)
+                if (node.target is Identifier) {
+                    val decl = symbolTableSession.getSymbol(node.target.spelling)
+                    if (decl is StateDecl && decl.multiStateCount != null) {
+                        node.lookupType = LookupExprType.MULTI_STATE
+                        node.setType(StateType)
+                        return
+                    }
+
+                    ErrorLogger += TypeError(node.ctx, "${node.target.spelling} is not a multi-state.")
+                    node.setType(UndeterminedType)
+                    return
+                }
+
+                ErrorLogger += TypeError(node.ctx, "Cannot indirectly lookup in expression of type $type. You must use the name of the state.")
+                node.setType(UndeterminedType)
             }
 
             else -> {

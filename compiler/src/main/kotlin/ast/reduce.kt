@@ -233,7 +233,7 @@ private fun reduceDecl(node: ParseTree): Decl {
         is CellmataParser.State_declContext -> StateDecl(
             ctx = SourceContext(node),
             ident = node.state_ident().text,
-            multiStateCount = node.multiStateCount?.text?.toInt() ?: 1,
+            multiStateCount = node.multiStateCount?.text?.toInt(),
             red = parseColor(node.state_rgb().red),
             green = parseColor(node.state_rgb().green),
             blue = parseColor(node.state_rgb().blue),
