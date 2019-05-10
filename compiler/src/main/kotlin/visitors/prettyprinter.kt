@@ -76,14 +76,9 @@ class PrettyPrinter : BaseASTVisitor() {
             stringBuilder.appendln(";")
         }
 
-        // Print tickrate and cellsize if not null
-        if (node.tickrate != null) {
-            stringBuilder.appendln("\ttickrate = ${node.tickrate};")
-        }
-
-        if (node.cellSize != null) {
-            stringBuilder.appendln("\tcellsize = ${node.cellSize};")
-        }
+        // Print tickrate and cellsize
+        stringBuilder.appendln("\ttickrate = ${node.tickrate};")
+        stringBuilder.appendln("\tcellsize = ${node.cellSize};")
 
         // When done with all world declaration printing, print closing curly bracket and newline
         stringBuilder.appendln("}")
@@ -109,7 +104,7 @@ class PrettyPrinter : BaseASTVisitor() {
      */
     override fun visit(node: StateDecl) {
         // Print signature of state. TODO: must take multi-state-declaration into account when implemented
-        stringBuilder.appendln("state ${node.ident} (${node.red}, ${node.green}, ${node.blue}) {")
+        stringBuilder.appendln("state ${node.ident}[${node.multiStateCount}] (${node.red}, ${node.green}, ${node.blue}) {")
 
         // Print body
         visit(node.body)

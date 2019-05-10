@@ -216,7 +216,7 @@ class KotlinCodegen : ASTVisitor<String> {
                 is ConstDecl -> addMapping(it.ident, nextLabel())
                 is NeighbourhoodDecl -> addMapping(it.ident, nextLabel())
                 is FuncDecl -> addMapping(it.ident, nextLabel())
-                is ErrorDecl -> throw KotlinCodegen_ErrorDecl()
+                else -> throw KotlinCodegen_ErrorDecl()
             }
         }
 
@@ -379,9 +379,17 @@ class KotlinCodegen : ASTVisitor<String> {
 
     override fun visit(node: BinaryExpr): String {
         return when (node) {
+            is EqualityComparisonExpr -> visit(node)
             is BinaryArithmeticExpr -> visit(node)
             is NumericComparisonExpr -> visit(node)
             is BinaryBooleanExpr -> visit(node)
+        }
+    }
+
+    override fun visit(node: EqualityComparisonExpr): String {
+        return when (node) {
+            is InequalityExpr -> visit(node)
+            is EqualityExpr -> visit(node)
         }
     }
 
@@ -404,8 +412,6 @@ class KotlinCodegen : ASTVisitor<String> {
 
     override fun visit(node: NumericComparisonExpr): String {
         return when (node) {
-            is InequalityExpr -> visit(node)
-            is EqualityExpr -> visit(node)
             is GreaterThanExpr -> visit(node)
             is GreaterOrEqExpr -> visit(node)
             is LessThanExpr -> visit(node)
@@ -502,7 +508,7 @@ class KotlinCodegen : ASTVisitor<String> {
                             val arrayLiteral = value as ArrayLiteralExpr
                             emitArray(
                                 sizes?.subList(1, sizes.size),
-                                arrayLiteral.getType()!! as ArrayType,
+                                arrayLiteral.getType() as ArrayType,
                                 arrayLiteral
                             )
                         }
@@ -556,7 +562,7 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: ArrayLiteralExpr): String {
-        return emitArray(null, node.getType()!! as ArrayType, node)
+        return emitArray(null, node.getType() as ArrayType, node)
     }
 
     override fun visit(node: StateIndexExpr): String {

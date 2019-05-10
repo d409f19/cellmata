@@ -5,6 +5,7 @@ world {
 }
 
 state ident (0, 0, 0) {
-    let z = 4 == 4;
-    become ident;
+    let x = true != false;
+    let y = 4 != 4;
+    let z = {ident, ident} != {ident};
 }
