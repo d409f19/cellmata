@@ -18,86 +18,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 
-enum class CompileTarget {
-    KOTLIN,
-    CELLMATA
-}
-
-enum class GraphPhases {
-    REDUCE,
-    SANITY,
-    FLOW,
-    SCOPE,
-    TYPE
-}
-
-enum class LogLevel {
-    SILENT,
-    MINIMAL,
-    DEBUG,
-    VERBOSE
-}
-
-class Arguments(parser: ArgParser) {
-    val verbose by parser.flagging(
-        "-v", "--verbose",
-        help = "enable verbose mode"
-    )
-
-    val logLevel by parser.storing(
-        "--log-level",
-        help = "level of details to log [silent,minimal,debug,verbose]"
-    ).default("silent").addValidator {
-        if(!listOf("silent", "minimal", "debug", "verbose").contains(this.value)) {
-            throw SystemExitException("Invalid log level", 1)
-        }
-    }
-
-    val debugAstPhases by parser.storing(
-        "--debug-ast-phase",
-        help = "comma seperated list of phases to save AST graph from [reduce,sanity,scope,type]"
-    ){ split(",") }
-        .default(listOf())
-        .addValidator {
-        this.value.forEach {
-            if(!listOf("reduce", "sanity","flow", "scope", "type").contains(it)) {
-                throw SystemExitException("Invalid phase specified for graphing", 1)
-            }
-        }
-    }
-
-    val debugInfoDir by parser.storing(
-        "--debug-info-dir",
-        help = "directory to save debug info in"
-    ).default("./debug")
-
-    val outputDir by parser.storing(
-        "-o", "--output",
-        help = "location to save compiled program to"
-    )
-
-    val target by parser.storing(
-        "-t", "--target",
-        help = "target to compile to"
-    ).default("kotlin").addValidator {
-        if(!listOf("kotlin", "cellmata").contains(this.value)) {
-            throw SystemExitException("Invalid target", 1)
-        }
-    }
-
-    val source by parser.positional(
-        "SOURCE",
-        help = "source filename"
-    )
-}
-
-data class CompilerSettings(
-    val logLevel: LogLevel = LogLevel.SILENT,
-    val graphPhases: List<GraphPhases> = listOf(),
-    val target: CompileTarget,
-    val source: Path,
-    val output: Path
-)
 
 fun main(args: Array<String>) {
     try {
@@ -108,13 +28,30 @@ fun main(args: Array<String>) {
         ).parseInto(::Arguments)
             .run {
                 val settings = CompilerSettings(
-                    target = when(target) {
+                    target = when (target) {
                         "kotlin" -> CompileTarget.KOTLIN
                         "cellmata" -> CompileTarget.CELLMATA
                         else -> throw SystemExitException("Internal error", 255)
                     },
                     source = Paths.get(source),
-                    output = Paths.get(outputDir)
+                    output = Paths.get(outputDir),
+                    logLevel = when (logLevel) {
+                        "silent" -> LogLevel.SILENT
+                        "minimal" -> LogLevel.MINIMAL
+                        "debug" -> LogLevel.DEBUG
+                        "verbose" -> LogLevel.VERBOSE
+                        else -> throw SystemExitException("Internal error", 255)
+                    },
+                    graphPhases = debugAstPhases.map {
+                        when (it) {
+                            "reduce" -> GraphPhases.REDUCE
+                            "sanity" -> GraphPhases.SANITY
+                            "flow" -> GraphPhases.FLOW
+                            "scope" -> GraphPhases.SCOPE
+                            "type" -> GraphPhases.TYPE
+                            else -> throw SystemExitException("Internal error", 255)
+                        }
+                    }
                 )
 
                 if (!Files.exists(settings.source)) {
@@ -207,22 +144,26 @@ fun graphAst(settings: CompilerSettings, name: String, phase: GraphPhases, ast: 
 fun prodCompilation(settings: CompilerSettings) {
     try {
         compile(CharStreams.fromPath(settings.source), settings)
-        ErrorLogger.printAllWarnings(if (settings.logLevel == LogLevel.DEBUG) Files.lines(settings.source) else null)
+        ErrorLogger.printAllWarnings(Files.lines(settings.source))
 
     } catch (e: TerminatedCompilationException) {
 
         // Compilation failed due to errors in program code
-        System.err.println("Compilation failed: ${e.message}")
-        ErrorLogger.printAllWarnings(if (settings.logLevel == LogLevel.DEBUG) Files.lines(settings.source) else null)
-        ErrorLogger.printAllErrors(if (settings.logLevel == LogLevel.MINIMAL) Files.lines(settings.source) else null)
+        if (settings.logLevel > LogLevel.SILENT) {
+            System.err.println("Compilation failed: ${e.message}")
+            ErrorLogger.printAllWarnings(Files.lines(settings.source))
+            ErrorLogger.printAllErrors(Files.lines(settings.source))
+        }
 
     } catch (e: Exception) {
 
         // Printing stack trace and errors for debugging purposes
         e.printStackTrace()
-        System.err.println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
-        ErrorLogger.printAllWarnings(if (settings.logLevel == LogLevel.DEBUG) Files.lines(settings.source) else null)
-        ErrorLogger.printAllErrors(if (settings.logLevel == LogLevel.MINIMAL) Files.lines(settings.source) else null)
+        if (settings.logLevel > LogLevel.SILENT) {
+            System.err.println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
+            ErrorLogger.printAllWarnings(Files.lines(settings.source))
+            ErrorLogger.printAllErrors(Files.lines(settings.source))
+        }
     }
 }
 
