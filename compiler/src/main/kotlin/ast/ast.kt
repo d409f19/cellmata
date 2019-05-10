@@ -333,7 +333,7 @@ class ConstDecl(
 class StateDecl(
     ctx: SourceContext,
     var ident: String,
-    val multiStateCount: Int?,
+    val multiStateCount: Int,
     var red: Short,
     var blue: Short,
     var green: Short,

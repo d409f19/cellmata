@@ -103,9 +103,8 @@ class PrettyPrinter : BaseASTVisitor() {
      * Build pretty printed state declaration
      */
     override fun visit(node: StateDecl) {
-        // Print signature of state.
-        val multiStatePart = node.multiStateCount?.let { "[$it]" } ?: ""
-        stringBuilder.appendln("state ${node.ident}$multiStatePart (${node.red}, ${node.green}, ${node.blue}) {")
+        // Print signature of state. TODO: must take multi-state-declaration into account when implemented
+        stringBuilder.appendln("state ${node.ident}[${node.multiStateCount}] (${node.red}, ${node.green}, ${node.blue}) {")
 
         // Print body
         visit(node.body)

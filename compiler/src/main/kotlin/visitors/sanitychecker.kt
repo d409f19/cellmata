@@ -93,12 +93,8 @@ class SanityChecker : BaseASTVisitor() {
         inAState = true
         super.visit(node)
         // counts the number of states
-        if (node.multiStateCount != null) {
-            if (node.multiStateCount > 0) numberOfStates += node.multiStateCount
-            else ErrorLogger += SanityError(node.ctx, "Multi-states must declare at least 1 state.")
-        } else {
-            numberOfStates += 1
-        }
+        if (node.multiStateCount > 0) numberOfStates += node.multiStateCount
+        else ErrorLogger += SanityError(node.ctx, "Multi-states must declare at least 1 state.")
         inAState = false
     }
 
