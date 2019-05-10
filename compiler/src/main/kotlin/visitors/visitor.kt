@@ -311,7 +311,7 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     }
 
     override fun visit(node: LookupExpr) {
-        visit(node.arr)
+        visit(node.target)
         visit(node.index)
     }
 

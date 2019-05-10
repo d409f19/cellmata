@@ -25,7 +25,7 @@ class KotlinCodegen : ASTVisitor<String> {
     /**
      * Maps states names to an unique integer identifier
      */
-    private var stateIDs: Map<String, Int> = mutableMapOf()
+    private var stateIDs: MutableMap<String, Int> = mutableMapOf()
     /**
      * Used to keep track of the next available label
      */
@@ -198,11 +198,11 @@ class KotlinCodegen : ASTVisitor<String> {
         addMapping("root", nextLabel())
         addMapping("pow", nextLabel())
 
-        // For each state create an associated integer indentifier, and label mapping that will be used in the final program
+        // For each state create an associated integer identifier, and label mapping that will be used in the final program
         var stateCounter = 0
         node.body.filterIsInstance<StateDecl>().forEach {
             // ToDo multi-states
-            stateIDs = stateIDs.plus(pair = Pair(it.ident, stateCounter))
+            stateIDs[it.ident] = stateCounter
             addMapping(it.ident, stateCounter.toString())
             stateCounter += 1
         }
@@ -277,11 +277,7 @@ class KotlinCodegen : ASTVisitor<String> {
 
         val builder = StringBuilder()
 
-        builder.appendln(
-            """
-            fun state_${stateIDs[node.ident]}(worldView: IWorldView): Int {
-        """.trimIndent()
-        )
+        builder.appendln("fun state_${stateIDs[node.ident]}(worldView: IWorldView): Int {")
 
         builder.append(visit(node.body).prependIndent(INDENT))
 
@@ -542,7 +538,13 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: LookupExpr): String {
-        return "(${visit(node.arr)}[${visit(node.index)}])"
+        return when (node.lookupType) {
+            LookupExprType.ARRAY, LookupExprType.NEIGHBOURHOOD -> "(${visit(node.target)}[${visit(node.index)}])"
+            LookupExprType.MULTI_STATE -> {
+                "(${visit(node.target)})" // TODO Determine state based on index
+            }
+            LookupExprType.UNKNOWN -> TODO()
+        }
     }
 
     override fun visit(node: SizedArrayExpr): String {

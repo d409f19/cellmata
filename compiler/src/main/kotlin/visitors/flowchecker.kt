@@ -256,7 +256,7 @@ class FlowChecker : ASTVisitor<Flow> {
     }
 
     override fun visit(node: LookupExpr): Flow {
-        visit(node.arr)
+        visit(node.target)
         visit(node.index)
         return Flow()
     }
