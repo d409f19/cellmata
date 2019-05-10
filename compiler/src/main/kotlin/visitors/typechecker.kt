@@ -328,7 +328,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         val decl = symbolTableSession.getSymbol(node.spelling)!!
         if (decl is FuncDecl) {
             node.setType(UndeterminedType)
-            ErrorLogger += TypeError(node.ctx, "Found function name '${node.spelling}', but the function is not called.")
+            ErrorLogger += TypeError(
+                node.ctx,
+                "Found function name '${node.spelling}', but the function is not called."
+            )
         } else {
             node.setType(
                 when (decl) {
@@ -337,7 +340,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
                     is AssignStmt -> decl.expr.getType()
                     is ConstDecl -> decl.expr.getType()
                     is FunctionArgument -> decl.type
-                    else -> throw AssertionError()
+                    else -> throw AssertionError("Identifier '${node.spelling}' is declared as a $'${decl.javaClass}' and can't determine its type.")
                 }
             )
         }
