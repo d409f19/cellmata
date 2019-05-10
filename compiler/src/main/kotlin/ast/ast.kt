@@ -360,13 +360,8 @@ class NeighbourhoodDecl(
 class FunctionArgument(
     ctx: SourceContext,
     val ident: String,
-    private var type: Type = UncheckedType
-) : AST(ctx), TypedNode {
-    override fun getType() = type
-    override fun setType(type: Type) {
-        this.type = type
-    }
-}
+    val type: Type = UncheckedType
+) : AST(ctx)
 
 /**
  * Represents a function declaration
@@ -502,12 +497,7 @@ class AssignStmt(
     val expr: Expr,
     var isDeclaration: Boolean,
     private var type: Type = UncheckedType
-) : Stmt(ctx), TypedNode {
-    override fun getType() = type
-    override fun setType(type: Type) {
-        this.type = type
-    }
-}
+) : Stmt(ctx)
 
 /**
  * Represent a block in a if statement that is to be run if expr evaluates to true.

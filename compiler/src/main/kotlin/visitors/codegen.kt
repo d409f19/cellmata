@@ -344,7 +344,7 @@ class KotlinCodegen : ASTVisitor<String> {
             if (i > 0) {
                 builder.append(", ")
             }
-            builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.getType())}")
+            builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.type)}")
         }
         builder.appendln("): ${toKotlinType(node.returnType)} {")
         builder.append(visit(node.body).prependIndent(INDENT))

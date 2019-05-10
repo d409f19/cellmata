@@ -146,7 +146,7 @@ class PrettyPrinter : BaseASTVisitor() {
      * Print a formal argument of a function declaration
      */
     override fun visit(node: FunctionArgument) {
-        stringBuilder.append("${node.getType()} ${node.ident}")
+        stringBuilder.append("${node.type} ${node.ident}")
     }
 
     override fun visit(node: NeighbourhoodDecl) {
