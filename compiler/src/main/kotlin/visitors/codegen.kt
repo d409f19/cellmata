@@ -681,9 +681,7 @@ class KotlinCodegen : ASTVisitor<String> {
         builder.append(getMappedLabel(node.ident))
         builder.append("(worldView")
         node.args.forEachIndexed { index, expr ->
-            if (index > 0) {
-                builder.append(", ")
-            }
+            builder.append(", ")
             builder.append(visit(expr))
         }
         builder.append("))")
