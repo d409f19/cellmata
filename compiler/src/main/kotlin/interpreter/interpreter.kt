@@ -51,6 +51,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         val yDim = node.world.dimensions[0]
         val height = yDim.size
 
+        val listOfNgbhs = node.body.filterIsInstance<NeighbourhoodDecl>()
         val listOfStates = node.body.filterIsInstance<StateDecl>()
         defaultStateValue = StateValue(listOfStates[0], 0)
         val grid = Array(width) { Array(height) { StateValue(listOfStates.random(), 0) } }
@@ -80,6 +81,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
                         // then use the old state
                         stack.openScope()
                         stack.declare("#", state.index)
+                        declareNeighbourhoods(listOfNgbhs, grid, x, y)
                         val newState = (visit(state.decl.body).takeIf { it is StateValue } ?: state) as StateValue
                         stack.closeScope()
                         grid[x][y] = newState
@@ -94,6 +96,24 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
 
         return Unit
     }
+
+    private fun declareNeighbourhoods(
+        listOfNgbhs: List<NeighbourhoodDecl>,
+        grid: Array<Array<StateValue>>,
+        x: Int,
+        y: Int
+    ) {
+        for (neiDecl in listOfNgbhs) {
+            val states = neiDecl.coords.map {
+                val nx = (x + it.axes[0]) wrap grid.size
+                val ny = (y + it.axes[1]) wrap grid[nx].size
+                grid[nx][ny]
+            }
+            stack.declare(neiDecl.ident, states)
+        }
+    }
+
+    infix fun Int.wrap(divisor: Int) = (this % divisor).let { if (it < 0) it + divisor else it }
 
     override fun visit(node: AST): Any {
         return when (node) {
