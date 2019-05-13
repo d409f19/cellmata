@@ -55,16 +55,31 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
         node.setType(BooleanType)
     }
 
-    override fun visit(node: ArrayLookupExpr) {
+    override fun visit(node: LookupExpr) {
         super.visit(node)
 
-        val arrayType = node.arr.getType()
+        val type = node.target.getType()
 
-        if (arrayType is ArrayType) {
-            node.setType(arrayType.subtype)
-        } else {
-            ErrorLogger += TypeError(node.ctx, "Cannot lookup in expression of type $arrayType")
-            node.setType(UndeterminedType)
+        when (type) {
+            is ArrayType -> {
+                node.lookupType = LookupExprType.ARRAY
+                node.setType(type.subtype)
+            }
+
+            LocalNeighbourhoodType -> {
+                node.lookupType = LookupExprType.NEIGHBOURHOOD
+                node.setType(StateType)
+            }
+
+            StateType -> {
+                node.lookupType = LookupExprType.MULTI_STATE
+                node.setType(StateType)
+            }
+
+            else -> {
+                ErrorLogger += TypeError(node.ctx, "Cannot lookup in expression of type $type")
+                node.setType(UndeterminedType)
+            }
         }
     }
 

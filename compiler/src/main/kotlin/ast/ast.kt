@@ -217,10 +217,15 @@ class NotExpr(
     val value: Expr
 ) : Expr(ctx)
 
-class ArrayLookupExpr(
+enum class LookupExprType {
+    UNKNOWN, MULTI_STATE, NEIGHBOURHOOD, ARRAY
+}
+
+class LookupExpr(
     ctx: SourceContext,
-    val arr: Expr,
-    val index: Expr
+    val target: Expr,
+    val index: Expr,
+    var lookupType: LookupExprType = LookupExprType.UNKNOWN // Determined during type-checking
 ) : Expr(ctx)
 
 /**

@@ -410,9 +410,9 @@ class PrettyPrinter : BaseASTVisitor() {
         visit(node.value)
     }
 
-    override fun visit(node: ArrayLookupExpr) {
+    override fun visit(node: LookupExpr) {
         // First print array expression
-        visit(node.arr)
+        visit(node.target)
 
         // Lastly print index expression within brackets
         stringBuilder.append("[")

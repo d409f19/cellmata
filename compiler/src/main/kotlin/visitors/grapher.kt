@@ -192,8 +192,8 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: ArrayLookupExpr) {
-        printLabel(node, "ArrayLookupExpr")
+    override fun visit(node: LookupExpr) {
+        printLabel(node, "LookupExpr")
         printNode(node, node.index)
         super.visit(node)
     }
