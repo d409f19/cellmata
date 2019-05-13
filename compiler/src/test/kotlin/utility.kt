@@ -7,18 +7,47 @@ import dk.aau.cs.d409f19.cellumata.CompilerSettings
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.reduce
 import dk.aau.cs.d409f19.cellumata.compile
-import dk.aau.cs.d409f19.cellumata.visitors.FlowChecker
-import dk.aau.cs.d409f19.cellumata.visitors.SanityChecker
-import dk.aau.cs.d409f19.cellumata.visitors.ScopeCheckVisitor
-import dk.aau.cs.d409f19.cellumata.visitors.TypeChecker
+import dk.aau.cs.d409f19.cellumata.visitors.*
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 
 /**
  * Compile a Cellmata program given as string parameter
  */
-fun compileTestProgram(program: String, settings: CompilerSettings): CompilerData {
-    return compile(CharStreams.fromString(program), settings)
+fun compileTestProgramKotlin(program: String): CompilerData {
+    val lexer = CellmataLexer(CharStreams.fromString(program))
+    val tokenStream = CommonTokenStream(lexer)
+    val parser = CellmataParser(tokenStream)
+
+    // Build AST
+    val startContext = parser.start()
+    val ast = reduce(startContext)
+    // Asserts that no errors has been found during the last phase
+    ErrorLogger.assertNoErrors()
+
+    // Sanity checker
+    val sanityChecker = SanityChecker()
+    sanityChecker.visit(ast)
+
+    // Flow checking
+    val flowChecker = FlowChecker()
+    flowChecker.visit(ast)
+    ErrorLogger.assertNoErrors()
+
+    // Symbol table and scope
+    val scopeChecker = ScopeCheckVisitor()
+    scopeChecker.visit(ast)
+    val symbolTable = scopeChecker.getSymbolTable()
+    ErrorLogger.assertNoErrors()
+
+    // Type checking
+    TypeChecker(symbolTable).visit(ast)
+    ErrorLogger.assertNoErrors()
+
+    // Codegen
+    val compiled = KotlinCodegen().visit(ast)
+
+    return CompilerData(parser, ast, symbolTable, ErrorLogger.hasErrors())
 }
 
 /**
@@ -51,6 +80,8 @@ fun compileTestProgramInsecure(program: String): CompilerData {
     // Type checking
     TypeChecker(symbolTable).visit(ast)
 
+    // Codegen
+    val compiled = KotlinCodegen().visit(ast)
 
     return CompilerData(parser, ast, symbolTable, ErrorLogger.hasErrors())
 }

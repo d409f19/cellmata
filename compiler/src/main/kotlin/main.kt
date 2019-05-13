@@ -1,5 +1,6 @@
 package dk.aau.cs.d409f19.cellumata
 
+import com.xenomachina.argparser.*
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.AST
@@ -10,67 +11,62 @@ import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import java.io.File
+import java.io.OutputStreamWriter
+import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 
-data class CompilerSettings(
-    val verbose: Boolean = false,
-    val veryVerbose: Boolean = false,
-    val doPrettyPrinting: Boolean = false,
-    val doGraphing: Boolean = false
-)
 
 fun main(args: Array<String>) {
-
-    // Check the arguments
-    if (args.size < 1) {
-        println("Too few arguments. Expected a path to a '.cell' file.")
-
-    } else {
-        val path = Paths.get(args[0])
-
-        // Check if file is a .cell file and if it exists
-        if (path.extention() != "cell") {
-            println("Given path is not a '.cell' file.")
-
-        } else if (!Files.exists(path)) {
-            println("Could not find $path. Does the file exist?")
-
-        } else {
-
-            var verbose = false
-            var veryVerbose = false
-            var doPrettyPrinting = false
-            var doGraph = false
-
-            // Read other arguments
-            for (i in 1 until args.size) {
-                val arg = args[i]
-                when (arg) {
-                    "-v" -> verbose = true
-                    "-vv" -> {
-                        verbose = true
-                        veryVerbose = true
+    try {
+        ArgParser(
+            args,
+            helpFormatter = DefaultHelpFormatter(),
+            mode = ArgParser.Mode.GNU
+        ).parseInto(::Arguments)
+            .run {
+                val settings = CompilerSettings(
+                    target = when (target) {
+                        "kotlin" -> CompileTarget.KOTLIN
+                        "cellmata" -> CompileTarget.CELLMATA
+                        else -> throw SystemExitException("Internal error", 255)
+                    },
+                    source = Paths.get(source),
+                    output = Paths.get(outputDir),
+                    logLevel = when (logLevel) {
+                        "silent" -> LogLevel.SILENT
+                        "minimal" -> LogLevel.MINIMAL
+                        "debug" -> LogLevel.DEBUG
+                        "verbose" -> LogLevel.VERBOSE
+                        else -> throw SystemExitException("Internal error", 255)
+                    },
+                    graphPhases = debugAstPhases.map {
+                        when (it) {
+                            "reduce" -> GraphPhases.REDUCE
+                            "sanity" -> GraphPhases.SANITY
+                            "flow" -> GraphPhases.FLOW
+                            "scope" -> GraphPhases.SCOPE
+                            "type" -> GraphPhases.TYPE
+                            else -> throw SystemExitException("Internal error", 255)
+                        }
                     }
-                    "--pretty" -> doPrettyPrinting = true
-                    "--graph" -> doGraph = true
-                    else -> {
-                        println("'$arg' is not a valid option."); return
-                    }
+                )
+
+                if (!Files.exists(settings.source)) {
+                    throw SystemExitException("source file doesn't exist", 2)
                 }
+
+
+                prodCompilation(settings)
             }
-
-            val settings = CompilerSettings(
-                verbose,
-                veryVerbose,
-                doPrettyPrinting,
-                doGraph
-            )
-
-            prodCompilation(path, settings)
-        }
+    } catch (e: ShowHelpException) {
+        val writer = OutputStreamWriter(System.out)
+        e.printUserMessage(writer, "cellmatac", 0)
+        writer.flush()
     }
+
 }
 
 /**
@@ -87,14 +83,20 @@ fun compile(source: CharStream, settings: CompilerSettings): CompilerData {
     // Asserts that no errors has been found during the last phase
     ErrorLogger.assertNoErrors()
 
+    graphAst(settings, "reduce", GraphPhases.REDUCE, ast)
+
     // Sanity checker
     val sanityChecker = SanityChecker()
     sanityChecker.visit(ast)
+
+    graphAst(settings, "sanity-checker", GraphPhases.SANITY, ast)
 
     // Flow checking
     val flowChecker = FlowChecker()
     flowChecker.visit(ast)
     ErrorLogger.assertNoErrors()
+
+    graphAst(settings, "flow-checker", GraphPhases.FLOW, ast)
 
     // Symbol table and scope
     val scopeChecker = ScopeCheckVisitor()
@@ -102,45 +104,66 @@ fun compile(source: CharStream, settings: CompilerSettings): CompilerData {
     val symbolTable = scopeChecker.getSymbolTable()
     ErrorLogger.assertNoErrors()
 
+    graphAst(settings, "scope-checker", GraphPhases.SCOPE, ast)
+
     // Type checking
     TypeChecker(symbolTable).visit(ast)
     ErrorLogger.assertNoErrors()
 
-    // Pretty printing
-    if (settings.doPrettyPrinting) {
-        PrettyPrinter().print(ast)
-    }
+    graphAst(settings, "type-checker", GraphPhases.TYPE, ast)
 
-    // Graph printing TODO add output file to settings
-    if (settings.doGraphing) {
-        File("ast.gs").outputStream().use { out -> ASTGrapher(out).visit(ast) }
+    // Codegen
+    when (settings.target) {
+        CompileTarget.KOTLIN -> {
+            val compiled = KotlinCodegen().visit(ast)
+            Files.write(
+                settings.output,
+                compiled.toByteArray(Charset.forName("UTF-8")),
+                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING
+            )
+        }
+        CompileTarget.CELLMATA -> {
+            PrettyPrinter().print(ast)
+        }
     }
 
     return CompilerData(parser, ast, symbolTable, ErrorLogger.hasErrors())
 }
 
+fun graphAst(settings: CompilerSettings, name: String, phase: GraphPhases, ast: AST) {
+    if (settings.graphPhases.contains(phase)) {
+        File(Paths.get(settings.output.toAbsolutePath().toString(), "ast-$name.gs").toUri())
+            .outputStream()
+            .use { out -> ASTGrapher(out).visit(ast) }
+    }
+}
+
 /**
  * Production compile function, outputs useful information to user on errors in source and possibly the compiler itself
  */
-fun prodCompilation(sourcePath: Path, settings: CompilerSettings) {
+fun prodCompilation(settings: CompilerSettings) {
     try {
-        compile(CharStreams.fromPath(sourcePath), settings)
-        ErrorLogger.printAllWarnings(if (settings.veryVerbose) Files.lines(sourcePath) else null)
+        compile(CharStreams.fromPath(settings.source), settings)
+        ErrorLogger.printAllWarnings(Files.lines(settings.source))
 
     } catch (e: TerminatedCompilationException) {
 
         // Compilation failed due to errors in program code
-        System.err.println("Compilation failed: ${e.message}")
-        ErrorLogger.printAllWarnings(if (settings.veryVerbose) Files.lines(sourcePath) else null)
-        ErrorLogger.printAllErrors(if (settings.verbose) Files.lines(sourcePath) else null)
+        if (settings.logLevel > LogLevel.SILENT) {
+            System.err.println("Compilation failed: ${e.message}")
+            ErrorLogger.printAllWarnings(Files.lines(settings.source))
+            ErrorLogger.printAllErrors(Files.lines(settings.source))
+        }
 
     } catch (e: Exception) {
 
         // Printing stack trace and errors for debugging purposes
         e.printStackTrace()
-        System.err.println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
-        ErrorLogger.printAllWarnings(if (settings.veryVerbose) Files.lines(sourcePath) else null)
-        ErrorLogger.printAllErrors(if (settings.verbose) Files.lines(sourcePath) else null)
+        if (settings.logLevel > LogLevel.SILENT) {
+            System.err.println("Critical error occurred. Maybe something is wrong in the compiler. Emptying ErrorLogger:")
+            ErrorLogger.printAllWarnings(Files.lines(settings.source))
+            ErrorLogger.printAllErrors(Files.lines(settings.source))
+        }
     }
 }
 

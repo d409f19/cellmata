@@ -56,7 +56,7 @@ class BatchTest {
         @MethodSource("getCompilingPrograms")
         fun batchPass(filename: String, program: String) {
             try {
-                compileTestProgram(program, settings = CompilerSettings())
+                compileTestProgramKotlin(program)
             } catch (e: TerminatedCompilationException) {
                 ErrorLogger.printAllErrors()
                 fail { "CompileErrors occurred while compiling '$filename'" }
@@ -109,13 +109,13 @@ class BatchTest {
                 assertThrows<TerminatedCompilationException>(
                     "Non-compiling program did not throw a TerminatedCompilationException! Filename: $filename"
                 ) {
-                    compileTestProgram(program, settings = CompilerSettings())
+                    compileTestProgramKotlin(program)
                 }
             } catch (e: AssertionFailedError) {
                 try {
                     // If compilation does not throw a TerminatedCompilationException,
                     // compile again and assert for errors in parser
-                    val compileData = compileTestProgram(program, settings = CompilerSettings())
+                    val compileData = compileTestProgramKotlin(program)
 
                     // Assert that no errors are contained in ErrorLogger, as this would indicate a fault with asserting for no errors
                     assertFalse(

@@ -377,6 +377,14 @@ class KotlinCodegen : ASTVisitor<String> {
         }
     }
 
+    override fun visit(node: IntToFloatConversion): String {
+        return "((${visit(node.expr)}).toFloat())"
+    }
+
+    override fun visit(node: StateArrayToLocalNeighbourhoodConversion): String {
+        return "((${visit(node.expr)}).toList())"
+    }
+
     override fun visit(node: BinaryExpr): String {
         return when (node) {
             is EqualityComparisonExpr -> visit(node)
