@@ -183,6 +183,9 @@ class KotlinCodegen : ASTVisitor<String> {
         return builder.toString()
     }
 
+    /**
+     * Emit a function that given a state, return the id of base state for the mutltistate
+     */
     private fun emitBaseStateLookup(states: List<StateDecl>): String {
         val builder = StringBuilder()
 
@@ -206,6 +209,9 @@ class KotlinCodegen : ASTVisitor<String> {
         return builder.toString()
     }
 
+    /**
+     * Emit a function that given a state, return its index in its multistate
+     */
     private fun emitMultiStateIndexLookup(states: List<StateDecl>): String {
         val builder = StringBuilder()
 
@@ -229,6 +235,9 @@ class KotlinCodegen : ASTVisitor<String> {
         return builder.toString()
     }
 
+    /**
+     * Emit a function that given a multistate and a index in the in the multistate, returns the id of the concrete state from the given multistate
+     */
     private fun emitMultiStateLookup(states: List<StateDecl>): String {
         val builder = StringBuilder()
 
