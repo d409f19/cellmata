@@ -1,0 +1,13 @@
+world {
+    size = 3 [wrap], 3 [wrap];
+    tickrate = 1;
+    cellsize = 10;
+}
+
+state s1 (255, 255, 255) {
+    become s2;
+}
+
+state s2 (0, 0, 0) {
+    become s1;
+}
