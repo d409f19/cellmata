@@ -664,17 +664,18 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: FuncCallExpr): String {
-        val builder = StringBuilder("(${getMappedLabel(node.ident)}(")
-
-        // Arguments
-        for ((i, arg) in node.args.withIndex()) {
-            if (i > 0) {
+        val builder = StringBuilder()
+        builder.append("(")
+        builder.append(getMappedLabel(node.ident))
+        builder.append("(worldView")
+        node.args.forEachIndexed { index, expr ->
+            if (index > 0) {
                 builder.append(", ")
             }
-            builder.append(visit(arg))
+            builder.append(visit(expr))
         }
-
         builder.append("))")
+
         return builder.toString()
     }
 
