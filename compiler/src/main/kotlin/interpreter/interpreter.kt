@@ -62,7 +62,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
 
         // Add components except neighbourhoods. Constants are added last as they need computation
         root.body
-            .filter { it !is ConstDecl && it !is NeighbourhoodDecl}
+            .filter { it !is ConstDecl && it !is NeighbourhoodDecl }
             .forEach {
                 when (it) {
                     is StateDecl -> stack.declareGlobal(it.ident, StateValue(it, 0))
@@ -106,21 +106,21 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         val g = panel.graphics as Graphics2D
 
         // Driver
-        Timer().scheduleAtFixedRate(object: TimerTask() {
+        Timer().scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
 
-                // Iterate over all cells, find their new state, and draw the new state
-                for ((x, row) in grid.withIndex()) {
-                    for ((y, state) in row.withIndex()) {
-
+                // Iterate the grid from top to bottom, imitating a progressive scan
+                for ((y, column) in grid.withIndex()) {
+                    for ((x, state) in column.withIndex()) {
                         // Find new state by executing the state's logic. If the logic does not return a StateDecl
                         // then use the old state
                         stack.openScope()
                         stack.declare("#", state.index)
-                        declareNeighbourhoods(listOfNgbhs, grid, x, y)
+                        // Flip passed indices as grid is iterated in a flipped manner
+                        declareNeighbourhoods(listOfNgbhs, grid, y, x)
                         val newState = (visit(state.decl.body).takeIf { it is StateValue } ?: state) as StateValue
                         stack.closeScope()
-                        nextGrid[x][y] = newState
+                        nextGrid[y][x] = newState
 
                         // Draw
                         g.color = Color(newState.decl.red, newState.decl.green, newState.decl.blue)
@@ -277,7 +277,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: GreaterThanExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 left.getType() == FloatType && right.getType() == FloatType -> {
                     (visit(left) as Float) > (visit(right) as Float)
@@ -297,7 +297,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: GreaterOrEqExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 left.getType() == FloatType && right.getType() == FloatType -> {
                     (visit(left) as Float) >= (visit(right) as Float)
@@ -317,7 +317,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: LessThanExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 left.getType() == FloatType && right.getType() == FloatType -> {
                     (visit(left) as Float) < (visit(right) as Float)
@@ -337,7 +337,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: LessOrEqExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 left.getType() == FloatType && right.getType() == FloatType -> {
                     (visit(left) as Float) <= (visit(right) as Float)
@@ -357,7 +357,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: AdditionExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 left.getType() == FloatType && right.getType() == FloatType -> {
                     (visit(left) as Float) + (visit(right) as Float)
@@ -377,7 +377,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: SubtractionExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 left.getType() == FloatType && right.getType() == FloatType -> {
                     (visit(left) as Float) - (visit(right) as Float)
@@ -397,7 +397,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: MultiplicationExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 left.getType() == FloatType && right.getType() == FloatType -> {
                     (visit(left) as Float) * (visit(right) as Float)
@@ -417,7 +417,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: DivisionExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 left.getType() == FloatType && right.getType() == FloatType -> {
                     (visit(left) as Float) / (visit(right) as Float)
@@ -437,7 +437,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: ModuloExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 left.getType() == FloatType && right.getType() == FloatType -> {
                     (visit(left) as Float) % (visit(right) as Float)
@@ -457,7 +457,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: NegationExpr): Any {
-        return with (node) {
+        return with(node) {
             when {
                 value.getType() == FloatType -> -(visit(value) as Float)
                 value.getType() == IntegerType -> -(visit(value) as Int)
@@ -577,7 +577,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: Stmt): Any {
-        return when(node) {
+        return when (node) {
             is AssignStmt -> visit(node)
             is IfStmt -> visit(node)
             is BecomeStmt -> visit(node)
