@@ -187,7 +187,6 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: RootNode): String {
-        // ToDo write implementation of builtins
         addMapping("count", "`builtin count`")
         addMapping("randi", "`builtin randi`")
         addMapping("randf", "`builtin randf`")
