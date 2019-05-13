@@ -32,7 +32,17 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
 
     private fun prefillMemory(root: RootNode) {
         stack.pushStack()
-        // TODO Built-in functions
+        // Add built-in functions
+        stack.declareGlobal(BuiltinFuncCount.ident, BuiltinFuncCount)
+        stack.declareGlobal(BuiltinFuncRandi.ident, BuiltinFuncRandi)
+        stack.declareGlobal(BuiltinFuncRandf.ident, BuiltinFuncRandf)
+        stack.declareGlobal(BuiltinFuncAbsi.ident, BuiltinFuncAbsi)
+        stack.declareGlobal(BuiltinFuncAbsf.ident, BuiltinFuncAbsf)
+        stack.declareGlobal(BuiltinFuncFloor.ident, BuiltinFuncFloor)
+        stack.declareGlobal(BuiltinFuncCeil.ident, BuiltinFuncCeil)
+        stack.declareGlobal(BuiltinFuncRoot.ident, BuiltinFuncRoot)
+        stack.declareGlobal(BuiltinFuncPow.ident, BuiltinFuncPow)
+
         // Add components except neighbourhoods. Constants are added last as they need computation
         root.body
             .filter { it !is ConstDecl && it !is NeighbourhoodDecl}
@@ -500,15 +510,20 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     override fun visit(node: FuncCallExpr): Any {
         val funcDecl = stack[node.ident] as FuncDecl
         val actualArguments = node.args.map { visit(it) }
-        stack.pushStack()
-        stack.openScope()
-        for ((i, formalArg) in funcDecl.args.withIndex()) {
-            stack.declare(formalArg.ident, actualArguments[i])
+        if (funcDecl is BuiltinFunc) {
+            return callBuiltinFunction(funcDecl, actualArguments)
+
+        } else {
+            stack.pushStack()
+            stack.openScope()
+            for ((i, formalArg) in funcDecl.args.withIndex()) {
+                stack.declare(formalArg.ident, actualArguments[i])
+            }
+            val result = visit(funcDecl.body)
+            stack.closeScope()
+            stack.popStack()
+            return result
         }
-        val result = visit(funcDecl.body)
-        stack.closeScope()
-        stack.popStack()
-        return result
     }
 
     override fun visit(node: StateIndexExpr): Any {
