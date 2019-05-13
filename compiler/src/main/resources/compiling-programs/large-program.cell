@@ -51,10 +51,10 @@ state alive5 (0, 0, 0) {
             continue;
         }
     }
-    become alive6;
+    become alive4;
 }
 
-state alive6 (0, 0, 0) {
+state dead[4] (0, 0, 0) {
     let a = -foo(42);
     let b = bar(a, true);
 

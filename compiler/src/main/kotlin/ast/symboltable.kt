@@ -57,62 +57,6 @@ val RESERVED_WORDS: List<String> = listOf(
     "break"
 )
 
-@Deprecated("Use CreatingSymbolTableSession")
-class SymbolTable {
-    private val root: Table = Table()
-    private val scopeStack: Stack<Table> = Stack()
-
-    init {
-        scopeStack.push(root)
-    }
-
-    fun insertSymbol(ident: String, node: AST) {
-        val table = scopeStack.peek()
-
-        if (RESERVED_WORDS.contains(ident) || table.symbols.containsKey(ident)) {
-            ErrorLogger += SymbolRedefinitionError(node.ctx, ident)
-        } else {
-            table.symbols[ident] = node
-        }
-    }
-
-    fun getSymbol(name: String): AST? {
-        for (table in scopeStack) {
-            if (table.symbols.containsKey(name)) {
-                return table.symbols.get(name)
-            }
-        }
-        return null
-    }
-
-    fun getSymbolType(name: String): Type? {
-        val symbol = getSymbol(name) ?: return null
-
-        return when (symbol) {
-            is TypedNode -> symbol.getType()
-            is StateDecl -> StateType
-            is ConstDecl -> symbol.type
-            is FuncDecl -> symbol.returnType
-            else -> null
-        }
-    }
-
-    fun createScope() {
-        val newScope = Table()
-        scopeStack.peek().tables.add(newScope)
-        scopeStack.push(newScope)
-    }
-
-    fun closeScope() {
-        assert(scopeStack.size > 1) { "Tried to remove root scope from symbol table" }
-        scopeStack.pop()
-    }
-
-    fun openScope(index: Int) {
-        scopeStack.push(scopeStack.peek().tables[index])
-    }
-}
-
 /**
  * Assists in building and filling a symbol table
  */
@@ -165,27 +109,10 @@ class CreatingSymbolTableSession(symbolTable: Table) {
     fun getSymbol(name: String): AST? {
         for (table in scopeStack) {
             if (table.symbols.containsKey(name)) {
-                return table.symbols.get(name)
+                return table.symbols[name]
             }
         }
         return null
-    }
-
-    /**
-     * Return the type of the symbol identified by name
-     *
-     * @see getSymbol
-     */
-    fun getSymbolType(name: String): Type? {
-        val symbol = getSymbol(name) ?: return null
-
-        return when (symbol) {
-            is TypedNode -> symbol.getType()
-            is StateDecl -> StateType
-            is ConstDecl -> symbol.type
-            is FuncDecl -> symbol.returnType
-            else -> null
-        }
     }
 
     /**
@@ -250,29 +177,11 @@ class ViewingSymbolTableSession(val symbolTable: Table) {
      * A symbol table session that allows the user to walk through the scopes in order.
      */
     fun getSymbol(name: String): AST? {
-        for (table in scopeStack) {
+        for (table in scopeStack.reversed()) {
             if (table.symbols.containsKey(name)) {
-                return table.symbols.get(name)
+                return table.symbols[name]
             }
         }
         return null
-    }
-
-    /**
-     * Return the type of the symbol identified by name
-     *
-     * @see getSymbol
-     */
-    fun getSymbolType(name: String): Type? {
-        val symbol = getSymbol(name)
-
-        return when (symbol) {
-            is TypedNode -> symbol.getType()
-            is StateDecl -> StateType
-            is NeighbourhoodDecl -> LocalNeighbourhoodType
-            is ConstDecl -> symbol.type
-            is FuncDecl -> symbol.returnType
-            else -> null
-        }
     }
 }

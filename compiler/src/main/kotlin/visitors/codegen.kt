@@ -344,7 +344,7 @@ class KotlinCodegen : ASTVisitor<String> {
             if (i > 0) {
                 builder.append(", ")
             }
-            builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.getType())}")
+            builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.type)}")
         }
         builder.appendln("): ${toKotlinType(node.returnType)} {")
         builder.append(visit(node.body).prependIndent(INDENT))
@@ -375,6 +375,14 @@ class KotlinCodegen : ASTVisitor<String> {
             is StateArrayToLocalNeighbourhoodConversion -> visit(node)
             is ErrorExpr -> throw KotlinCodegen_ErrorExpr()
         }
+    }
+
+    override fun visit(node: IntToFloatConversion): String {
+        return "((${visit(node.expr)}).toFloat())"
+    }
+
+    override fun visit(node: StateArrayToLocalNeighbourhoodConversion): String {
+        return "((${visit(node.expr)}).toList())"
     }
 
     override fun visit(node: BinaryExpr): String {

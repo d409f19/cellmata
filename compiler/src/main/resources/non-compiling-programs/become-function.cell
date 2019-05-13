@@ -8,6 +8,6 @@ state ident (0, 0, 0) {
     become f;
 }
 
-function f() int {
-    return 1;
+function f() state {
+    return ident;
 }

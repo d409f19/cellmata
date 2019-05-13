@@ -3,6 +3,7 @@ package dk.aau.cs.d409f19.cellumata.visitors
 import dk.aau.cs.d409f19.cellumata.CompileError
 import dk.aau.cs.d409f19.cellumata.ErrorLogger
 import dk.aau.cs.d409f19.cellumata.ast.*
+import java.lang.AssertionError
 
 /**
  * Error for violation of the type rules
@@ -324,7 +325,25 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
 
     override fun visit(node: Identifier) {
         // Get type of name
-        node.setType(symbolTableSession.getSymbolType(node.spelling)!!)
+        val decl = symbolTableSession.getSymbol(node.spelling)!!
+        if (decl is FuncDecl) {
+            node.setType(UndeterminedType)
+            ErrorLogger += TypeError(
+                node.ctx,
+                "Found function name '${node.spelling}', but the function is not called."
+            )
+        } else {
+            node.setType(
+                when (decl) {
+                    is StateDecl -> StateType
+                    is NeighbourhoodDecl -> LocalNeighbourhoodType
+                    is AssignStmt -> decl.expr.getType()
+                    is ConstDecl -> decl.expr.getType()
+                    is FunctionArgument -> decl.type
+                    else -> throw AssertionError("Identifier '${node.spelling}' is declared as a $'${decl.javaClass}' and can't determine its type.")
+                }
+            )
+        }
     }
 
     override fun visit(node: EqualityComparisonExpr) {
@@ -499,16 +518,17 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: FuncCallExpr) {
         super.visit(node)
 
+        val funcDecl = symbolTableSession.getSymbol(node.ident)
+
         // If node is not a function, register error and continue type-checking
-        if (symbolTableSession.getSymbol(node.ident) !is FuncDecl) {
+        if (funcDecl !is FuncDecl) {
+            node.setType(UndeterminedType)
             ErrorLogger += TypeError(node.ctx, "\"${node.ident}\" cannot be called, as it is not a function")
+
         } else { // If node is a function, continue type-checking return type and arguments
 
             // Set type of this node to the return type of the function
-            node.setType(symbolTableSession.getSymbolType(node.ident)!!)
-
-            // Get function declaration for type-checking
-            val funcDecl = (symbolTableSession.getSymbol(node.ident) as FuncDecl)
+            node.setType(funcDecl.returnType)
 
             // If actual and formal arguments are of equal size, type-check them
             if (node.args.size == funcDecl.args.size) {
@@ -519,7 +539,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
                     val funcDeclArg = funcDecl.args[i]
 
                     val callArgType = callArg.getType()
-                    val funcDeclArgType = funcDeclArg.getType()
+                    val funcDeclArgType = funcDeclArg.type
 
                     // If each argument are not typewise congruent or can be implicitly converted, register error
                     when {
@@ -542,7 +562,7 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
                             ErrorLogger += TypeError(
                                 node.ctx,
                                 "Actual argument \"${callArg.ctx.text}\", of type ${callArg.getType()}, was not equal to " +
-                                        "formal argument \"${funcDeclArg.ident}\", of type ${funcDeclArg.getType()}"
+                                        "formal argument \"${funcDeclArg.ident}\", of type ${funcDeclArg.type}"
                             )
                         }
                     }
@@ -565,7 +585,6 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
 
     override fun visit(node: AssignStmt) {
         super.visit(node)
-        node.setType(node.expr.getType())
     }
 
     /**
