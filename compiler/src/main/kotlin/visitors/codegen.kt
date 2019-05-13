@@ -187,16 +187,15 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: RootNode): String {
-        // ToDo write implementation of builtins
-        addMapping("count", nextLabel())
-        addMapping("randi", nextLabel())
-        addMapping("randf", nextLabel())
-        addMapping("absi", nextLabel())
-        addMapping("absf", nextLabel())
-        addMapping("floor", nextLabel())
-        addMapping("ceil", nextLabel())
-        addMapping("root", nextLabel())
-        addMapping("pow", nextLabel())
+        addMapping("count", "`builtin count`")
+        addMapping("randi", "`builtin randi`")
+        addMapping("randf", "`builtin randf`")
+        addMapping("absi", "`builtin absi`")
+        addMapping("absf", "`builtin absf`")
+        addMapping("floor", "`builtin floor`")
+        addMapping("ceil", "`builtin ceil`")
+        addMapping("root", "`builtin root`")
+        addMapping("pow", "`builtin pow`")
 
         // For each state create an associated integer indentifier, and label mapping that will be used in the final program
         var stateCounter = 0
@@ -558,7 +557,11 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: Identifier): String {
-        return "(${getMappedLabel(node.spelling)})"
+        return if (node.getType() == LocalNeighbourhoodType) {
+            "(${getMappedLabel(node.spelling)}(worldView))"
+        } else {
+            "(${getMappedLabel(node.spelling)})"
+        }
     }
 
     override fun visit(node: ModuloExpr): String {
@@ -566,7 +569,18 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: FuncCallExpr): String {
-        return "(${getMappedLabel(node.ident)}())"
+        val builder = StringBuilder("(${getMappedLabel(node.ident)}(")
+
+        // Arguments
+        for ((i, arg) in node.args.withIndex()) {
+            if (i > 0) {
+                builder.append(", ")
+            }
+            builder.append(visit(arg))
+        }
+
+        builder.append("))")
+        return builder.toString()
     }
 
     override fun visit(node: ArrayLiteralExpr): String {

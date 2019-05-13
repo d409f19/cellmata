@@ -416,11 +416,11 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     }
 
     override fun visit(node: IntToFloatConversion) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        visit(node.expr)
     }
 
     override fun visit(node: StateArrayToLocalNeighbourhoodConversion) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        visit(node.expr)
     }
 }
 
