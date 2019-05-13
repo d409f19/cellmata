@@ -109,7 +109,8 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         Timer().scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
 
-                // Iterate the grid from top to bottom, imitating a progressive scan
+                // Iterate the grid from top to bottom, imitating a progressive scan,
+                // find each cell's new state, and draw the new state
                 for ((y, column) in grid.withIndex()) {
                     for ((x, state) in column.withIndex()) {
                         // Find new state by executing the state's logic. If the logic does not return a StateDecl
