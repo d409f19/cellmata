@@ -23,6 +23,9 @@ class KotlinCodegenError_FoundUndeterminedType : KotlinCodegenError()
 
 class KotlinCodegenError_FoundNoSubtypeType : KotlinCodegenError()
 
+class KotlinCodegenError_Unreachable: KotlinCodegenError()
+
+
 class KotlinCodegen : ASTVisitor<String> {
     /**
      * String used for indentation in emitted code
@@ -419,7 +422,7 @@ class KotlinCodegen : ASTVisitor<String> {
 
     override fun visit(node: Coordinate): String {
         // Should be unreachable
-        TODO("not implemented")
+        throw KotlinCodegenError_Unreachable()
     }
 
     override fun visit(node: FuncDecl): String {
@@ -785,17 +788,17 @@ class KotlinCodegen : ASTVisitor<String> {
 
     override fun visit(node: FunctionArgument): String {
         // Should be unreachable
-        TODO("not implemented")
+        throw KotlinCodegenError_Unreachable()
     }
 
     override fun visit(node: WorldNode): String {
         // Should be unreachable
-        TODO("not implemented")
+        throw KotlinCodegenError_Unreachable()
     }
 
     override fun visit(node: WorldDimension): String {
         // Should be unreachable
-        TODO("not implemented")
+        throw KotlinCodegenError_Unreachable()
     }
 
     override fun visit(node: ForLoopStmt): String {
