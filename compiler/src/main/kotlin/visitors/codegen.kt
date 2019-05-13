@@ -17,6 +17,12 @@ class KotlinCodegen_FoundUncheckedType : KotlinCodegenError()
 
 class KotlinCodegen_FoundUndefinedWorldType : KotlinCodegenError()
 
+class KotlinCodegenError_FoundUnknownLookupType : KotlinCodegenError()
+
+class KotlinCodegenError_FoundUndeterminedType : KotlinCodegenError()
+
+class KotlinCodegenError_FoundNoSubtypeType : KotlinCodegenError()
+
 class KotlinCodegen : ASTVisitor<String> {
     /**
      * String used for indentation in emitted code
@@ -35,6 +41,11 @@ class KotlinCodegen : ASTVisitor<String> {
      * Acts like symbol table in that it keeps track of mapping labels to states, and tracking scopes.
      */
     private var mapping: Stack<Map<String, String>> = Stack()
+
+    /**
+     * Number of dimensions
+     */
+    private var dimCount = 0
 
     init {
         mapping.push(mutableMapOf())
@@ -169,6 +180,87 @@ class KotlinCodegen : ASTVisitor<String> {
         return builder.toString()
     }
 
+    private fun emitBaseStateLookup(states: List<StateDecl>): String {
+        val builder = StringBuilder()
+
+        builder.append("""
+            fun baseStateLookup(state: Int): Int {
+            ${INDENT}when(state) {
+        """.trimIndent())
+
+        states.forEach {
+            val baseId = stateIDs[it.ident]!!
+            for (stateId in baseId until baseId + it.multiStateCount) {
+                builder.append("$INDENT$INDENT$stateId -> $baseId")
+            }
+        }
+
+        builder.append("""
+            $INDENT}
+            }
+        """.trimIndent())
+
+        return builder.toString()
+    }
+
+    private fun emitMultiStateIndexLookup(states: List<StateDecl>): String {
+        val builder = StringBuilder()
+
+        builder.append("""
+            fun baseMultiStateIndexLookup(state: Int): Int {
+            ${INDENT}when(state) {
+        """.trimIndent())
+
+        states.forEach {
+            val baseId = stateIDs[it.ident]!!
+            for (x in 0 until it.multiStateCount) {
+                builder.append("$INDENT$INDENT${baseId + x} -> $x")
+            }
+        }
+
+        builder.append("""
+            $INDENT}
+            }
+        """.trimIndent())
+
+        return builder.toString()
+    }
+
+    private fun emitMultiStateLookup(states: List<StateDecl>): String {
+        val builder = StringBuilder()
+
+        builder.append("""
+            fun baseMultiStateLookup(state: Int, index: Int): Int {
+
+            if (index < 0) {
+            ${INDENT}throw Error()
+            }
+
+            val baseId = baseStateLookup(state)
+            ${INDENT}return when(baseId) {
+        """.trimIndent())
+
+        states.forEach {
+            val baseId = stateIDs[it.ident]!!
+            builder.append("""
+                $INDENT$INDENT$baseId -> {
+                $INDENT$INDENT${INDENT}if(index >= ${it.multiStateCount}) {
+                $INDENT$INDENT$INDENT${INDENT}throw Error()
+                $INDENT$INDENT}
+                $INDENT${INDENT}$baseId + index
+                $INDENT}
+                """.trimIndent())
+        }
+
+        builder.append("""
+            $INDENT${INDENT}else -> throw Error()
+            $INDENT}
+            }
+        """.trimIndent())
+
+        return builder.toString()
+    }
+
     /**
      * Emit Kotlin equivalent type identifiers
      */
@@ -181,8 +273,8 @@ class KotlinCodegen : ASTVisitor<String> {
             LocalNeighbourhoodType -> "List<Int>"
             is ArrayType -> "MutableList<${toKotlinType(type.subtype)}>"
             UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
-            UndeterminedType -> TODO()
-            NoSubtypeType -> TODO()
+            UndeterminedType -> throw KotlinCodegenError_FoundUndeterminedType()
+            NoSubtypeType -> throw KotlinCodegenError_FoundNoSubtypeType()
         }
     }
 
@@ -197,13 +289,14 @@ class KotlinCodegen : ASTVisitor<String> {
         addMapping("root", "`builtin root`")
         addMapping("pow", "`builtin pow`")
 
+        dimCount = node.world.dimensions.size
+
         // For each state create an associated integer identifier, and label mapping that will be used in the final program
         var stateCounter = 0
         node.body.filterIsInstance<StateDecl>().forEach {
-            // ToDo multi-states
             stateIDs[it.ident] = stateCounter
             addMapping(it.ident, stateCounter.toString())
-            stateCounter += 1
+            stateCounter += it.multiStateCount
         }
 
 
@@ -232,6 +325,10 @@ class KotlinCodegen : ASTVisitor<String> {
 
         // Emit state dispatcher
         builder.appendln(emitDispatcher().prependIndent(INDENT))
+
+        // Multi-state
+        builder.appendln(emitBaseStateLookup(node.body.filterIsInstance<StateDecl>()).prependIndent(INDENT))
+        builder.appendln(emitMultiStateLookup(node.body.filterIsInstance<StateDecl>()).prependIndent(INDENT))
 
         // Emit the cell program
         node.body.forEach { builder.appendln(visit(it).prependIndent(INDENT) + ";") }
@@ -272,8 +369,6 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: StateDecl): String {
-        // ToDo multi-state
-
         val builder = StringBuilder()
 
         builder.appendln("fun state_${stateIDs[node.ident]}(worldView: IWorldView): Int {")
@@ -334,11 +429,9 @@ class KotlinCodegen : ASTVisitor<String> {
         node.args.forEach { addMapping(it.ident, nextLabel()) }
 
         openScope()
-        builder.append("fun ${getMappedLabel(node.ident)}(")
+        builder.append("fun ${getMappedLabel(node.ident)}(worldView: WorldView")
         node.args.forEachIndexed { i, it ->
-            if (i > 0) {
-                builder.append(", ")
-            }
+            builder.append(", ")
             builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.type)}")
         }
         builder.appendln("): ${toKotlinType(node.returnType)} {")
@@ -516,8 +609,8 @@ class KotlinCodegen : ASTVisitor<String> {
                             )
                         }
                         UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
-                        UndeterminedType -> TODO()
-                        NoSubtypeType -> TODO()
+                        UndeterminedType -> throw KotlinCodegenError_FoundUndeterminedType()
+                        NoSubtypeType -> throw KotlinCodegenError_FoundNoSubtypeType()
                     }
                 } else {
                     // Note: values is either null, or we have emitted all specified values and the remainder of values is the default value for the type
@@ -534,8 +627,8 @@ class KotlinCodegen : ASTVisitor<String> {
                             null
                         )
                         UncheckedType -> throw KotlinCodegen_FoundUncheckedType()
-                        UndeterminedType -> TODO()
-                        NoSubtypeType -> TODO()
+                        UndeterminedType -> throw KotlinCodegenError_FoundUndeterminedType()
+                        NoSubtypeType -> throw KotlinCodegenError_FoundNoSubtypeType()
                     }
                 }
             )
@@ -548,9 +641,9 @@ class KotlinCodegen : ASTVisitor<String> {
         return when (node.lookupType) {
             LookupExprType.ARRAY, LookupExprType.NEIGHBOURHOOD -> "(${visit(node.target)}[${visit(node.index)}])"
             LookupExprType.MULTI_STATE -> {
-                "(${visit(node.target)})" // TODO Determine state based on index
+                "(multiStateLookup((${visit(node.target)}), (${visit(node.index)})))"
             }
-            LookupExprType.UNKNOWN -> TODO()
+            LookupExprType.UNKNOWN -> throw KotlinCodegenError_FoundUnknownLookupType()
         }
     }
 
@@ -590,11 +683,19 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: StateIndexExpr): String {
-        /*
-         * Idea: Emit a when statement that know based on the state id
-         * which multi-state the state belongs to and the multi-state index
-         */
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val builder = StringBuilder()
+        builder.append("(multiStateIndexLookup(worldView.getCell(")
+
+        for (i in 0 until dimCount) {
+            if (i > 0) {
+                builder.append(", ")
+            }
+            builder.append("0")
+        }
+
+        builder.append(")))")
+
+        return builder.toString()
     }
 
     override fun visit(node: IntLiteral): String {
