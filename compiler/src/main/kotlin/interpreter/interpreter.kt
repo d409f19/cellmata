@@ -128,10 +128,8 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
                     }
                 }
 
-                // Swap the grids
-                val tmp = grid
-                grid = nextGrid
-                nextGrid = tmp
+                // Swap the grids using inline swap
+                grid = nextGrid.also { nextGrid = grid }
             }
         }, 0, (1000f / tickrate).toLong())
 
