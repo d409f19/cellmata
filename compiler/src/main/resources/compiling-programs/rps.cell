@@ -1,0 +1,29 @@
+world {
+    size = 100 [wrap], 100 [wrap];
+    tickrate = 20;
+    cellsize = 5;
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Rock (0, 0, 255) {
+    if (count(Paper, Moore) > 2) {
+        become Paper;
+    }
+}
+
+state Paper (0, 255, 0) {
+    if (count(Scissors, Moore) > 2) {
+        become Scissors;
+    }
+}
+
+state Scissors (255, 0, 0) {
+    if (count(Rock, Moore) > 2) {
+        become Rock;
+    }
+}
