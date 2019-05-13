@@ -245,7 +245,7 @@ class KotlinCodegen : ASTVisitor<String> {
             fun baseMultiStateLookup(state: Int, index: Int): Int {
 
             if (index < 0) {
-            ${INDENT}throw Error()
+            ${INDENT}throw IndexOutOfBoundsException()
             }
 
             val baseId = baseStateLookup(state)
@@ -257,7 +257,7 @@ class KotlinCodegen : ASTVisitor<String> {
             builder.append("""
                 $INDENT$INDENT$baseId -> {
                 $INDENT$INDENT${INDENT}if(index >= ${it.multiStateCount}) {
-                $INDENT$INDENT$INDENT${INDENT}throw Error()
+                $INDENT$INDENT$INDENT${INDENT}throw IndexOutOfBoundsException()
                 $INDENT$INDENT}
                 $INDENT${INDENT}$baseId + index
                 $INDENT}
