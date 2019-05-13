@@ -12,9 +12,6 @@ class GraphicalDriver(private val worldConfig: WorldConfiguration, program: IPro
     override fun run() {
         assert(worldConfig.dims.size == 2)
 
-        val cellSize = worldConfig.cellSize
-        val tickrate = worldConfig.tickrate
-
         val frame = JFrame("Cellmata")
         val panel = frame.add(JPanel())
         panel.preferredSize = Dimension(
@@ -38,7 +35,7 @@ class GraphicalDriver(private val worldConfig: WorldConfiguration, program: IPro
                 update()
                 drawWorld(g)
             }
-        }, 0, (1000F / tickrate).toLong())
+        }, 0, (1000F / worldConfig.tickrate).toLong())
     }
 
     fun drawWorld(g: Graphics2D) {
