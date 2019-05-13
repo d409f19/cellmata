@@ -88,10 +88,11 @@ class KotlinCodegen : ASTVisitor<String> {
      */
     private fun emitDispatcher(): String {
         val builder = StringBuilder()
+
         builder.appendln(
             """
             override fun updateCell(worldView: IWorldView): Int {
-            ${INDENT}return when(worldView.getCell(0, 0)) {
+            ${INDENT}return when(getCurrentState(worldView)) {
         """.trimIndent()
         )
 
@@ -189,19 +190,20 @@ class KotlinCodegen : ASTVisitor<String> {
     private fun emitBaseStateLookup(states: List<StateDecl>): String {
         val builder = StringBuilder()
 
-        builder.append("""
+        builder.appendln("""
             fun baseStateLookup(state: Int): Int {
-            ${INDENT}when(state) {
+            ${INDENT}return when(state) {
         """.trimIndent())
 
         states.forEach {
             val baseId = stateIDs[it.ident]!!
             for (stateId in baseId until baseId + it.multiStateCount) {
-                builder.append("$INDENT$INDENT$stateId -> $baseId")
+                builder.appendln("$INDENT$INDENT$stateId -> $baseId")
             }
         }
 
         builder.append("""
+            $INDENT${INDENT}else -> throw Error()
             $INDENT}
             }
         """.trimIndent())
@@ -215,7 +217,7 @@ class KotlinCodegen : ASTVisitor<String> {
     private fun emitMultiStateIndexLookup(states: List<StateDecl>): String {
         val builder = StringBuilder()
 
-        builder.append("""
+        builder.appendln("""
             fun baseMultiStateIndexLookup(state: Int): Int {
             ${INDENT}when(state) {
         """.trimIndent())
@@ -223,7 +225,7 @@ class KotlinCodegen : ASTVisitor<String> {
         states.forEach {
             val baseId = stateIDs[it.ident]!!
             for (x in 0 until it.multiStateCount) {
-                builder.append("$INDENT$INDENT${baseId + x} -> $x")
+                builder.appendln("$INDENT$INDENT${baseId + x} -> $x")
             }
         }
 
@@ -241,27 +243,27 @@ class KotlinCodegen : ASTVisitor<String> {
     private fun emitMultiStateLookup(states: List<StateDecl>): String {
         val builder = StringBuilder()
 
-        builder.append("""
+        builder.appendln("""
             fun baseMultiStateLookup(state: Int, index: Int): Int {
 
-            if (index < 0) {
-            ${INDENT}throw IndexOutOfBoundsException()
-            }
+            ${INDENT}if (index < 0) {
+            $INDENT${INDENT}throw IndexOutOfBoundsException()
+            $INDENT}
 
-            val baseId = baseStateLookup(state)
+            ${INDENT}val baseId = baseStateLookup(state)
             ${INDENT}return when(baseId) {
         """.trimIndent())
 
         states.forEach {
             val baseId = stateIDs[it.ident]!!
-            builder.append("""
-                $INDENT$INDENT$baseId -> {
-                $INDENT$INDENT${INDENT}if(index >= ${it.multiStateCount}) {
-                $INDENT$INDENT$INDENT${INDENT}throw IndexOutOfBoundsException()
-                $INDENT$INDENT}
-                $INDENT${INDENT}$baseId + index
+            builder.appendln("""
+                $baseId -> {
+                ${INDENT}if(index >= ${it.multiStateCount}) {
+                $INDENT${INDENT}throw IndexOutOfBoundsException()
                 $INDENT}
-                """.trimIndent())
+                $INDENT$baseId + index
+                }
+                """.trimIndent().prependIndent(INDENT.repeat(2)))
         }
 
         builder.append("""
@@ -269,6 +271,27 @@ class KotlinCodegen : ASTVisitor<String> {
             $INDENT}
             }
         """.trimIndent())
+
+        return builder.toString()
+    }
+
+    private fun emitGetCurrentState(): String {
+        val builder = StringBuilder()
+
+        builder.appendln("fun getCurrentState(worldView: IWorldView): Int {")
+
+        builder.append("${INDENT}return (worldView.getCell(")
+
+        for (i in 0 until dimCount) {
+            if (i > 0) {
+                builder.append(", ")
+            }
+            builder.append("0")
+        }
+
+        builder.appendln("))")
+
+        builder.append("}")
 
         return builder.toString()
     }
@@ -341,6 +364,7 @@ class KotlinCodegen : ASTVisitor<String> {
         // Multi-state
         builder.appendln(emitBaseStateLookup(node.body.filterIsInstance<StateDecl>()).prependIndent(INDENT))
         builder.appendln(emitMultiStateLookup(node.body.filterIsInstance<StateDecl>()).prependIndent(INDENT))
+        builder.appendln(emitGetCurrentState().prependIndent(INDENT))
 
         // Emit the cell program
         node.body.forEach { builder.appendln(visit(it).prependIndent(INDENT) + ";") }
@@ -387,6 +411,8 @@ class KotlinCodegen : ASTVisitor<String> {
 
         builder.append(visit(node.body).prependIndent(INDENT))
 
+        builder.appendln("return getCurrentState(worldView)")
+
         builder.append("}")
 
         return builder.toString()
@@ -404,7 +430,7 @@ class KotlinCodegen : ASTVisitor<String> {
         )
 
         node.coords.forEachIndexed { i, it ->
-            builder.append("${INDENT}worldView.getCell(")
+            builder.append("$INDENT${INDENT}worldView.getCell(")
             it.axes.forEachIndexed { o, that ->
                 if (o > 0) {
                     builder.append(",")
@@ -413,7 +439,7 @@ class KotlinCodegen : ASTVisitor<String> {
             }
             builder.append(")")
             if (i < node.coords.size - 1) {
-                builder.append(",")
+                builder.appendln(",")
             } else {
                 builder.appendln()
             }
@@ -694,19 +720,7 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: StateIndexExpr): String {
-        val builder = StringBuilder()
-        builder.append("(multiStateIndexLookup(worldView.getCell(")
-
-        for (i in 0 until dimCount) {
-            if (i > 0) {
-                builder.append(", ")
-            }
-            builder.append("0")
-        }
-
-        builder.append(")))")
-
-        return builder.toString()
+        return "(multiStateIndexLookup(getCurrentState(worldView)))"
     }
 
     override fun visit(node: IntLiteral): String {
