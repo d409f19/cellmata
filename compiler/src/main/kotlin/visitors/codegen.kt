@@ -25,7 +25,7 @@ class KotlinCodegen : ASTVisitor<String> {
     /**
      * Maps states names to an unique integer identifier
      */
-    private var stateIDs: Map<String, Int> = mutableMapOf()
+    private var stateIDs: MutableMap<String, Int> = mutableMapOf()
     /**
      * Used to keep track of the next available label
      */
@@ -187,22 +187,21 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: RootNode): String {
-        // ToDo write implementation of builtins
-        addMapping("count", nextLabel())
-        addMapping("randi", nextLabel())
-        addMapping("randf", nextLabel())
-        addMapping("absi", nextLabel())
-        addMapping("absf", nextLabel())
-        addMapping("floor", nextLabel())
-        addMapping("ceil", nextLabel())
-        addMapping("root", nextLabel())
-        addMapping("pow", nextLabel())
+        addMapping("count", "`builtin count`")
+        addMapping("randi", "`builtin randi`")
+        addMapping("randf", "`builtin randf`")
+        addMapping("absi", "`builtin absi`")
+        addMapping("absf", "`builtin absf`")
+        addMapping("floor", "`builtin floor`")
+        addMapping("ceil", "`builtin ceil`")
+        addMapping("root", "`builtin root`")
+        addMapping("pow", "`builtin pow`")
 
-        // For each state create an associated integer indentifier, and label mapping that will be used in the final program
+        // For each state create an associated integer identifier, and label mapping that will be used in the final program
         var stateCounter = 0
         node.body.filterIsInstance<StateDecl>().forEach {
             // ToDo multi-states
-            stateIDs = stateIDs.plus(pair = Pair(it.ident, stateCounter))
+            stateIDs[it.ident] = stateCounter
             addMapping(it.ident, stateCounter.toString())
             stateCounter += 1
         }
@@ -277,11 +276,7 @@ class KotlinCodegen : ASTVisitor<String> {
 
         val builder = StringBuilder()
 
-        builder.appendln(
-            """
-            fun state_${stateIDs[node.ident]}(worldView: IWorldView): Int {
-        """.trimIndent()
-        )
+        builder.appendln("fun state_${stateIDs[node.ident]}(worldView: IWorldView): Int {")
 
         builder.append(visit(node.body).prependIndent(INDENT))
 
@@ -344,7 +339,7 @@ class KotlinCodegen : ASTVisitor<String> {
             if (i > 0) {
                 builder.append(", ")
             }
-            builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.getType())}")
+            builder.append("${getMappedLabel(it.ident)}: ${toKotlinType(it.type)}")
         }
         builder.appendln("): ${toKotlinType(node.returnType)} {")
         builder.append(visit(node.body).prependIndent(INDENT))
@@ -362,7 +357,7 @@ class KotlinCodegen : ASTVisitor<String> {
             is BinaryExpr -> visit(node)
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
-            is ArrayLookupExpr -> visit(node)
+            is LookupExpr -> visit(node)
             is SizedArrayExpr -> visit(node)
             is ArrayLiteralExpr -> visit(node)
             is Identifier -> visit(node)
@@ -375,6 +370,14 @@ class KotlinCodegen : ASTVisitor<String> {
             is StateArrayToLocalNeighbourhoodConversion -> visit(node)
             is ErrorExpr -> throw KotlinCodegen_ErrorExpr()
         }
+    }
+
+    override fun visit(node: IntToFloatConversion): String {
+        return "((${visit(node.expr)}).toFloat())"
+    }
+
+    override fun visit(node: StateArrayToLocalNeighbourhoodConversion): String {
+        return "((${visit(node.expr)}).toList())"
     }
 
     override fun visit(node: BinaryExpr): String {
@@ -541,8 +544,14 @@ class KotlinCodegen : ASTVisitor<String> {
         return builder.toString()
     }
 
-    override fun visit(node: ArrayLookupExpr): String {
-        return "(${visit(node.arr)}[${visit(node.index)}])"
+    override fun visit(node: LookupExpr): String {
+        return when (node.lookupType) {
+            LookupExprType.ARRAY, LookupExprType.NEIGHBOURHOOD -> "(${visit(node.target)}[${visit(node.index)}])"
+            LookupExprType.MULTI_STATE -> {
+                "(${visit(node.target)})" // TODO Determine state based on index
+            }
+            LookupExprType.UNKNOWN -> TODO()
+        }
     }
 
     override fun visit(node: SizedArrayExpr): String {
@@ -550,7 +559,11 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: Identifier): String {
-        return "(${getMappedLabel(node.spelling)})"
+        return if (node.getType() == LocalNeighbourhoodType) {
+            "(${getMappedLabel(node.spelling)}(worldView))"
+        } else {
+            "(${getMappedLabel(node.spelling)})"
+        }
     }
 
     override fun visit(node: ModuloExpr): String {
@@ -558,7 +571,18 @@ class KotlinCodegen : ASTVisitor<String> {
     }
 
     override fun visit(node: FuncCallExpr): String {
-        return "(${getMappedLabel(node.ident)}())"
+        val builder = StringBuilder("(${getMappedLabel(node.ident)}(")
+
+        // Arguments
+        for ((i, arg) in node.args.withIndex()) {
+            if (i > 0) {
+                builder.append(", ")
+            }
+            builder.append(visit(arg))
+        }
+
+        builder.append("))")
+        return builder.toString()
     }
 
     override fun visit(node: ArrayLiteralExpr): String {

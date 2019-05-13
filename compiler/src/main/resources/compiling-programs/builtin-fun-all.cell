@@ -1,0 +1,21 @@
+world {
+    size = 100 [wrap], 100 [wrap];
+    tickrate = 1;
+    cellsize = 5;
+}
+
+neighbourhood nei {
+    (-1, 1), (0, 1), (1, 1)
+}
+
+state ident (0, 0, 0) {
+    let a = count(ident, nei);
+    let b = absi(-a);
+    let c = 0.65 * pow(1.3, b);
+    let d = absf(-c);
+    let e = floor(c);
+    let f = ceil(d);
+    let g = root(e + f * 2, 2);
+    let h = randi(3, 10);
+    let i = randf(-1, 1);
+}

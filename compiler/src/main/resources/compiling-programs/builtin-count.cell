@@ -1,5 +1,5 @@
 world {
-    size = 100 [wrap], 200 [wrap];
+    size = 100 [wrap], 140 [wrap];
     tickrate = 1;
     cellsize = 5;
 }

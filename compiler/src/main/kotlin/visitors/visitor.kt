@@ -60,7 +60,7 @@ interface ASTVisitor<R> {
 
     fun visit(node: NotExpr): R
 
-    fun visit(node: ArrayLookupExpr): R
+    fun visit(node: LookupExpr): R
 
     fun visit(node: SizedArrayExpr): R
 
@@ -107,6 +107,10 @@ interface ASTVisitor<R> {
     fun visit(node: ContinueStmt): R
 
     fun visit(node: CodeBlock): R
+
+    fun visit(node: IntToFloatConversion): R
+
+    fun visit(node: StateArrayToLocalNeighbourhoodConversion): R
 }
 
 /**
@@ -187,7 +191,7 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
             is BinaryExpr -> visit(node)
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
-            is ArrayLookupExpr -> visit(node)
+            is LookupExpr -> visit(node)
             is SizedArrayExpr -> visit(node)
             is Identifier -> visit(node)
             is FuncCallExpr -> visit(node)
@@ -310,8 +314,8 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
         visit(node.value)
     }
 
-    override fun visit(node: ArrayLookupExpr) {
-        visit(node.arr)
+    override fun visit(node: LookupExpr) {
+        visit(node.target)
         visit(node.index)
     }
 
@@ -409,6 +413,14 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
 
     override fun visit(node: CodeBlock) {
         node.body.forEach { visit(it) }
+    }
+
+    override fun visit(node: IntToFloatConversion) {
+        visit(node.expr)
+    }
+
+    override fun visit(node: StateArrayToLocalNeighbourhoodConversion) {
+        visit(node.expr)
     }
 }
 

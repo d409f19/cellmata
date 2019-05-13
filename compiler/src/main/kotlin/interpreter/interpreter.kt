@@ -135,7 +135,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
             is BinaryExpr -> visit(node)
             is NegationExpr -> visit(node)
             is NotExpr -> visit(node)
-            is ArrayLookupExpr -> visit(node)
+            is LookupExpr -> visit(node)
             is Identifier -> visit(node)
             is FuncCallExpr -> visit(node)
             is StateIndexExpr -> visit(node)
@@ -402,17 +402,31 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         return !(visit(node.value) as Boolean)
     }
 
-    override fun visit(node: ArrayLookupExpr): Any {
-        val arr = visit(node.arr)
-        val index = visit(node.index) as Int
-        return when (arr) {
+    override fun visit(node: LookupExpr): Any {
+        return when (node.lookupType) {
             // Multi-state
-            is StateValue -> StateValue(arr.decl, index)
+            LookupExprType.MULTI_STATE -> {
+                val state = visit(node.target) as StateValue
+                val index = visit(node.index) as Int
+                StateValue(state.decl, index)
+            }
+
             // Neighbourhood
-            is List<*> -> arr[index]!!
+            LookupExprType.NEIGHBOURHOOD -> {
+                val list = visit(node.target) as List<*>
+                val index = visit(node.index) as Int
+                list[index]!!
+            }
+
             // Array
-            is MutableList<*> -> arr[index]!!
-            else -> throw AssertionError("Trying to lookup in ${arr.javaClass}")
+            LookupExprType.ARRAY -> {
+                val list = visit(node.target) as MutableList<*>
+                val index = visit(node.index) as Int
+                list[index]!!
+            }
+
+            // Error
+            LookupExprType.UNKNOWN -> throw InterpretRuntimeException("Could not determined lookup method.")
         }
     }
 
@@ -587,5 +601,13 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         }
         stack.closeScope()
         return result
+    }
+
+    override fun visit(node: IntToFloatConversion): Any {
+        return (visit(node.expr) as Int).toFloat()
+    }
+
+    override fun visit(node: StateArrayToLocalNeighbourhoodConversion): Any {
+        return (visit(node.expr) as List<*>).toMutableList()
     }
 }

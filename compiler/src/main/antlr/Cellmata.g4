@@ -23,7 +23,7 @@ world_cellsize : WORLD_CELLSIZE ASSIGN value=integer_literal END ;
 world_edge : WORLD_EDGE ASSIGN state=IDENT END ;
 
 // State
-state_decl : STMT_STATE state_ident (SQ_BRACKET_START integer_literal SQ_BRACKET_END)? state_rgb code_block ;
+state_decl : STMT_STATE state_ident (SQ_BRACKET_START multiStateCount=integer_literal SQ_BRACKET_END)? state_rgb code_block ;
 state_ident : IDENT ;
 state_rgb : PAREN_START red=integer_literal LIST_SEP green=integer_literal LIST_SEP blue=integer_literal PAREN_END ;
 
@@ -101,7 +101,7 @@ expr : '#' # stateIndexExpr
     | PAREN_START value=expr PAREN_END # parenExpr
     | value=array_value_sized # arraySizedValueExpr
     | value=array_value_literal # arrayLiteralExpr
-    | value=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # arrayLookupExpr
+    | target=expr SQ_BRACKET_START index=expr SQ_BRACKET_END # lookupExpr
     | OP_NOT value=expr # notExpr
     | OP_MINUS value=expr # negationExpr
     | left=expr OP_MODULO right=expr # moduloExpr

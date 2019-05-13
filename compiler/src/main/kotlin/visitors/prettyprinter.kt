@@ -104,7 +104,7 @@ class PrettyPrinter : BaseASTVisitor() {
      */
     override fun visit(node: StateDecl) {
         // Print signature of state. TODO: must take multi-state-declaration into account when implemented
-        stringBuilder.appendln("state ${node.ident} (${node.red}, ${node.green}, ${node.blue}) {")
+        stringBuilder.appendln("state ${node.ident}[${node.multiStateCount}] (${node.red}, ${node.green}, ${node.blue}) {")
 
         // Print body
         visit(node.body)
@@ -146,7 +146,7 @@ class PrettyPrinter : BaseASTVisitor() {
      * Print a formal argument of a function declaration
      */
     override fun visit(node: FunctionArgument) {
-        stringBuilder.append("${node.getType()} ${node.ident}")
+        stringBuilder.append("${node.type} ${node.ident}")
     }
 
     override fun visit(node: NeighbourhoodDecl) {
@@ -410,9 +410,9 @@ class PrettyPrinter : BaseASTVisitor() {
         visit(node.value)
     }
 
-    override fun visit(node: ArrayLookupExpr) {
+    override fun visit(node: LookupExpr) {
         // First print array expression
-        visit(node.arr)
+        visit(node.target)
 
         // Lastly print index expression within brackets
         stringBuilder.append("[")

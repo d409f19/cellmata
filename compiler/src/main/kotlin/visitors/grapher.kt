@@ -65,7 +65,11 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
     }
 
     override fun visit(node: StateDecl) {
-        printLabel(node, "State\\n" + node.ident + "\\nred=" + node.red + "\\ngreen=" + node.green + "\\nblue=" + node.blue)
+        printLabel(node, "State\\n${node.ident}\\n" +
+                "count=${node.multiStateCount}" +
+                "red=${node.red}\\n" +
+                "green=${node.green}\\n" +
+                "blue=${node.blue}\\n")
         printNode(node, node.body)
         depth++
         super.visit(node)
@@ -188,8 +192,8 @@ class ASTGrapher(sink: OutputStream, private val output: PrintStream = PrintStre
         super.visit(node)
     }
 
-    override fun visit(node: ArrayLookupExpr) {
-        printLabel(node, "ArrayLookupExpr")
+    override fun visit(node: LookupExpr) {
+        printLabel(node, "LookupExpr")
         printNode(node, node.index)
         super.visit(node)
     }

@@ -44,7 +44,7 @@ class SymbolTest {
     fun assignStmtLiteralPassTest(value: String) {
 
         val compilerData =
-            compileTestProgram(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let x = $value;"), settings = CompilerSettings())
+            compileTestProgramKotlin(getWorldDeclString() + "\n\n" + getStateDeclString(body = "let x = $value;"))
 
         // Ensure that symbol table actually exists
         assertNotNull(compilerData.symbolTable)
@@ -100,7 +100,8 @@ class SymbolTest {
             Arguments.of("x", listOf("4", "2+2")),
             Arguments.of("x", listOf("true", "5")),
             Arguments.of("x", listOf("false", "-42.5")),
-            Arguments.of("x", listOf("-42.5", "42.5"))
+            Arguments.of("x", listOf("-42.5", "42.5")),
+            Arguments.of("x", listOf("-42.5", "true"))
         )
     }
 
@@ -117,32 +118,25 @@ class SymbolTest {
     @MethodSource("symbolRedefinitionFailData")
     fun symbolRedefinitionFailTest(ident: String, values: List<String>) {
         val stringBuilder = StringBuilder()
-        // For each value, create assignment expression with equal identifier and given value
-        values.forEach {
-            stringBuilder.appendln("let $ident = $it;")
-        }
+        // For each value, create assignment expression with equal identifier and value
+        values.forEach { stringBuilder.appendln("let $ident = $it;") }
 
         // Compile boilerplate program with state having the constructed body
-        compileTestProgramParserASTInsecure(getWorldDeclString() + getStateDeclString(body = stringBuilder.toString()))
+        compileTestProgramInsecure(getWorldDeclString() + getStateDeclString(body = stringBuilder.toString()))
+
+        assertTrue(ErrorLogger.hasErrors(), "ErrorLogger is empty when expecting errors")
 
         // For each error recorded, assert that error is of SymbolRedefinitionError-type and with given identifier
         ErrorLogger.allErrors().forEach {
-            try {
-                assertTrue(
-                    it is SymbolRedefinitionError,
-                    "Class assertion error at: $it"
-                ) /* If class is not a SymbolRedefinitionError,
-                     AssertionFailedException is thrown with message on error if 'is'-keyword assertion fails */
-                assertTrue(
-                    (it as SymbolRedefinitionError).ident == ident,
-                    "Identifier error at: $it"
-                ) /* If identifier of SymbolRedefinitionError, which is the identifier of the given symbol
-                     which is redefined, is not equal to the actual identifier passed, then assertion fails */
-            } catch (e: AssertionFailedError) {
-                fail("AssertionFailedError: $it was not a SymbolRedefinitionError")
-            }
-
+            assertTrue(
+                it is SymbolRedefinitionError,
+                "Class assertion error at: $it"
+            ) // If class is not a SymbolRedefinitionError, AssertionFailedException is thrown
+            assertTrue(
+                (it as SymbolRedefinitionError).ident == ident,
+                "Identifier error at: $it"
+            ) /* If identifier of SymbolRedefinitionError is not equal to the
+                    actual identifier passed, AssertionFailedException is thrown*/
         }
-
     }
 }

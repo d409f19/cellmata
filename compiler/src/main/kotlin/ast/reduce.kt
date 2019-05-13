@@ -124,9 +124,9 @@ private fun reduceExpr(node: ParseTree): Expr {
             ctx = SourceContext(node),
             value = reduceExpr(node.value)
         )
-        is CellmataParser.ArrayLookupExprContext -> ArrayLookupExpr(
+        is CellmataParser.LookupExprContext -> LookupExpr(
             ctx = SourceContext(node),
-            arr = reduceExpr(node.value),
+            target = reduceExpr(node.target),
             index = reduceExpr(node.index)
         )
         is CellmataParser.ParenExprContext -> reduceExpr(node.expr())
@@ -233,6 +233,7 @@ private fun reduceDecl(node: ParseTree): Decl {
         is CellmataParser.State_declContext -> StateDecl(
             ctx = SourceContext(node),
             ident = node.state_ident().text,
+            multiStateCount = node.multiStateCount?.text?.toInt() ?: 1,
             red = parseColor(node.state_rgb().red),
             green = parseColor(node.state_rgb().green),
             blue = parseColor(node.state_rgb().blue),

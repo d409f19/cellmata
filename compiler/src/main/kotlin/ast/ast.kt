@@ -217,10 +217,15 @@ class NotExpr(
     val value: Expr
 ) : Expr(ctx)
 
-class ArrayLookupExpr(
+enum class LookupExprType {
+    UNKNOWN, MULTI_STATE, NEIGHBOURHOOD, ARRAY
+}
+
+class LookupExpr(
     ctx: SourceContext,
-    val arr: Expr,
-    val index: Expr
+    val target: Expr,
+    val index: Expr,
+    var lookupType: LookupExprType = LookupExprType.UNKNOWN // Determined during type-checking
 ) : Expr(ctx)
 
 /**
@@ -328,6 +333,7 @@ class ConstDecl(
 class StateDecl(
     ctx: SourceContext,
     var ident: String,
+    val multiStateCount: Int,
     var red: Int,
     var blue: Int,
     var green: Int,
@@ -359,13 +365,8 @@ class NeighbourhoodDecl(
 class FunctionArgument(
     ctx: SourceContext,
     val ident: String,
-    private var type: Type = UncheckedType
-) : AST(ctx), TypedNode {
-    override fun getType() = type
-    override fun setType(type: Type) {
-        this.type = type
-    }
-}
+    val type: Type = UncheckedType
+) : AST(ctx)
 
 /**
  * Represents a function declaration
@@ -501,12 +502,7 @@ class AssignStmt(
     val expr: Expr,
     var isDeclaration: Boolean,
     private var type: Type = UncheckedType
-) : Stmt(ctx), TypedNode {
-    override fun getType() = type
-    override fun setType(type: Type) {
-        this.type = type
-    }
-}
+) : Stmt(ctx)
 
 /**
  * Represent a block in a if statement that is to be run if expr evaluates to true.
