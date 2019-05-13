@@ -13,12 +13,25 @@ import javax.swing.JPanel
 open class InterpretRuntimeException(msg: String) : RuntimeException(msg)
 class InterpreterVisitException(node: Any) : InterpretRuntimeException("${node.javaClass} should not be visited.")
 
+/**
+ * Custom values used by the interpreter. StateValue is a state and a index (used for multi-states).
+ * When a state is mentioned in the source code, e.g. Alive, a StateValue equal to (Alive, 0) is created.
+ * The LookupExpr affects the index of the state value, e.g. Alive[2] = (Alive, 2)
+ */
 data class StateValue(val decl: StateDecl, val index: Int) {
     override fun toString(): String {
         return "${decl.ident}[$index]"
     }
 }
+
+/**
+ * Special value returned by break-statements
+ */
 object BreakValue
+
+/**
+ * Special value returned by continue-statements
+ */
 object ContinueValue
 
 class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
@@ -30,6 +43,10 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         visit(rootNode)
     }
 
+    /**
+     * Fill MemoryStack with built-in functions, custom functions, neighbourhood-, and state-declarations.
+     * Constants are added last as they can depend on other declarations.
+     */
     private fun prefillMemory(root: RootNode) {
         stack.pushStack()
         // Add built-in functions
@@ -60,18 +77,22 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
 
         prefillMemory(node)
 
+        // Find states and neighbourhoods for later
+        val listOfNgbhs = node.body.filterIsInstance<NeighbourhoodDecl>()
+        val listOfStates = node.body.filterIsInstance<StateDecl>()
+        defaultStateValue = StateValue(listOfStates[0], 0)
+
+        // Find dimensions
         val xDim = node.world.dimensions[0]
         val width = xDim.size
         val yDim = node.world.dimensions[0]
         val height = yDim.size
 
-        val listOfNgbhs = node.body.filterIsInstance<NeighbourhoodDecl>()
-        val listOfStates = node.body.filterIsInstance<StateDecl>()
-        defaultStateValue = StateValue(listOfStates[0], 0)
+        // Setup grids, initial configuration is just random
         var grid = Array(width) { Array(height) { StateValue(listOfStates.random(), 0) } }
         var nextGrid = Array(width) { Array(height) { defaultStateValue!! } }
 
-        // Rendering
+        // Setup rendering
         val cellSize = node.world.cellSize
         val tickrate = node.world.tickrate
         val frame = JFrame("Cellmata")
@@ -107,6 +128,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
                     }
                 }
 
+                // Swap the grids
                 val tmp = grid
                 grid = nextGrid
                 nextGrid = tmp
@@ -116,6 +138,9 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         return Unit
     }
 
+    /**
+     * Determines the local neighbourhoods and stores them in the current scope.
+     */
     private fun declareNeighbourhoods(
         listOfNgbhs: List<NeighbourhoodDecl>,
         grid: Array<Array<StateValue>>,
@@ -132,6 +157,10 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         }
     }
 
+    /**
+     * Modulo but negative numbers wraps to positive, so the result will always be between 0 (inclusive)
+     * and the given divisor (exclusive).
+     */
     infix fun Int.wrap(divisor: Int) = (this % divisor).let { if (it < 0) it + divisor else it }
 
     override fun visit(node: AST): Any {
@@ -492,6 +521,9 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         }
     }
 
+    /**
+     * Returns the default value of a given type, e.g. default integer is 0 and default boolean is false.
+     */
     fun getDefaultArrayValue(type: Type): Any {
         return when (type) {
             IntegerType -> 0
@@ -514,8 +546,10 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
             return callBuiltinFunction(funcDecl, actualArguments)
 
         } else {
+            // Create a new stack as we don't want access to the previous variables
             stack.pushStack()
             stack.openScope()
+            // Map formal arguments to their values
             for ((i, formalArg) in funcDecl.args.withIndex()) {
                 stack.declare(formalArg.ident, actualArguments[i])
             }
@@ -567,11 +601,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     override fun visit(node: IfStmt): Any {
         for (conditionalBlock in node.conditionals) {
             if (visit(conditionalBlock.expr) as Boolean) {
-                val value = visit(conditionalBlock.block)
-                if (value != Unit) {
-                    return value
-                }
-                return Unit
+                return visit(conditionalBlock.block)
             }
         }
         if (node.elseBlock != null) {
@@ -605,12 +635,15 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
     }
 
     override fun visit(node: ForLoopStmt): Any {
+        // The variable declared in the init-part of the for-loop has its own scope as it preserved between iterations
+        // but is forgotten again after the for-loop
         stack.openScope()
         var result: Any = Unit
 
         if (node.initPart != null) visit(node.initPart)
         while (visit(node.condition) as Boolean) {
             val value = visit(node.body)
+            // Some values create special behaviour
             if (value == BreakValue) break
             if (value == ContinueValue) continue
             if (value != Unit) {

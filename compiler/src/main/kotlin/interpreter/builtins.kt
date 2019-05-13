@@ -3,7 +3,11 @@ package dk.aau.cs.d409f19.cellumata.interpreter
 import dk.aau.cs.d409f19.cellumata.ast.*
 import kotlin.random.Random
 
+/**
+ * Calls a builtin function by dispatching to the equivalent kotlin function.
+ */
 fun callBuiltinFunction(funcDecl: BuiltinFunc, arguments: List<Any>): Any {
+    @Suppress("UNCHECKED_CAST")
     return when (funcDecl) {
         BuiltinFuncCount -> builtInCount(arguments[0] as StateValue, arguments[1] as List<StateValue>)
         BuiltinFuncRandi -> builtInRandi(arguments[0] as Int, arguments[1] as Int)
