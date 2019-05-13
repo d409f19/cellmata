@@ -1,7 +1,7 @@
 world {
     size = 80 [wrap], 80 [wrap];
-    tickrate = 2;
-    cellsize = 10;
+    tickrate = 8;
+    cellsize = 7;
 }
 
 neighbourhood Moore {

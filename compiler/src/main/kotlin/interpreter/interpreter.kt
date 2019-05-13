@@ -13,7 +13,11 @@ import javax.swing.JPanel
 open class InterpretRuntimeException(msg: String) : RuntimeException(msg)
 class InterpreterVisitException(node: Any) : InterpretRuntimeException("${node.javaClass} should not be visited.")
 
-class StateValue(val decl: StateDecl, val index: Int)
+data class StateValue(val decl: StateDecl, val index: Int) {
+    override fun toString(): String {
+        return "${decl.ident}[$index]"
+    }
+}
 object BreakValue
 object ContinueValue
 
@@ -54,7 +58,8 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         val listOfNgbhs = node.body.filterIsInstance<NeighbourhoodDecl>()
         val listOfStates = node.body.filterIsInstance<StateDecl>()
         defaultStateValue = StateValue(listOfStates[0], 0)
-        val grid = Array(width) { Array(height) { StateValue(listOfStates.random(), 0) } }
+        var grid = Array(width) { Array(height) { StateValue(listOfStates.random(), 0) } }
+        var nextGrid = Array(width) { Array(height) { defaultStateValue!! } }
 
         // Rendering
         val cellSize = node.world.cellSize
@@ -84,13 +89,17 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
                         declareNeighbourhoods(listOfNgbhs, grid, x, y)
                         val newState = (visit(state.decl.body).takeIf { it is StateValue } ?: state) as StateValue
                         stack.closeScope()
-                        grid[x][y] = newState
+                        nextGrid[x][y] = newState
 
                         // Draw
                         g.color = Color(newState.decl.red, newState.decl.green, newState.decl.blue)
                         g.fillRect(x * cellSize, y * cellSize, cellSize, cellSize)
                     }
                 }
+
+                val tmp = grid
+                grid = nextGrid
+                nextGrid = tmp
             }
         }, 0, (1000f / tickrate).toLong())
 
@@ -494,11 +503,11 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         stack.pushStack()
         stack.openScope()
         for ((i, formalArg) in funcDecl.args.withIndex()) {
-            stack[formalArg.ident] = actualArguments[i]
+            stack.declare(formalArg.ident, actualArguments[i])
         }
         val result = visit(funcDecl.body)
         stack.closeScope()
-        stack.closeScope()
+        stack.popStack()
         return result
     }
 
