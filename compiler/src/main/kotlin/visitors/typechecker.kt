@@ -354,7 +354,12 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
             node.setType(
                 when (decl) {
                     is StateDecl -> StateType
-                    is NeighbourhoodDecl -> LocalNeighbourhoodType
+                    is NeighbourhoodDecl -> {
+                        if (inLimitedConstExpr) {
+                            ErrorLogger += TypeError(node.ctx, "Neighbourhoods are not allowed in constant declarations.")
+                        }
+                        LocalNeighbourhoodType
+                    }
                     is AssignStmt -> decl.expr.getType()
                     is ConstDecl -> decl.expr.getType()
                     is FunctionArgument -> decl.type
