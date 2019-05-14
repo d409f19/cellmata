@@ -22,12 +22,11 @@ class DimensionsError(ctx: SourceContext, description: String) : CompileError(ct
  */
 class SanityChecker : BaseASTVisitor() {
 
-    var inAFunction = false
-    var inLimitedConstExpr = false // Constants are limited. Function calls are not allowed in limited expressions
-    var inAState = false
-    var numberOfStates = 0
-    var dimensions: Int = 0
-    var worldHasEdge = false
+    private var inAFunction = false
+    private var inAState = false
+    private var numberOfStates = 0
+    private var dimensions: Int = 0
+    private var worldHasEdge = false
 
     override fun visit(node: WorldNode) {
         dimensions = node.dimensions.size
@@ -69,23 +68,10 @@ class SanityChecker : BaseASTVisitor() {
         }
     }
 
-    override fun visit(node: ConstDecl) {
-        inLimitedConstExpr = true
-        super.visit(node)
-        inLimitedConstExpr = false
-    }
-
     override fun visit(node: FuncDecl) {
         inAFunction = true
         super.visit(node)
         inAFunction = false
-    }
-
-    override fun visit(node: FuncCallExpr) {
-        if (inLimitedConstExpr) {
-            ErrorLogger += SanityError(node.ctx, "Function calls are not allowed in constant declarations.")
-        }
-        super.visit(node)
     }
 
     override fun visit(node: Coordinate) {

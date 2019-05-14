@@ -14,8 +14,11 @@ class TypeError(ctx: SourceContext, description: String) : CompileError(ctx, des
  * Synthesizes types by moving them up the abstract syntax tree according to the type rules, and check that there is no violation of the type rules
  */
 class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTable) {
+
     private var expectedReturn: Type? = null
     private var isOuterArray = true
+    // Constants are limited. Function calls and neighbourhoods are not allowed in limited expressions
+    private var inLimitedConstExpr = false
 
     override fun visit(node: WorldNode) {
         node.dimensions.forEach { visit(it) }
@@ -533,6 +536,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     override fun visit(node: FuncCallExpr) {
         super.visit(node)
 
+        if (inLimitedConstExpr) {
+            ErrorLogger += TypeError(node.ctx, "Function calls are not allowed in constant declarations.")
+        }
+
         val funcDecl = symbolTableSession.getSymbol(node.ident)
 
         // If node is not a function, register error and continue type-checking
@@ -594,8 +601,10 @@ class TypeChecker(symbolTable: Table) : ScopedASTVisitor(symbolTable = symbolTab
     }
 
     override fun visit(node: ConstDecl) {
+        inLimitedConstExpr = true
         super.visit(node)
         node.type = node.expr.getType()
+        inLimitedConstExpr = false
     }
 
     override fun visit(node: AssignStmt) {
