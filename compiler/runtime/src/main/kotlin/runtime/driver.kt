@@ -39,7 +39,7 @@ class MultiWorldView(private val world: World, private val dims: List<Int>, priv
         return if (overEdge) {
             edge
         } else {
-            world.getCell(*relPos.mapIndexed { index, p -> p wrap dims[index] }.toIntArray())
+            world.getCell(*relPos.mapIndexed { index, p -> (pos[index] + p) wrap dims[index] }.toIntArray())
         }
     }
 }

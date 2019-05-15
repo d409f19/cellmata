@@ -12,9 +12,6 @@ class GraphicalDriver(private val worldConfig: WorldConfiguration, program: IPro
     override fun run() {
         assert(worldConfig.dims.size == 2)
 
-        val cellSize = worldConfig.cellSize
-        val tickrate = worldConfig.tickrate
-
         val frame = JFrame("Cellmata")
         val panel = frame.add(JPanel())
         panel.preferredSize = Dimension(
@@ -28,6 +25,9 @@ class GraphicalDriver(private val worldConfig: WorldConfiguration, program: IPro
         frame.isVisible = true
         val g = panel.graphics as Graphics2D
 
+        fillRandom(worldCurrent)
+        fillRandom(worldNext)
+
         drawWorld(g)
 
         Timer().scheduleAtFixedRate(object: TimerTask() {
@@ -35,7 +35,7 @@ class GraphicalDriver(private val worldConfig: WorldConfiguration, program: IPro
                 update()
                 drawWorld(g)
             }
-        }, 0, (1000F / tickrate).toLong())
+        }, 0, (1000F / worldConfig.tickrate).toLong())
     }
 
     fun drawWorld(g: Graphics2D) {
@@ -50,6 +50,15 @@ class GraphicalDriver(private val worldConfig: WorldConfiguration, program: IPro
                     worldConfig.cellSize,
                     worldConfig.cellSize
                 )
+            }
+        }
+    }
+
+    fun fillRandom(world: World) {
+        val r = Random()
+        for (x in 0 until worldConfig.dims[0]) {
+            for (y in 0 until worldConfig.dims[1]) {
+                world.setCell(x,y, state = if(r.nextBoolean()) 1 else 0)
             }
         }
     }
