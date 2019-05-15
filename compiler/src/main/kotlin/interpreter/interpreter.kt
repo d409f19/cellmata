@@ -82,11 +82,9 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         val listOfStates = node.body.filterIsInstance<StateDecl>()
         defaultStateValue = StateValue(listOfStates[0], 0)
 
-        // Find dimensions
-        val xDim = node.world.dimensions[0]
-        val width = xDim.size
-        val yDim = node.world.dimensions[0]
-        val height = yDim.size
+        // Find width and height
+        val width = node.world.dimensions[0].size
+        val height = node.world.dimensions[1].size
 
         // Setup grids, initial configuration is just random
         var grid = Array(width) { Array(height) { StateValue(listOfStates.random(), 0) } }
@@ -498,6 +496,22 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
         }
     }
 
+    /* TODO: The current implementation of arrays works for the most common cases but not for multi-dimensional
+        arrays where a subarray is omitted. E.g. in `{{{1}}, {}}` the second sub-array (the empty one), has an omitted
+        value, which should be an array. The current implementation visits each of an arrays values, and if any are
+        missing, they are created based on a default value. But for the example above, the second sub-array does
+        not know which size the omitted sub-array should have. We don't store that information, so we can't create
+        a default sub-array.
+
+        I see two possible solutions:
+        1) Array AST node should not only contain their own size, but also their children's size. The child size
+        could simply be passed to the `getDefaultArrayValue` method.
+        2) When an array is visited, it constructs the whole array - including all sub-arrays - similarly to the
+        kotlin code generator, without visiting sub-arrays. However, values declared in the source code should
+        still be visited.
+
+        - NØ, May 2019 */
+
     override fun visit(node: SizedArrayExpr): Any {
         if (node.body != null) {
             return visit(node.body)
@@ -506,7 +520,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
             if (type is ArrayType && type.subtype !is ArrayType) {
                 return Array(node.declaredSize[0]!!) { getDefaultArrayValue(type.subtype) }
             } else {
-                TODO("not implemented") // We need to construct default values that are arrays
+                TODO("not implemented") // We need to construct default values that are arrays. See big comment above.
             }
         }
     }
@@ -516,7 +530,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
             when {
                 i < node.values.size -> visit(node.values[i])
                 node.getType() !is ArrayType -> getDefaultArrayValue(node.getType())
-                else -> TODO("not implemented") // Default values that are arrays. They need a size from somewhere.
+                else -> TODO("not implemented") // Default values that are arrays. See big comment above.
             }
         }
     }
