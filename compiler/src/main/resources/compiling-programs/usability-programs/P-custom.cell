@@ -1,0 +1,54 @@
+world {
+    size = 50 [wrap], 50 [wrap];
+    tickrate = 2;
+    cellsize = 6;
+}
+
+neighbourhood mooreNeighbourhood{
+    (-1,1), (0,1), (1,1),
+    (-1,0),         (1,0),
+    (-1,-1), (0,-1),(1,-1)
+}
+
+state dead (255, 255, 255){
+    if(count(alive, mooreNeighbourhood) == 3){
+        become alive;
+    }
+}
+
+state alive(0, 0, 0){
+    if(count(alive, mooreNeighbourhood) < 2){
+        become dead;
+    }
+    elif(count(alive, mooreNeighbourhood) > 3){
+        become dead;
+    }
+    // infect
+    if(randi(1,4) == 2){
+       if(count(infected, mooreNeighbourhood) > 0){
+           become infected;
+       }
+    }
+}
+
+state infected(0,255,0){
+    if(bomb()){
+        if(count(doctor, mooreNeighbourhood) > 2){
+            become alive;
+        }
+    }
+}
+
+state doctor(0,0,255){
+    if(count(infected, mooreNeighbourhood) > 3){
+        if(mooreNeighbourhood[6] == infected){
+            become infected;
+        }
+    }
+}
+
+const upperBound = 5;
+
+function bomb() bool{
+    return randi(1,upperBound) == 2;
+}
