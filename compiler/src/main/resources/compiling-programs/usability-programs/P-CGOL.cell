@@ -1,0 +1,27 @@
+world {
+    size = 50 [wrap], 50 [wrap];
+    tickrate = 6;
+    cellsize = 6;
+}
+
+neighbourhood mooreNeighbourhood{
+    (-1,1), (0,1), (1,1),
+    (-1,0),        (1,0),
+    (-1,-1), (0,-1),(1,-1)
+}
+
+state dead (255, 255, 255){
+    if(count(alive, mooreNeighbourhood) == 3){
+        become alive;
+    }
+
+}
+
+state alive(0, 0, 0){
+    if(count(alive, mooreNeighbourhood) < 2){
+        become dead;
+    }
+    elif(count(alive, mooreNeighbourhood) > 3){
+        become dead;
+    }
+}

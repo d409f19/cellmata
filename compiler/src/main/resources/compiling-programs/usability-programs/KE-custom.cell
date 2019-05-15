@@ -1,0 +1,51 @@
+world{
+size = 50 [wrap],50 [wrap];
+tickrate = 30;
+cellsize = 10;
+}
+neighbourhood moore{
+(-1, 1), (0,1), (1,1),
+(-1, 0)        ,(1, 0),
+(-1,-1), (0,-1), (1,-1)
+}
+
+neighbourhood von{
+         (0,1),
+(-1, 0)        ,(1, 0),
+        (0,-1)
+}
+
+state healthy (255, 255, 255){
+let numberofinf = count (infected, moore);
+let susc = randi(0,10);
+let infchance = numberofinf * susc;
+
+if(infchance > 20){
+become infected;
+}
+
+}
+
+state infected (0, 128, 0){
+let numbermoore = count (cure, moore);
+let numbervon = count(cure, von);
+let risk = randi (0,4);
+if (numbermoore==0){
+if (risk==1){
+become dead;
+}
+
+}
+elif(numbervon>=1){
+become healthy;
+}
+
+}
+
+state cure (255, 165, 0){
+
+}
+
+state dead (0, 0, 0){
+
+}
