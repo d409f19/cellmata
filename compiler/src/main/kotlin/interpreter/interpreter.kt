@@ -16,7 +16,7 @@ class InterpreterVisitException(node: Any) : InterpretRuntimeException("${node.j
 /**
  * Custom values used by the interpreter. StateValue is a state and a index (used for multi-states).
  * When a state is mentioned in the source code, e.g. Alive, a StateValue equal to (Alive, 0) is created.
- * The LookupExpr affects the index of the state value, e.g. Alive[2] = (Alive, 2)
+ * The LookupExpr affects the index of the state value, e.g. `Alive[2] = (Alive, 2)`
  */
 data class StateValue(val decl: StateDecl, val index: Int) {
     override fun toString(): String {
@@ -67,7 +67,7 @@ class Interpreter(val rootNode: RootNode) : ASTVisitor<Any> {
                 when (it) {
                     is StateDecl -> stack.declareGlobal(it.ident, StateValue(it, 0))
                     is FuncDecl -> stack.declareGlobal(it.ident, it)
-                    else -> AssertionError()
+                    else -> AssertionError("Unexpected root component: ${it.javaClass}")
                 }
             }
         root.body.filterIsInstance<ConstDecl>().forEach { stack.declareGlobal(it.ident, visit(it.expr)) }
