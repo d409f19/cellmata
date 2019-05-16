@@ -17,6 +17,6 @@ function f(int a) int {
 
     for (let x = a; x < a; x = x+1) {
         let y = 2;
-    }
+    } 
     return a;
 }
