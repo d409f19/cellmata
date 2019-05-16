@@ -1,0 +1,15 @@
+world {
+    size = 100 [wrap], 100 [wrap];
+    tickrate = 1;
+    cellsize = 5;
+}
+
+const c = 20 + foo(i)
+
+state alive (0, 0, 0) {
+
+}
+
+function foo(int i) int {
+    return i + i;
+}

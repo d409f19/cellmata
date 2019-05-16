@@ -1,0 +1,15 @@
+world {
+    size = 100 [wrap], 100 [wrap];
+    tickrate = 1;
+    cellsize = 5;
+}
+
+neighbourhood nei {
+    (1, 0)
+}
+
+const c = alive == nei[0];
+
+state alive (0, 0, 0) {
+
+}

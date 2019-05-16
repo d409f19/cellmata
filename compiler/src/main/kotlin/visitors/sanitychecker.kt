@@ -22,9 +22,11 @@ class DimensionsError(ctx: SourceContext, description: String) : CompileError(ct
  */
 class SanityChecker : BaseASTVisitor() {
 
-    var inAFunction = false
-    var dimensions: Int = 0
-    var worldHasEdge = false
+    private var inAFunction = false
+    private var inAState = false
+    private var numberOfStates = 0
+    private var dimensions: Int = 0
+    private var worldHasEdge = false
 
     override fun visit(node: WorldNode) {
         dimensions = node.dimensions.size
@@ -85,9 +87,6 @@ class SanityChecker : BaseASTVisitor() {
         if (inAFunction)
             ErrorLogger += SanityError(node.ctx, "Become statements cannot be in functions")
     }
-
-    var inAState = false
-    var numberOfStates = 0
 
     override fun visit(node: StateDecl) {
         inAState = true
