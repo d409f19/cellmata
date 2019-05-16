@@ -1,0 +1,24 @@
+world {
+    size = 100 [wrap], 100 [wrap];
+    tickrate = 5;
+    cellsize = 7;
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Dead (255, 255, 255) {
+    if (count(Alive, Moore) == 3) {
+        become Alive;
+    }
+}
+
+state Alive (0, 0, 0) {
+    let aliveNeighbours = count(Alive, Moore);
+    if (aliveNeighbours < 2 || 3 < aliveNeighbours) {
+        become Dead;
+    }
+}

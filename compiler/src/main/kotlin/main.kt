@@ -4,8 +4,10 @@ import com.xenomachina.argparser.*
 import dk.aau.cs.d409f19.antlr.CellmataLexer
 import dk.aau.cs.d409f19.antlr.CellmataParser
 import dk.aau.cs.d409f19.cellumata.ast.AST
+import dk.aau.cs.d409f19.cellumata.ast.RootNode
 import dk.aau.cs.d409f19.cellumata.ast.Table
 import dk.aau.cs.d409f19.cellumata.ast.reduce
+import dk.aau.cs.d409f19.cellumata.interpreter.Interpreter
 import dk.aau.cs.d409f19.cellumata.visitors.*
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
@@ -51,7 +53,8 @@ fun main(args: Array<String>) {
                             "type" -> GraphPhases.TYPE
                             else -> throw SystemExitException("Internal error", 255)
                         }
-                    }
+                    },
+                    interpret = interpret
                 )
 
                 if (!Files.exists(settings.source)) {
@@ -112,18 +115,23 @@ fun compile(source: CharStream, settings: CompilerSettings): CompilerData {
 
     graphAst(settings, "type-checker", GraphPhases.TYPE, ast)
 
-    // Codegen
-    when (settings.target) {
-        CompileTarget.KOTLIN -> {
-            val compiled = KotlinCodegen().visit(ast)
-            Files.write(
-                settings.output,
-                compiled.toByteArray(Charset.forName("UTF-8")),
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING
-            )
-        }
-        CompileTarget.CELLMATA -> {
-            PrettyPrinter().print(ast)
+    if (settings.interpret) {
+        Interpreter(ast as RootNode).start()
+
+    } else {
+        // Codegen
+        when (settings.target) {
+            CompileTarget.KOTLIN -> {
+                val compiled = KotlinCodegen().visit(ast)
+                Files.write(
+                    settings.output,
+                    compiled.toByteArray(Charset.forName("UTF-8")),
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING
+                )
+            }
+            CompileTarget.CELLMATA -> {
+                PrettyPrinter().print(ast)
+            }
         }
     }
 

@@ -61,7 +61,7 @@ class Arguments(parser: ArgParser) {
     val outputDir by parser.storing(
         "-o", "--output",
         help = "location to save compiled program to"
-    )
+    ).default("out.kt")
 
     val target by parser.storing(
         "-t", "--target",
@@ -71,6 +71,11 @@ class Arguments(parser: ArgParser) {
             throw SystemExitException("Invalid target", 1)
         }
     }
+
+    val interpret by parser.flagging(
+        "-i", "--interpret",
+        help = "do interpreting instead of compiling"
+    )
 
     val source by parser.positional(
         "SOURCE",
@@ -82,6 +87,7 @@ data class CompilerSettings(
     val logLevel: LogLevel = LogLevel.SILENT,
     val graphPhases: List<GraphPhases> = listOf(),
     val target: CompileTarget,
+    val interpret: Boolean,
     val source: Path,
     val output: Path
 )
