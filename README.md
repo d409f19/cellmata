@@ -36,7 +36,7 @@ state Alive (0, 0, 0) {
 }
 ```
 
-This program consists of a world-, neighbourhood-, and two state-declarations. 
+This program consists of a world-, a neighbourhood-, and two state-declarations. 
 The state-declarations define the logic to be executed upon evaluation each cell of that given state. 
 Note how this resembles a function, but rather than specifying a `return`-statement, a `become`-statement specifies which state the cell should become.
 
