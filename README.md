@@ -44,7 +44,7 @@ Note how this resembles a function, but rather than specifying a `return`-statem
 Cellmata also defines a set of built-in functions, here `count(state, neighbourhood)` is used, which are discussed in the language-guide.
 
 ## Using Cellmata
-If you just want to get started, then downloading the jar-file from [latest releases](https://github.com/d409f19/cellmata/releases) and only using the interpreter is sufficient for writing a Cellmata program and rendering this through the interpreter.
+You can get started by with writing you own cellular automata by downloading the compiler from the [release section](https://github.com/d409f19/cellmata/releases). The compiler features both a build-in interpreter and [Kotlin](https://kotlinlang.org/) target. If you are new to programming, or just want to get going quickly, the interpreter is the easiest way to get a cellular automaton running.
 
 Since the source is free and public, you are more than welcome to contribute to the project. No code-of-conduct has been released yet, so use your best judgement.
 
