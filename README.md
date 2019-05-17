@@ -54,4 +54,4 @@ A simple, but effective, [language-guide](https://github.com/d409f19/cellmata/bl
 Since the source is free and public, you are more than welcome to contribute to the project. No code-of-conduct has been released yet, so use your best judgement.
 
 ## License
-Note that all source-code is released under GNU GPL v2.0.
+All source-code is released under GNU GPL v2.0.
