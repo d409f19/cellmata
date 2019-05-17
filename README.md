@@ -10,7 +10,7 @@ This repository contains the source code and files related to the Cellmata compi
 Note that all source-code is released under GNU GPL v2.0.
 
 ## Conway's Game of Life example
-The popular _game_ Conway's Game of Life (CGOL) is a popular cellular automaton (CA) which emulates _life_.
+The popular _game_ Conway's Game of Life (CGOL) is a cellular automaton (CA) which emulates _life_.
 
 ```
 world {
