@@ -364,7 +364,7 @@ class NeighbourhoodDecl(
  */
 class FunctionArgument(
     ctx: SourceContext,
-    val ident: String,
+    var ident: String,
     val type: Type = UncheckedType
 ) : AST(ctx)
 
