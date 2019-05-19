@@ -12,7 +12,7 @@ class UndeclaredNameException(ctx: SourceContext, val ident: String) : CompileEr
 /**
  * Walks through the abstract syntax tree, extracts symbols, and checks for use-before-declaration.
  */
-class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
+class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseScopedASTVisitor() {
     private val symbolTableSession: CreatingSymbolTableSession = CreatingSymbolTableSession(symbolTable = symbolTable)
 
     /**
@@ -20,6 +20,14 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
      */
     fun getSymbolTable(): Table {
         return symbolTableSession.getRootTable()
+    }
+
+    override fun openScope() {
+        symbolTableSession.openScope()
+    }
+
+    override fun closeScope() {
+        symbolTableSession.closeScope()
     }
 
     override fun visit(node: RootNode) {
@@ -52,18 +60,8 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         symbolTableSession.insertSymbol(node.ident, node)
     }
 
-    override fun visit(node: StateDecl) {
-        symbolTableSession.openScope()
-        super.visit(node)
-        symbolTableSession.closeScope()
-    }
-
-    override fun visit(node: FuncDecl) {
-        symbolTableSession.openScope()
+    override fun visitFuncDeclPreNode(node: FuncDecl) {
         node.args.forEach { symbolTableSession.insertSymbol(it.ident, it) }
-
-        super.visit(node)
-        symbolTableSession.closeScope()
     }
 
     override fun visit(node: AssignStmt) {
@@ -81,43 +79,10 @@ class ScopeCheckVisitor(symbolTable: Table = Table()) : BaseASTVisitor() {
         super.visit(node)
     }
 
-    override fun visit(node: IfStmt) {
-        // conditional blocks open their own scopes
-        node.conditionals.forEach { visit(it) }
-        if (node.elseBlock != null) {
-            symbolTableSession.openScope()
-            visit(node.elseBlock)
-            symbolTableSession.closeScope()
-        }
-    }
-
-    override fun visit(node: ConditionalBlock) {
-        visit(node.expr)
-        symbolTableSession.openScope()
-        visit(node.block)
-        symbolTableSession.closeScope()
-    }
-
     override fun visit(node: FuncCallExpr) {
         if (symbolTableSession.getSymbol(node.ident) == null) {
             ErrorLogger += UndeclaredNameException(node.ctx, node.ident)
         }
         super.visit(node)
-    }
-
-    override fun visit(node: ForLoopStmt) {
-        // For-loop adds two layers of scopes.
-        // In the outer-layer are the init, condition, and post-iteration.
-        // The inner-layer is the loops body.
-        // This way any loop-control-variables (those in the init-part) are not remade every iteration, but they are
-        // removed when the loop finishes.
-        symbolTableSession.openScope()
-        node.initPart?.let { visit(it) }
-        visit(node.condition)
-        symbolTableSession.openScope()
-        visit(node.body)
-        symbolTableSession.closeScope()
-        node.postIterationPart?.let { visit(it) }
-        symbolTableSession.closeScope()
     }
 }
