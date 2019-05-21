@@ -2,6 +2,8 @@ package dk.aau.cs.d409f19.cellumata.visitors
 
 import dk.aau.cs.d409f19.cellumata.ast.*
 
+class UnreachableVisitorError : Error("Visitor hit a visit function that should be unreachable")
+
 /**
  * The base interface for an implementation of the visitor pattern on the abstract syntax tree
  */
@@ -111,6 +113,22 @@ interface ASTVisitor<R> {
     fun visit(node: IntToFloatConversion): R
 
     fun visit(node: StateArrayToLocalNeighbourhoodConversion): R
+
+    fun visit(node: ErrorAST): R {
+        throw UnreachableVisitorError()
+    }
+
+    fun visit(node: ErrorDecl): R {
+        throw UnreachableVisitorError()
+    }
+
+    fun visit(node: ErrorStmt): R {
+        throw UnreachableVisitorError()
+    }
+
+    fun visit(node: ErrorExpr): R {
+        throw UnreachableVisitorError()
+    }
 }
 
 /**
