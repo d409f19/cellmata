@@ -442,40 +442,130 @@ abstract class BaseASTVisitor: ASTVisitor<Unit> {
     }
 }
 
+abstract class BaseScopedASTVisitor : BaseASTVisitor() {
+    abstract fun openScope()
+    abstract fun closeScope()
+
+    override fun visit(node: StateDecl) {
+        openScope()
+        visitStateDeclPreNode(node)
+        super.visit(node)
+        visitStateDeclPostNode(node)
+        closeScope()
+    }
+
+    open fun visitStateDeclPreNode(node: StateDecl) {}
+
+    open fun visitStateDeclPostNode(node: StateDecl) {}
+
+    override fun visit(node: FuncDecl) {
+        openScope()
+        visitFuncDeclPreNode(node)
+        super.visit(node)
+        visitFuncDeclPostNode(node)
+        closeScope()
+    }
+
+    open fun visitFuncDeclPreNode(node: FuncDecl) {}
+
+    open fun visitFuncDeclPostNode(node: FuncDecl) {}
+
+    override fun visit(node: IfStmt) {
+        // conditional blocks open their own scopes
+        visitIfStmtPreConditionals()
+        node.conditionals.forEach { visit(it) }
+        visitIfStmtPostConditionals()
+        if (node.elseBlock != null) {
+            openScope()
+            visitIfStmtPreElseBlock()
+            visit(node.elseBlock)
+            visitIfStmtPostElseBlock()
+            closeScope()
+        }
+    }
+
+    open fun visitIfStmtPreConditionals() {}
+
+    open fun visitIfStmtPostConditionals() {}
+
+    open fun visitIfStmtPreElseBlock() {}
+
+    open fun visitIfStmtPostElseBlock() {}
+
+    override fun visit(node: ConditionalBlock) {
+        visitConditionalBlockPreExpr(node)
+        visit(node.expr)
+        visitConditionalBlockPostExpr(node)
+        openScope()
+        visitConditionalBlockPreBlock(node)
+        visit(node.block)
+        visitConditionalBlockPostBlock(node)
+        closeScope()
+    }
+
+    open fun visitConditionalBlockPreExpr(node: ConditionalBlock) {}
+
+    open fun visitConditionalBlockPostExpr(node: ConditionalBlock) {}
+
+    open fun visitConditionalBlockPreBlock(node: ConditionalBlock) {}
+
+    open fun visitConditionalBlockPostBlock(node: ConditionalBlock) {}
+
+
+    override fun visit(node: ForLoopStmt) {
+        // For-loop adds two layers of scopes.
+        // In the outer-layer are the init, condition, and post-iteration.
+        // The inner-layer is the loops body.
+        // This way any loop-control-variables (those in the init-part) are not remade every iteration, but they are
+        // removed when the loop finishes.
+        openScope()
+        visitForLoopPreInitPart(node)
+        node.initPart?.let { visit(it) }
+        visitForLoopPostInitPart(node)
+        visitForLoopPreCondition(node)
+        visit(node.condition)
+        visitForLoopPostCondition(node)
+        openScope()
+        visitForLoopPreBody(node)
+        visit(node.body)
+        visitForLoopPostBody(node)
+        closeScope()
+        visitForLoopPrePostIteration(node)
+        node.postIterationPart?.let { visit(it) }
+        visitForLoopPostPostIteration(node)
+        closeScope()
+    }
+
+    open fun visitForLoopPreInitPart(node: ForLoopStmt) {}
+
+    open fun visitForLoopPostInitPart(node: ForLoopStmt) {}
+
+    open fun visitForLoopPreCondition(node: ForLoopStmt) {}
+
+    open fun visitForLoopPostCondition(node: ForLoopStmt) {}
+
+    open fun visitForLoopPreBody(node: ForLoopStmt) {}
+
+    open fun visitForLoopPostBody(node: ForLoopStmt) {}
+
+    open fun visitForLoopPrePostIteration(node: ForLoopStmt) {}
+
+    open fun visitForLoopPostPostIteration(node: ForLoopStmt) {}
+}
+
 /**
  * Walks the tree while opening and closing scopes as they are entered and left.
  *
  * @see BaseASTVisitor
  */
-open class ScopedASTVisitor(symbolTable: Table): BaseASTVisitor() {
+open class ScopedASTVisitor(symbolTable: Table): BaseScopedASTVisitor() {
     protected val symbolTableSession = ViewingSymbolTableSession(symbolTable = symbolTable)
 
-    override fun visit(node: StateDecl) {
+    override fun openScope() {
         symbolTableSession.openScope()
-        super.visit(node)
-        symbolTableSession.closeScope()
     }
 
-    override fun visit(node: FuncDecl) {
-        symbolTableSession.openScope()
-        super.visit(node)
-        symbolTableSession.closeScope()
-    }
-
-    override fun visit(node: ConditionalBlock) {
-        symbolTableSession.openScope()
-        super.visit(node)
-        symbolTableSession.closeScope()
-    }
-
-    override fun visit(node: ForLoopStmt) {
-        symbolTableSession.openScope()
-        node.initPart?.let { visit(it) }
-        visit(node.condition)
-        symbolTableSession.openScope()
-        visit(node.body)
-        symbolTableSession.closeScope()
-        node.postIterationPart?.let { visit(it) }
+    override fun closeScope() {
         symbolTableSession.closeScope()
     }
 }
