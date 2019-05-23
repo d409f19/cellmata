@@ -1,0 +1,30 @@
+/*
+B3678/S34678
+Symmetric under on-off reversal. Has engineered patterns with highly complex behavior
+*/
+
+world {
+    size = 150 [wrap], 100 [wrap];
+    tickrate = 30;
+    cellsize = 8;
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Dead (255, 255, 255) {
+    let aliveNeighbours = count(Alive, Moore);
+    if (aliveNeighbours == 3 || 5 < aliveNeighbours) {
+        become Alive;
+    }
+}
+
+state Alive (0, 0, 0) {
+    let aliveNeighbours = count(Alive, Moore);
+    if (aliveNeighbours < 3 || aliveNeighbours == 5) {
+        become Dead;
+    }
+}

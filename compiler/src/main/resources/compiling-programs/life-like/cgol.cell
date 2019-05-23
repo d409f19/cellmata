@@ -1,7 +1,12 @@
+/*
+B3/S23
+Highly complex behavior.
+*/
+
 world {
-    size = 100 [wrap], 100 [wrap];
-    tickrate = 5;
-    cellsize = 7;
+    size = 150 [wrap], 100 [wrap];
+    tickrate = 30;
+    cellsize = 8;
 }
 
 neighbourhood Moore {
