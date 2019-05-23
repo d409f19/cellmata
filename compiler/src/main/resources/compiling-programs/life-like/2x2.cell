@@ -1,0 +1,35 @@
+/*
+B36/S125
+If a pattern is composed of 2x2 blocks, it will continue to evolve in the same form; grouping these
+blocks into larger powers of two leads to the same behavior,
+but slower. Has complex oscillators of high periods as well as a small glider.
+*/
+
+world {
+    size = 150 [wrap], 100 [wrap];
+    tickrate = 30;
+    cellsize = 8;
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Dead (255, 255, 255) {
+    let aliveNeighbours = count(Alive, Moore);
+    if (aliveNeighbours == 3 || aliveNeighbours == 6) {
+        become Alive;
+    }
+}
+
+state Alive (0, 0, 0) {
+    let aliveNeighbours = count(Alive, Moore);
+    if (aliveNeighbours == 0 ||
+        aliveNeighbours == 3 ||
+        aliveNeighbours == 4 ||
+        5 < aliveNeighbours) {
+        become Dead;
+    }
+}

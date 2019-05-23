@@ -1,0 +1,26 @@
+/*
+B3/S012345678
+Also known as Inkspot or Flakes. Cells that become alive never die. It combines chaotic growth
+with more structured ladder-like patterns that can be used to simulate arbitrary Boolean circuits.
+*/
+
+world {
+    size = 150 [wrap], 100 [wrap];
+    tickrate = 30;
+    cellsize = 8;
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Dead (255, 255, 255) {
+    let aliveNeighbours = count(Alive, Moore);
+    if (aliveNeighbours == 3) {
+        become Alive;
+    }
+}
+
+state Alive (0, 0, 0) {}

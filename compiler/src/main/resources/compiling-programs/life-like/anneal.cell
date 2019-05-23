@@ -1,0 +1,31 @@
+/*
+B4678/S35678
+Also called the twisted majority rule. Symmetric under on-off reversal.
+Approximates the curve-shortening flow on the boundaries between live and dead cells.
+*/
+
+world {
+    size = 150 [wrap], 100 [wrap];
+    tickrate = 30;
+    cellsize = 8;
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Dead (255, 255, 255) {
+    let aliveNeighbours = count(Alive, Moore);
+    if (aliveNeighbours == 4 || 5 < aliveNeighbours) {
+        become Alive;
+    }
+}
+
+state Alive (0, 0, 0) {
+    let aliveNeighbours = count(Alive, Moore);
+    if (aliveNeighbours < 3 || aliveNeighbours == 4) {
+        become Dead;
+    }
+}

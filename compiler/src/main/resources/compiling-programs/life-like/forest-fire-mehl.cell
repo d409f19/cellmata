@@ -1,0 +1,29 @@
+world {
+    size = 150 [wrap], 100 [wrap];
+    tickrate = 60;
+    cellsize = 8;
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+state Fire (255, 0, 0) {
+    if (count(Water, Moore) == 1) {
+        become Water;
+    }
+}
+
+state Water (0, 0, 255) {
+    if (count(Tree, Moore) != 2) {
+        become Tree;
+    }
+}
+
+state Tree (0, 255, 0) {
+    if (count(Fire, Moore) == 3) {
+        become Fire;
+    }
+}
