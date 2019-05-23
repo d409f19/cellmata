@@ -1,0 +1,45 @@
+world {
+    size = 240 [edge], 135 [edge];
+    edge = Earth;
+    tickrate = 60;
+    cellsize = 8;
+}
+
+neighbourhood Moore {
+    (-1, 1), (0, 1), (1, 1),
+    (-1, 0),          (1, 0),
+    (-1, -1), (0, -1), (1, -1)
+}
+
+
+state Forest (0, 220, 0) {
+    // 0.01% chance to become fire
+    if (count(Fire, Moore) > 0 && randi(0,2) == 0) {
+        become Fire;
+    } elif (randi(0,1000000) == 0) {
+        become Fire;
+    }
+}
+
+state Earth (64, 168, 24) {
+    // Become a forest if at least two forests nearby and lucky
+    if (randi(0, 20 - count(Forest, Moore)) == 0) {
+        become Forest;
+    } elif (count(Fire, Moore) > 2 && randi(0,1000) == 0) { // 0.5% chance to become fire
+        become Fire;
+    }
+}
+
+state Fire (255, 0, 0) {
+    // 25% chance to extinguish
+    if (randi(0,5) == 0) {
+        become ScorchedEarth;
+    }
+}
+
+state ScorchedEarth (100, 42, 42) {
+    // % chance to become forest, since the earth is fertilised with nutrients
+    if (randi(0,100) == 0) {
+        become Earth;
+    }
+}
