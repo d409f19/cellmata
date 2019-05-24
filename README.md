@@ -1,4 +1,9 @@
-# Cellmata 
+<p align="center" >
+    <img src="https://raw.githubusercontent.com/d409f19/cellmata/master/logo.png" height="91px" 
+    alt="The Cellmata Programming Language" 
+    title="The Cellmata Programming Language">
+</p>
+
 ![CircleCI branch](https://img.shields.io/circleci/project/github/d409f19/cellmata/master.svg)
 ![GitHub release](https://img.shields.io/github/release/d409f19/cellmata.svg)
 ![GitHub](https://img.shields.io/github/license/d409f19/cellmata.svg)
